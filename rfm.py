@@ -6,6 +6,10 @@ from sklearn.metrics import mean_squared_error, log_loss, roc_auc_score
 from rankfm.rankfm import RankFM
 import copy
 import csv
+from rankfm.evaluation import precision, recall
+
+# Variables
+K = 10
 
 # Read in data
 def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
@@ -85,16 +89,27 @@ print("Test scores shape: ", test_scores.shape)
 print(pd.Series(test_scores).describe())
 
 # Generate TopN Recommendations for Test Users
-test_recommendations = rankfm.recommend(test_users, n_items=10, filter_previous=True, cold_start="nan")
+test_recommendations = rankfm.recommend(test_users, n_items=K, filter_previous=True, cold_start="nan")
 print("test_recommendations shape: ", test_recommendations.shape)
 
+confidence_scores = test_recommendations.copy()
 
-with open('test_recomended_items.csv','a', newline='') as csvfile:
+with open('test_recomended_items.csv','w', newline='') as csvfile:
     csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    csv_writer.writerow(["User", "Item", "Rank"] )
+    csv_writer.writerow(["User", "Item", "Rank", "Confidence score"] )
 
+ind = 0
 for usr in range(test_recommendations.shape[0]):
     for rnk in range(test_recommendations.shape[1]):
+        confidence_scores[rnk][usr] = test_scores[ind]
         with open('test_recomended_items.csv','a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ usr, test_recommendations[rnk][usr], rnk+1] )
+            csv_writer.writerow([ usr, test_recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
+        ind += 1
+
+# Evaluate model
+rankfm_precision = precision(rankfm, X_test, k=K)
+rankfm_recall = recall(rankfm, X_test, k=K)
+
+print("precision: {:.3f}".format(rankfm_precision))
+print("recall: {:.3f}".format(rankfm_recall))
