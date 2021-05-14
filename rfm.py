@@ -30,6 +30,23 @@ def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
             items.add(movieid)
     return (data, np.array(y), users, items)
 
+# load other user data -> age, gender ...
+user_info = {}
+
+with open('ml-100k/u.user', 'r') as fin:
+    for line in fin.readlines():
+        user_id, age, gender, occu, zipcode = line.split('|')
+        user_info[int(user_id)-1] = {
+            'age': int(age),
+            'gender': 0 if gender == 'M' else 1,
+            'occupation': occu,
+            'zipcode': zipcode
+        }
+    print('User Info Loaded!')
+
+
+
+
 # Create train and test sets
 (train_data, y_train, train_users, train_items) = load_data("ua.base") 
 (test_data, y_test, test_users, test_items) = load_data("ua.test")
@@ -47,8 +64,8 @@ print("X_train shape: {}".format(X_train.shape))
 print("X_train unique users: {}".format(X_train.user_id.nunique()))
 print("X_train unique items: {}".format(X_train.item_id.nunique()))
 
-print("user features users:", X_train.user_id.nunique())
-print("item features items:", X_train.item_id.nunique())
+#print("user features users:", X_train.user_id.nunique())
+#print("item features items:", X_train.item_id.nunique())
 
 
 train_users = np.sort(X_train.user_id.unique())
@@ -72,15 +89,27 @@ print("train items: {}".format(len(train_items)))
 print("test items: {}".format(len(test_items)))
 print("cold-start items: {}".format(cold_start_items))
 
-#TODO: Add user features
-
 #Evaluate X_train Matrix Sparsity
 sparsity = 1 - (len(X_train) / (unique_users * unique_items))
 print("\nX_train matrix sparsity: {}%".format(round(100 * sparsity, 1)))
 
+# Generate contextual info matrix
+user_context = []
+for us in train_users:
+    gender_F = 1 if user_info[int(us)-1]["gender"] == 1 else 0
+    gender_M = 1 if user_info[int(us)-1]["gender"] == 0 else 0
+    user_context.append({ "user_id": str(us), "gender_F": str(gender_F), "gender_M": str(gender_M)})
+
+
+user_context = pd.DataFrame(data=user_context)
+print("user_context.shape: ", user_context.shape)
+
+
+
+
 # Build and train FM model
 rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
-rankfm.fit(X_train, epochs=20, verbose=True)
+rankfm.fit(X_train, user_context, epochs=20, verbose=True)
 
 
 # Generate Model Scores for Validation Interactions
