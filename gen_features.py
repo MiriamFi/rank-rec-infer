@@ -1,6 +1,8 @@
 
 import pandas as pd
 
+# Variables
+
 
 include_features = {
         "gender" : False,
@@ -14,6 +16,7 @@ include_features = {
 
 def load_user_data(filename="u.user", path="ml-100k/"):
     user_info = {}
+    user_features = []
     with open(path+filename, 'r') as fin:
         for line in fin.readlines():
             user_id, age, gender, occu, zipcode = line.split('|')
@@ -23,8 +26,11 @@ def load_user_data(filename="u.user", path="ml-100k/"):
                 'occupation': occu,
                 'zipcode': zipcode
             }
+            user_features.append({"user_id": str(user_id)})
         print('User Info Loaded!')
-    return user_info
+    return user_info, user_features
+
+
 
 
 def add_gender_feature(user_info, user_features):
@@ -34,6 +40,13 @@ def add_gender_feature(user_info, user_features):
     include_features["gender"] = True
     print("Gender feature was added")
     return user_features
+
+
+        
+
+
+
+
 
 def get_new_file_name():
     filename = "user_features/feat"
@@ -49,12 +62,8 @@ def get_new_file_name():
     return filename
 
 def main():
-    user_info = load_user_data()
-    user_features = []
-
     
-    for u_id in range((len(user_info))):
-        user_features.append({"user_id": u_id})
+    user_info, user_features = load_user_data()
     
     print("len user_info: ", len(user_info))
     print("len user_features: ", len(user_features))

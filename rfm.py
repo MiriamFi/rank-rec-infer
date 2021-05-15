@@ -10,6 +10,12 @@ from rankfm.evaluation import precision, recall
 
 # Variables
 K = 10
+include_features = {
+        "gender" : True,
+        "age" : False,
+        "occupation" : False,
+        "location" : False
+        }
 
 # Read in data
 def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
@@ -30,6 +36,7 @@ def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
             items.add(movieid)
     return (data, np.array(y), users, items)
 
+
 # load other user data -> age, gender ...
 user_info = {}
 
@@ -45,6 +52,28 @@ with open('ml-100k/u.user', 'r') as fin:
     print('User Info Loaded!')
 
 
+
+
+# Load user features
+def load_user_features():
+    # Gets filename for user features
+    filename = "user_features/feat"
+    if include_features["gender"] == True:
+        filename += "_g"
+    if include_features["age"] == True:
+        filename += "_a"
+    if include_features["occupation"] == True:
+        filename += "_o"
+    if include_features["location"] == True:
+        filename += "_l"
+    filename += ".csv"
+
+    usr_feat = pd.read_csv(filename)
+    return usr_feat
+
+user_features = load_user_features()
+user_features = user_features.astype(str)
+print("user_features shape: ", user_features.shape)
 
 
 # Create train and test sets
@@ -63,9 +92,6 @@ print("\n Matrix/Vector Dimensions")
 print("X_train shape: {}".format(X_train.shape))
 print("X_train unique users: {}".format(X_train.user_id.nunique()))
 print("X_train unique items: {}".format(X_train.item_id.nunique()))
-
-#print("user features users:", X_train.user_id.nunique())
-#print("item features items:", X_train.item_id.nunique())
 
 
 train_users = np.sort(X_train.user_id.unique())
@@ -93,23 +119,11 @@ print("cold-start items: {}".format(cold_start_items))
 sparsity = 1 - (len(X_train) / (unique_users * unique_items))
 print("\nX_train matrix sparsity: {}%".format(round(100 * sparsity, 1)))
 
-# Generate contextual info matrix
-user_context = []
-for us in train_users:
-    gender_F = 1 if user_info[int(us)-1]["gender"] == 1 else 0
-    gender_M = 1 if user_info[int(us)-1]["gender"] == 0 else 0
-    user_context.append({ "user_id": str(us), "gender_F": str(gender_F), "gender_M": str(gender_M)})
-
-
-user_context = pd.DataFrame(data=user_context)
-print("user_context.shape: ", user_context.shape)
-
-
 
 
 # Build and train FM model
 rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
-rankfm.fit(X_train, user_context, epochs=20, verbose=True)
+rankfm.fit(X_train, user_features, epochs=20, verbose=True)
 
 
 # Generate Model Scores for Validation Interactions
