@@ -18,7 +18,7 @@ include_features = {
         }
 
 # Read in data
-def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
+def load_data(filename, path="ml-100k/"):
     data = [] # user id + movie id
     y = [] # ratings
     users = set()

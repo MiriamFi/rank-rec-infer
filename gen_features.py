@@ -8,7 +8,7 @@ OCC_NUM = 21
 STATE = "state"
 CITY = "major_city"
 
-LOC_TYPE = STATE
+LOC_TYPE = CITY
 
 AGE_GROUPS = {
     "age_0": [0,34],
@@ -132,7 +132,10 @@ def add_location_feature(user_info, user_features, loc_type):
         zipcode = user_info[u_id]["zipcode"].strip()
         user_loc = map_location(zipcode, loc_type)
         if user_loc not in locations.keys():
-            locations[user_loc] = "location_" + str(len(locations))
+            if loc_type == STATE:
+                locations[user_loc] = "state_" + str(len(locations))
+            elif loc_type == CITY:
+                locations[user_loc] = "city_" + str(len(locations))
     
     # Generate user features
     for u_id in range(len(user_info)):
@@ -162,7 +165,10 @@ def get_new_file_name():
     if added_features["occupation"] == True:
         filename += "_o"
     if added_features["location"] == True:
-        filename += "_l"
+        if LOC_TYPE == STATE:
+            filename += "_s"
+        if LOC_TYPE == CITY:
+            filename += "_c"
     filename += ".csv"
     return filename
 
