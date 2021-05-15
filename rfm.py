@@ -14,8 +14,10 @@ include_features = {
         "gender" : False,
         "age" : False,
         "occupation" : False,
-        "location" : True
+        "state" : True,
+        "city" : False
         }
+
 
 # Read in data
 def load_data(filename, path="ml-100k/"):
@@ -48,8 +50,10 @@ def load_user_features():
         filename += "_a"
     if include_features["occupation"] == True:
         filename += "_o"
-    if include_features["location"] == True:
-        filename += "_l"
+    if include_features["state"] == True:
+        filename += "_s"
+    elif include_features["city"] == True:
+        filename += "_c"
     filename += ".csv"
 
     usr_feat = pd.read_csv(filename)

@@ -8,7 +8,7 @@ OCC_NUM = 21
 STATE = "state"
 CITY = "major_city"
 
-LOC_TYPE = CITY
+LOC_TYPE = STATE
 
 AGE_GROUPS = {
     "age_0": [0,34],
