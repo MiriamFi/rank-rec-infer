@@ -11,14 +11,14 @@ from rankfm.evaluation import precision, recall
 # Variables
 K = 10
 include_features = {
-        "gender" : True,
-        "age" : True,
-        "occupation" : True,
-        "location" : False
+        "gender" : False,
+        "age" : False,
+        "occupation" : False,
+        "location" : True
         }
 
 # Read in data
-def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
+def load_data(filename, path="ml-100k/"):
     data = [] # user id + movie id
     y = [] # ratings
     users = set()
