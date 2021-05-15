@@ -2,6 +2,8 @@
 import pandas as pd
 
 # Variables
+OCC_NUM = 21
+occupations = {}
 
 
 include_features = {
@@ -42,7 +44,25 @@ def add_gender_feature(user_info, user_features):
     return user_features
 
 
+def add_occupation_feature(user_info, user_features):
+    for u_id in range(len(user_info)):
+        # Generate all occupation feature labels
+        for o in range(OCC_NUM):
+            feature_label = "occupation_" + str(o)
+            user_features[u_id][feature_label] = 0
         
+        # Add occupation feature
+        occ = user_info[u_id]["occupation"]
+
+        if occ not in occupations.keys():
+            occupations[occ] = "occupation_" + str(len(occupations))
+
+        feature_label = occupations[occ]
+        user_features[u_id][feature_label] = 1
+    
+    include_features["occupation"] = True
+    print("Occupation feature was added")
+    return user_features
 
 
 
@@ -69,6 +89,10 @@ def main():
     print("len user_features: ", len(user_features))
 
     user_features = add_gender_feature(user_info, user_features)
+    
+    print("user_features[0]:", user_features[0])
+
+    user_features = add_occupation_feature(user_info, user_features)
     
     print("user_features[0]:", user_features[0])
 

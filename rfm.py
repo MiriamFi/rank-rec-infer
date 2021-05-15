@@ -13,7 +13,7 @@ K = 10
 include_features = {
         "gender" : True,
         "age" : False,
-        "occupation" : False,
+        "occupation" : True,
         "location" : False
         }
 
