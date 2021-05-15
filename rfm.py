@@ -11,10 +11,10 @@ from rankfm.evaluation import precision, recall
 # Variables
 K = 10
 include_features = {
-        "gender" : True,
-        "age" : True,
-        "occupation" : True,
-        "location" : False
+        "gender" : False,
+        "age" : False,
+        "occupation" : False,
+        "location" : True
         }
 
 # Read in data
