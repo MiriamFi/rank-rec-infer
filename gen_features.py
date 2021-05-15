@@ -3,7 +3,11 @@ import pandas as pd
 
 # Variables
 OCC_NUM = 21
-occupations = {}
+AGE_GROUPS = {
+    "age_0": [0,34],
+    "age_1": [35,45],
+    "age_2": [46,99]
+}
 
 
 include_features = {
@@ -36,6 +40,9 @@ def load_user_data(filename="u.user", path="ml-100k/"):
 
 
 def add_gender_feature(user_info, user_features):
+    if include_features["gender"] == True:
+        return
+
     for i in range(len(user_info)):
         user_features[i]["gender_F"] = 1 if user_info[i]["gender"] == "F" else 0
         user_features[i]["gender_M"] = 1 if user_info[i]["gender"] == "M" else 0
@@ -43,8 +50,27 @@ def add_gender_feature(user_info, user_features):
     print("Gender feature was added")
     return user_features
 
+def add_age_feature(user_info, user_features):
+    if include_features["age"] == True:
+        return
+    
+    def is_in_age_group(age, age_cat):
+        return 1 if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else 0
+    
+    for i in range(len(user_info)):
+        for j in range(len(AGE_GROUPS)):
+            label = "age_" + str(j)
+            age = user_info[i]["age"]
+            user_features[i][label] = is_in_age_group(age, label)
+
+    include_features["age"] = True
+    print("Age feature was added")
+    return user_features
 
 def add_occupation_feature(user_info, user_features):
+    if include_features["occupation"] == True:
+        return
+    occupations = {}
     for u_id in range(len(user_info)):
         # Generate all occupation feature labels
         for o in range(OCC_NUM):
@@ -91,6 +117,9 @@ def main():
     user_features = add_gender_feature(user_info, user_features)
     
     print("user_features[0]:", user_features[0])
+
+    user_features = add_age_feature(user_info, user_features)
+    
 
     user_features = add_occupation_feature(user_info, user_features)
     

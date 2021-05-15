@@ -12,7 +12,7 @@ from rankfm.evaluation import precision, recall
 K = 10
 include_features = {
         "gender" : True,
-        "age" : False,
+        "age" : True,
         "occupation" : True,
         "location" : False
         }
@@ -37,22 +37,6 @@ def load_data(filename, path="ml-100k/"): #todo: add dataset to repo
     return (data, np.array(y), users, items)
 
 
-# load other user data -> age, gender ...
-user_info = {}
-
-with open('ml-100k/u.user', 'r') as fin:
-    for line in fin.readlines():
-        user_id, age, gender, occu, zipcode = line.split('|')
-        user_info[int(user_id)-1] = {
-            'age': int(age),
-            'gender': 0 if gender == 'M' else 1,
-            'occupation': occu,
-            'zipcode': zipcode
-        }
-    print('User Info Loaded!')
-
-
-
 
 # Load user features
 def load_user_features():
@@ -69,6 +53,7 @@ def load_user_features():
     filename += ".csv"
 
     usr_feat = pd.read_csv(filename)
+    print("Loaded user features from", filename)
     return usr_feat
 
 user_features = load_user_features()
