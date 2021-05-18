@@ -22,8 +22,8 @@ INCLUDE_FEATURES = {
 def load_data(filename, path="ml-100k/"):
     data = [] # user id + movie id
     y = [] # ratings
-    users = set()
-    items = set()
+    users = []
+    items = []
     with open(path+filename) as f:
         for line in f:
             (user, movieid, rating, ts) = line.split('\t')
@@ -32,9 +32,17 @@ def load_data(filename, path="ml-100k/"):
                     y.append(1.0)
             else:
                 y.append(0.0)
-            users.add(user)
-            items.add(movieid)
-    return (data, np.array(y), users, items)
+            users.append(user)
+            items.append(movieid)
+
+    # Prepare data
+    data = pd.DataFrame(data=data)
+    y = np.array(y)
+    users = np.array(users)
+    users = np.sort(np.unique(users))
+    items = np.array(items)
+    items = np.sort(np.unique(items))
+    return (data, y, users, items)
 
 
 
@@ -101,46 +109,25 @@ def evaluate_matrix_sparsity(x_set, set_name=""):
 
 
 
+def write_recommendations_to_csv(recommendations, scores):
+    confidence_scores = recommendations.copy()
 
-"""
+    with open('test_recomended_items.csv','w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["User", "Item", "Rank", "Confidence score"] )
 
-# Build and train FM model
-rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
-rankfm.fit(X_train, user_features, epochs=20, verbose=True)
+    ind = 0
+    for usr in range(recommendations.shape[0]):
+        for rnk in range(recommendations.shape[1]):
+            confidence_scores[rnk][usr] = scores[ind]
+            with open('test_recomended_items.csv','a', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                csv_writer.writerow([ usr, recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
+            ind += 1
 
 
-# Generate Model Scores for Validation Interactions
-test_scores = rankfm.predict(X_test, cold_start="nan")
-print("Test scores shape: ", test_scores.shape)
-print(pd.Series(test_scores).describe())
 
-# Generate TopN Recommendations for Test Users
-test_recommendations = rankfm.recommend(test_users, n_items=K, filter_previous=True, cold_start="nan")
-print("test_recommendations shape: ", test_recommendations.shape)
 
-confidence_scores = test_recommendations.copy()
-
-with open('test_recomended_items.csv','w', newline='') as csvfile:
-    csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    csv_writer.writerow(["User", "Item", "Rank", "Confidence score"] )
-
-ind = 0
-for usr in range(test_recommendations.shape[0]):
-    for rnk in range(test_recommendations.shape[1]):
-        confidence_scores[rnk][usr] = test_scores[ind]
-        with open('test_recomended_items.csv','a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ usr, test_recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
-        ind += 1
-
-# Evaluate model
-rankfm_precision = precision(rankfm, X_test, k=K)
-rankfm_recall = recall(rankfm, X_test, k=K)
-
-print("precision: {:.3f}".format(rankfm_precision))
-print("recall: {:.3f}".format(rankfm_recall))
-
-"""
 
 def main():
     print("Program starting... \n")
@@ -148,17 +135,9 @@ def main():
     # Load user features
     user_features = load_user_features()
 
-    #TODO: train/test users/items are defined twice, decide which method to use
-    #TODO: maybe just move the preparations into the load data?
-
     # Load interaction data and create training and test sets
-    (train_data, y_train, train_users, train_items) = load_data("ua.base") 
-    (test_data, y_test, test_users, test_items) = load_data("ua.test")
-
-    # Prepare training sets
-    X_train, train_users, train_items = prepare_set(train_data, y_train, train_users, train_items)
-    X_test, test_users, test_items = prepare_set(test_data, y_test, test_users, test_items)
-
+    (X_train, y_train, train_users, train_items) = load_data("ua.base") 
+    (X_test, y_test, test_users, test_items) = load_data("ua.test")
     
 
     # Training and test set dimensions
@@ -171,7 +150,28 @@ def main():
     print_user_item_stats(train_users, test_users, "users")
     print_user_item_stats(train_items, test_items, "items")
 
-    
+    # Build and train FM model
+    rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
+    rankfm.fit(X_train, user_features, epochs=20, verbose=True)
+
+    # Generate TopN Recommendations for Test Users
+    test_recommendations = rankfm.recommend(test_users, n_items=K, filter_previous=True, cold_start="nan")
+    print("test_recommendations shape: ", test_recommendations.shape)
+
+    # Generate Model Scores for Validation Interactions
+    test_scores = rankfm.predict(X_test, cold_start="nan")
+    print("Test scores shape: ", test_scores.shape)
+    print(pd.Series(test_scores).describe())
+
+    # Evaluate model
+    rankfm_precision = precision(rankfm, X_test, k=K)
+    rankfm_recall = recall(rankfm, X_test, k=K)
+
+    print("precision: {:.3f}".format(rankfm_precision))
+    print("recall: {:.3f}".format(rankfm_recall))
+
+    # Write recommendation results to file
+    write_recommendations_to_csv(test_recommendations, test_scores)
 
 
 
