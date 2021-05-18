@@ -2,7 +2,7 @@
 import pandas as pd
 from uszipcode import SearchEngine
 
-# Variables
+# Constants
 OCC_NUM = 21
 
 STATE = "state"
@@ -16,12 +16,13 @@ AGE_GROUPS = {
     "age_2": [46,99]
 }
 INCLUDE_FEATURES = {
-        "gender" : True,
-        "age" : True,
-        "occupation" : True,
+        "gender" : False,
+        "age" : False,
+        "occupation" : False,
         "location" : True
         }
 
+# Variables
 added_features = {
         "gender" : False,
         "age" : False,
@@ -29,10 +30,8 @@ added_features = {
         "location" : False
         }
 
-#search = SearchEngine(simple_zipcode=True)
 
 # load other user data -> age, gender ...
-
 def load_user_data(filename="u.user", path="ml-100k/"):
     user_info = {}
     user_features = []
@@ -50,26 +49,7 @@ def load_user_data(filename="u.user", path="ml-100k/"):
     return user_info, user_features
 
 
-def map_location(zipcode, loc_type):
-    #print("input zip: ", zipcode, ", ", type(zipcode))
-    #print("input loc_type: ", loc_type, ", ", type(loc_type))
-    search = SearchEngine(simple_zipcode=True)
-    zip_code = search.by_zipcode(zipcode)
-    zip_code = zip_code.to_dict()
-    #print("output zip: ", zip_code, ", ", type(zip_code))
-    #print("output location: ", zip_code[loc_type], ", ", type(zip_code[loc_type]))
-    return zip_code[loc_type]
-    """
-    zipcode = search.by_zipcode("85711")
-    zipcode = zipcode.to_dict()
-    print(zipcode)
-    print("state: ", zipcode[LOC_TYPE])
-    print("city: ", zipcode[CITY])
-    """
-    
-
-
-
+# Add gender to user features
 def add_gender_feature(user_info, user_features):
     if added_features["gender"] == True:
         return
@@ -81,6 +61,7 @@ def add_gender_feature(user_info, user_features):
     print("Gender feature was added")
     return user_features
 
+# Add age to user features
 def add_age_feature(user_info, user_features):
     if added_features["age"] == True:
         return
@@ -93,50 +74,70 @@ def add_age_feature(user_info, user_features):
             label = "age_" + str(j)
             age = user_info[i]["age"]
             user_features[i][label] = is_in_age_group(age, label)
-
+        
     added_features["age"] = True
     print("Age feature was added")
     return user_features
 
+# Add occupation to user features
 def add_occupation_feature(user_info, user_features):
+    
     if added_features["occupation"] == True:
         return
+    
+    # Generate occupations dict
     occupations = {}
     for u_id in range(len(user_info)):
-        # Generate all occupation feature labels
-        for o in range(OCC_NUM):
-            feature_label = "occupation_" + str(o)
-            user_features[u_id][feature_label] = 0
-        
-        # Add occupation feature
         occ = user_info[u_id]["occupation"]
 
         if occ not in occupations.keys():
             occupations[occ] = "occupation_" + str(len(occupations))
+    print("Occupations: ", occupations)
 
-        feature_label = occupations[occ]
-        user_features[u_id][feature_label] = 1
+    # Generate occupation features
+    for u_id in range(len(user_info)):
+
+        for o in occupations:
+            occ_label = occupations[o]
+            user_features[u_id][occ_label] = 0
+        
+        user_occ = user_info[u_id]["occupation"]
+
+        occ_label = occupations[user_occ]
+        user_features[u_id][occ_label] = 1
     
     added_features["occupation"] = True
     print("Occupation feature was added")
     return user_features
 
+# Add location to user features
 def add_location_feature(user_info, user_features, loc_type):
+    
     if added_features["location"] == True:
         return
     
+    # Map zip code to state/city
+    def map_location(zipcode, loc_type):
+        search = SearchEngine(simple_zipcode=True)
+        zip_code = search.by_zipcode(zipcode)
+        zip_code = zip_code.to_dict()
+        return zip_code[loc_type]
+
     # Generate location dict
     locations = {}
 
     for u_id in range(len(user_info)):
         zipcode = user_info[u_id]["zipcode"].strip()
         user_loc = map_location(zipcode, loc_type)
+        #if user_loc == None:
+        #    print("zip: ", zipcode, ", loc:", user_loc)
         if user_loc not in locations.keys():
             if loc_type == STATE:
                 locations[user_loc] = "state_" + str(len(locations))
             elif loc_type == CITY:
                 locations[user_loc] = "city_" + str(len(locations))
-    
+    #print("locations: ", locations)
+
     # Generate user features
     for u_id in range(len(user_info)):
         for loc_key in locations.keys():
@@ -155,7 +156,7 @@ def add_location_feature(user_info, user_features, loc_type):
 
 
 
-
+# Generate a name for the new user features file
 def get_new_file_name():
     filename = "user_features/feat"
     if added_features["gender"] == True:
@@ -171,6 +172,7 @@ def get_new_file_name():
             filename += "_c"
     filename += ".csv"
     return filename
+
 
 def main():
     
