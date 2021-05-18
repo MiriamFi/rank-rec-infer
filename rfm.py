@@ -58,17 +58,19 @@ def load_user_features():
 
     usr_feat = pd.read_csv(filename)
     print("Loaded user features from", filename)
+    usr_feat = usr_feat.astype(str)
+    print("User features shape: ", usr_feat.shape)
     return usr_feat
 
-user_features = load_user_features()
-user_features = user_features.astype(str)
-print("user_features shape: ", user_features.shape)
 
+# Load user features
+user_features = load_user_features()
+
+######## HERE : Needs a method for completly preparing the training and test sets
 
 # Create train and test sets
 (train_data, y_train, train_users, train_items) = load_data("ua.base") 
 (test_data, y_test, test_users, test_items) = load_data("ua.test")
-
 
 X_train = pd.DataFrame(data=train_data)
 X_test = pd.DataFrame(data=test_data)
