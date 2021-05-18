@@ -1,16 +1,15 @@
 import numpy as np
 import pandas as pd
-from sklearn.feature_extraction import DictVectorizer
-from sklearn.metrics import mean_squared_error, log_loss, roc_auc_score
-#from sklearn.linear_model import LogisticRegression
+
 from rankfm.rankfm import RankFM
 import copy
 import csv
 from rankfm.evaluation import precision, recall
 
-# Variables
+# Constants
 K = 10
-include_features = {
+
+INCLUDE_FEATURES = {
         "gender" : False,
         "age" : False,
         "occupation" : False,
@@ -19,7 +18,7 @@ include_features = {
         }
 
 
-# Read in data
+# Load interaction data
 def load_data(filename, path="ml-100k/"):
     data = [] # user id + movie id
     y = [] # ratings
@@ -33,7 +32,6 @@ def load_data(filename, path="ml-100k/"):
                     y.append(1.0)
             else:
                 y.append(0.0)
-            #y.append(float(rating))
             users.add(user)
             items.add(movieid)
     return (data, np.array(y), users, items)
@@ -44,73 +42,67 @@ def load_data(filename, path="ml-100k/"):
 def load_user_features():
     # Gets filename for user features
     filename = "user_features/feat"
-    if include_features["gender"] == True:
+    if INCLUDE_FEATURES["gender"] == True:
         filename += "_g"
-    if include_features["age"] == True:
+    if INCLUDE_FEATURES["age"] == True:
         filename += "_a"
-    if include_features["occupation"] == True:
+    if INCLUDE_FEATURES["occupation"] == True:
         filename += "_o"
-    if include_features["state"] == True:
+    if INCLUDE_FEATURES["state"] == True:
         filename += "_s"
-    elif include_features["city"] == True:
+    elif INCLUDE_FEATURES["city"] == True:
         filename += "_c"
     filename += ".csv"
 
     usr_feat = pd.read_csv(filename)
     print("Loaded user features from", filename)
     usr_feat = usr_feat.astype(str)
-    print("User features shape: ", usr_feat.shape)
+    print("User features shape: ", usr_feat.shape, "\n")
     return usr_feat
 
-
-# Load user features
-user_features = load_user_features()
-
-######## HERE : Needs a method for completly preparing the training and test sets
-
-# Create train and test sets
-(train_data, y_train, train_users, train_items) = load_data("ua.base") 
-(test_data, y_test, test_users, test_items) = load_data("ua.test")
-
-X_train = pd.DataFrame(data=train_data)
-X_test = pd.DataFrame(data=test_data)
-
-unique_users = X_train.user_id.nunique()
-unique_items = X_train.item_id.nunique()
-
-# Check Matrix/Vector Dimensions
-print("\n Matrix/Vector Dimensions")
-print("X_train shape: {}".format(X_train.shape))
-print("X_train unique users: {}".format(X_train.user_id.nunique()))
-print("X_train unique items: {}".format(X_train.item_id.nunique()))
+# Print Matrix Dimensions for training/test sets
+def print_matrix_dim(x_set, set_name=""):
+    print("Matrix Dimensions for ", set_name)
+    print(set_name, " shape: {}".format(x_set.shape))
+    print(set_name, " unique users: {}".format(x_set.user_id.nunique()))
+    print(set_name, " unique items: {}".format(x_set.item_id.nunique()))
+    print("\n")
 
 
-train_users = np.sort(X_train.user_id.unique())
-test_users = np.sort(X_test.user_id.unique())
-cold_start_users = set(test_users) - set(train_users)
+# Get cold-start users and items
+def get_coldstart_units(train_units, test_units, unit_name="units"):
+    cold_start_units = set(test_units) - set(train_units)
+    return cold_start_units
 
-train_items = np.sort(X_train.item_id.unique())
-test_items = np.sort(X_test.item_id.unique())
-cold_start_items = set(test_items) - set(train_items)
+def prepare_set(t_data, y_train, train_users, train_items, train=True):
+    x_set = pd.DataFrame(data=t_data)
+    t_users = np.sort(x_set.user_id.unique())
+    t_items = np.sort(x_set.item_id.unique())
 
-# User and item stats
-print("\nUsers and Items")
-print("X_train shape: {}".format(X_train.shape))
-print("X_test shape: {}".format(X_test.shape))
+    return x_set, t_users, t_items
 
-print("train users: {}".format(len(train_users)))
-print("test users: {}".format(len(test_users)))
-print("cold-start users: {}".format(cold_start_users))
+# Prints user and item stats
+def print_user_item_stats(train_units, test_units, unit_name="units"):
+    print("Stats for ", unit_name)
+    print("Train ", unit_name, ": {}".format(len(train_units)))
+    print("Test ", unit_name, "{}".format(len(test_units)))
+    cold_start_units = get_coldstart_units(train_units, test_units, unit_name)
+    print("cold-start ", unit_name, ": {}".format(cold_start_units))
+    print("\n")
 
-print("train items: {}".format(len(train_items)))
-print("test items: {}".format(len(test_items)))
-print("cold-start items: {}".format(cold_start_items))
 
 #Evaluate X_train Matrix Sparsity
-sparsity = 1 - (len(X_train) / (unique_users * unique_items))
-print("\nX_train matrix sparsity: {}%".format(round(100 * sparsity, 1)))
+def evaluate_matrix_sparsity(x_set, set_name=""):
+    unique_users = x_set.user_id.nunique()
+    unique_items = x_set.item_id.nunique()
+    sparsity = 1 - (len(x_set) / (unique_users * unique_items))
+    print(set_name, " matrix sparsity: {}%".format(round(100 * sparsity, 1)))
+    print("\n")
 
 
+
+
+"""
 
 # Build and train FM model
 rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
@@ -147,3 +139,41 @@ rankfm_recall = recall(rankfm, X_test, k=K)
 
 print("precision: {:.3f}".format(rankfm_precision))
 print("recall: {:.3f}".format(rankfm_recall))
+
+"""
+
+def main():
+    print("Program starting... \n")
+
+    # Load user features
+    user_features = load_user_features()
+
+    #TODO: train/test users/items are defined twice, decide which method to use
+    #TODO: maybe just move the preparations into the load data?
+
+    # Load interaction data and create training and test sets
+    (train_data, y_train, train_users, train_items) = load_data("ua.base") 
+    (test_data, y_test, test_users, test_items) = load_data("ua.test")
+
+    # Prepare training sets
+    X_train, train_users, train_items = prepare_set(train_data, y_train, train_users, train_items)
+    X_test, test_users, test_items = prepare_set(test_data, y_test, test_users, test_items)
+
+    
+
+    # Training and test set dimensions
+    print_matrix_dim(X_train, "X_train")
+    evaluate_matrix_sparsity(X_train, "X_train")
+
+    print_matrix_dim(X_test, "X_test")
+
+    # User and Item stats
+    print_user_item_stats(train_users, test_users, "users")
+    print_user_item_stats(train_items, test_items, "items")
+
+    
+
+
+
+if __name__ == "__main__":
+    main()
