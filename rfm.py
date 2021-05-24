@@ -1,19 +1,22 @@
 import numpy as np
 import pandas as pd
 
-from rankfm.rankfm import RankFM
 import copy
 import csv
+
+from rankfm.rankfm import RankFM
 from rankfm.evaluation import precision, recall
+
+from sklearn.linear_model import LogisticRegression
 
 # Constants
 K = 10
 
 INCLUDE_FEATURES = {
-        "gender" : False,
+        "gender" : True,
         "age" : False,
         "occupation" : False,
-        "state" : True,
+        "state" : False,
         "city" : False
         }
 
@@ -44,7 +47,20 @@ def load_data(filename, path="ml-100k/"):
     items = np.sort(np.unique(items))
     return (data, y, users, items)
 
-
+# load other user data -> age, gender ...
+def load_user_data(filename="u.user", path="ml-100k/"):
+    user_info = {}
+    with open(path+filename, 'r') as fin:
+        for line in fin.readlines():
+            user_id, age, gender, occu, zipcode = line.split('|')
+            user_info[int(user_id)-1] = {
+                'age': int(age),
+                'gender': 1 if gender== "M" else 0,
+                'occupation': occu,
+                'zipcode': str(zipcode)
+            }
+        print('User Info Loaded!')
+    return user_info
 
 # Load user features
 def load_user_features():
@@ -82,12 +98,6 @@ def get_coldstart_units(train_units, test_units, unit_name="units"):
     cold_start_units = set(test_units) - set(train_units)
     return cold_start_units
 
-def prepare_set(t_data, y_train, train_users, train_items, train=True):
-    x_set = pd.DataFrame(data=t_data)
-    t_users = np.sort(x_set.user_id.unique())
-    t_items = np.sort(x_set.item_id.unique())
-
-    return x_set, t_users, t_items
 
 # Prints user and item stats
 def print_user_item_stats(train_units, test_units, unit_name="units"):
@@ -125,12 +135,30 @@ def write_recommendations_to_csv(recommendations, scores):
                 csv_writer.writerow([ usr, recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
             ind += 1
 
+def prepare_attributes_for_classifier(user_info, attr="gender"):
+    attributes = []
+    for usr_id in user_info.keys():
+        attributes.append(user_info[usr_id][attr])
+    return attributes
+
+# Try with gender first, so age, then occupation
+# X is recommendaitons for each user (943, 10)
+# z is true genders shape(943,1)
+def apply_logistic_regression(X, y):
+    clf = LogisticRegression(random_state=0, max_iter=100).fit(X, y)
+    print(clf.predict(X), "\n\n")
+    print(clf.predict_proba(X), "\n\n")
+    print(clf.score(X, y))
+
 
 
 
 
 def main():
     print("Program starting... \n")
+
+    # Load user info
+    user_info = load_user_data()
 
     # Load user features
     user_features = load_user_features()
@@ -172,6 +200,14 @@ def main():
 
     # Write recommendation results to file
     write_recommendations_to_csv(test_recommendations, test_scores)
+
+    # Prepare attributes for classification
+    gender_attributes = prepare_attributes_for_classifier(user_info, attr="gender")
+    print("Gender attributes len: ", len(gender_attributes))
+    print(gender_attributes)
+
+    # Classify
+    apply_logistic_regression(test_recommendations, gender_attributes)
 
 
 
