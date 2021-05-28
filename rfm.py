@@ -9,6 +9,7 @@ from rankfm.rankfm import RankFM
 from rankfm.evaluation import precision, recall
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
 
 from uszipcode import SearchEngine
@@ -24,7 +25,7 @@ K = 10
 STATE = "state"
 CITY = "major_city"
 
-LOC_TYPE = STATE
+LOC_TYPE = CITY
 
 INCLUDE_FEATURES = {
         "gender" : False,
@@ -239,11 +240,10 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
         attributes.append(new_attr_value)
     return attributes
 
-# Try with gender first, so age, then occupation
+
 # X is recommendaitons for each user (943, 10)
 # z is true genders shape(943,1)
-# This does not have the correct splits, right now it is trained and tested on the same set
-def apply_logistic_regression(X_train, X_test, y_train, y_test, max_iter=100):
+def apply_logistic_regression(X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), LogisticRegression())
     pipe.fit(X_train, y_train) # apply scaling on training data
     print("True values: ", y_test)
@@ -261,7 +261,13 @@ def apply_logistic_regression(X_train, X_test, y_train, y_test, max_iter=100):
 def apply_svm(X,y):
     clf = svm.SVC().fit(X,y)
 
-
+def apply_random_forest(X_train, X_test, y_train, y_test):
+    pipe = make_pipeline(StandardScaler(), RandomForestClassifier())
+    pipe.fit(X_train, y_train) # apply scaling on training data
+    print("True values: ", y_test)
+    print("Predicted values: ", pipe.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
+    print("Score: ", pipe.score(X_test, y_test))
 
 
 def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
@@ -385,6 +391,7 @@ def main():
     attributes_train = {}
     attributes_test = {}
 
+
     if INCLUDE_FEATURES["gender"] == True:
         # Prepare gender attributes for classification
         attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
@@ -394,7 +401,10 @@ def main():
         print("Gender attributes test len: ", len(attributes_test["gender"]))
 
         # Classify gender
+        print("## Logistic regression ##")
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
+        print("## Random forest ##")
+        apply_random_forest(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
 
     if INCLUDE_FEATURES["age"] == True:
         # Prepare age attributes for classification
@@ -405,7 +415,10 @@ def main():
         print("Age attributes test len: ", len(attributes_test["age"]))
 
         # Classify age
+        print("## Logistic regression ##")
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
+        print("## Random forest ##")
+        apply_random_forest(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
 
     if INCLUDE_FEATURES["occupation"] == True:
         # Prepare occupation attributes for classification
@@ -416,7 +429,10 @@ def main():
         print("Occupation attributes test len: ", len(attributes_test["occupation"]))
 
         # Classify occupation
+        print("## Logistic regression ##")
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
+        print("## Random forest ##")
+        apply_random_forest(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
 
     if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["city"] == True:
         # Prepare location attributes for classification
@@ -427,7 +443,10 @@ def main():
         print("Location attributes test len: ", len(attributes_test["location"]))
 
         # Classify location
+        print("## Logistic regression ##")
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
+        print("## Random forest ##")
+        apply_random_forest(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
 
 
 
