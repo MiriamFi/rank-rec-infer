@@ -24,14 +24,14 @@ K = 10
 STATE = "state"
 CITY = "major_city"
 
-LOC_TYPE = CITY
+LOC_TYPE = STATE
 
 INCLUDE_FEATURES = {
-        "gender" : True,
+        "gender" : False,
         "age" : False,
         "occupation" : False,
         "state" : False,
-        "city" : False
+        "city" : True
         }
 
 AGE_GROUPS = {
@@ -205,23 +205,11 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
     attributes = []
     new_user_info = {}
 
-    print_i = True
-    print("##prepare_attributes_for_classifier##")
-    print("len users: ", len(users))
-    print("len user_info: ", len(user_info))
-
     for i in range(len(users)):
         for key in user_info.keys():
-            if print_i == True:
-                print("users type: ", type(users[i]))
-                print("user_info type: ", type(key))
-                print_i = False
             if int(users[i]) == key:
                 new_user_info[key] = user_info[key]
 
-    if print_i == True:
-        print("Len new_user_info: ", len(new_user_info))
-        print_i = False
     def is_in_age_group(age, age_cat):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
     
@@ -256,25 +244,24 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
 # z is true genders shape(943,1)
 # This does not have the correct splits, right now it is trained and tested on the same set
 def apply_logistic_regression(X_train, X_test, y_train, y_test, max_iter=100):
-    """pipe = make_pipeline(StandardScaler(), LogisticRegression())
-    print(pipe.fit(X, y) ) # apply scaling on training data
-    print(pipe.predict(X), "\n\n")
-    print(pipe.predict_proba(X), "\n\n")
-    print(pipe.score(X, y))"""
+    pipe = make_pipeline(StandardScaler(), LogisticRegression())
+    pipe.fit(X_train, y_train) # apply scaling on training data
+    print("True values: ", y_test)
+    print("Predicted values: ", pipe.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
+    print("Score: ", pipe.score(X_test, y_test))
+
+    """
     clf = LogisticRegression(random_state=0, max_iter=max_iter).fit(X_train, y_train)
-    print(clf.predict(X_test), "\n\n")
-    print(clf.predict_proba(X_test), "\n\n")
-    print(clf.score(X_test, y_test))
+    print("True values: ", y_test)
+    print("Predicted values: ", clf.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", clf.predict_proba(X_test), "\n\n")
+    print("Score: ", clf.score(X_test, y_test))"""
 
 def apply_svm(X,y):
     clf = svm.SVC().fit(X,y)
 
-def find_min_num_of_items(user_items):
-    min_items = 1000000
-    for usr in range(len(user_items)):
-        if len(user_items[usr]) < min_items:
-            min_items = len(user_items[usr])
-    return min_items
+
 
 
 def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
@@ -286,6 +273,12 @@ def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
     X_test = []
     y_test = []
 
+    def find_min_num_of_items(user_items):
+        min_items = 1000000
+        for usr in range(len(user_items)):
+            if len(user_items[usr]) < min_items:
+                min_items = len(user_items[usr])
+        return min_items
     
 
     for usr in range(len(user_item)):
@@ -339,8 +332,8 @@ def main():
     (X, y, users, items, user_items, ratings) = load_data("u.data") 
 
     # Create train and test sets
-    (X_train1, y_train1, X_test1, y_test1, L1) = prepare_splits(user_items, ratings, test_size=0.2, ghost_size=0.1)
-    (X_train2, y_train2, X_test2, y_test2, L2) = prepare_splits(user_items, ratings, test_size=0.5)
+    (X_train1, y_train1, X_test1, y_test1, L1) = prepare_splits(user_items, ratings, ghost_size=0.1)
+    (X_train2, y_train2, X_test2, y_test2, L2) = prepare_splits(user_items, ratings)
 
     # Training and test set dimensions
     print_matrix_dim(X_train1, "X_train1")
@@ -392,32 +385,51 @@ def main():
     attributes_train = {}
     attributes_test = {}
 
-    # Prepare gender attributes for classification
-    attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
-    attributes_test["gender"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="gender")
-    
-    print("Gender attributes train len: ", len(attributes_train["gender"]))
-    print("Gender attributes test len: ", len(attributes_test["gender"]))
+    if INCLUDE_FEATURES["gender"] == True:
+        # Prepare gender attributes for classification
+        attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
+        attributes_test["gender"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="gender")
+        
+        print("Gender attributes train len: ", len(attributes_train["gender"]))
+        print("Gender attributes test len: ", len(attributes_test["gender"]))
 
-    # Classify gender
-    apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
+        # Classify gender
+        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
 
-    #attributes["age"] = prepare_attributes_for_classifier(user_info, attr_type="age")
-    #attributes["occupation"] = prepare_attributes_for_classifier(user_info, attr_type="occupation")
-    #attributes["location"] = prepare_attributes_for_classifier(user_info, attr_type="location")
-    #print("Age attributes len: ", len(attributes["age"]))
-    #print("Occupation attributes len: ", len(attributes["occupation"]))
-    #print("Location attributes len: ", len(attributes["location"]))
-    #print("gender attributes: ", attributes["gender"])
-    #print("age attributes: ", attributes["age"])
-    #print("occupation attributes: ", attributes["occupation"])
-    #print("location attributes: ", attributes["location"])
+    if INCLUDE_FEATURES["age"] == True:
+        # Prepare age attributes for classification
+        attributes_train["age"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="age")
+        attributes_test["age"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="age")
+        
+        print("Age attributes train len: ", len(attributes_train["age"]))
+        print("Age attributes test len: ", len(attributes_test["age"]))
 
-    # Classify gender
-    
-    #apply_logistic_regression(test_recommendations, attributes["age"])
-    #apply_logistic_regression(test_recommendations, attributes["occupation"], max_iter=120)
-    #apply_logistic_regression(test_recommendations, attributes["location"], max_iter=50000)
+        # Classify age
+        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
+
+    if INCLUDE_FEATURES["occupation"] == True:
+        # Prepare occupation attributes for classification
+        attributes_train["occupation"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="occupation")
+        attributes_test["occupation"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="occupation")
+        
+        print("Occupation attributes train len: ", len(attributes_train["occupation"]))
+        print("Occupation attributes test len: ", len(attributes_test["occupation"]))
+
+        # Classify occupation
+        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
+
+    if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["city"] == True:
+        # Prepare location attributes for classification
+        attributes_train["location"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="location")
+        attributes_test["location"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="location")
+        
+        print("Location attributes train len: ", len(attributes_train["location"]))
+        print("Location attributes test len: ", len(attributes_test["location"]))
+
+        # Classify location
+        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
+
+
 
 
 """
@@ -436,31 +448,6 @@ def main():
     #(X_test2, y_test2, test_users2, test_items2) = load_data("u2.test")
     
 
-    
-
-    # Prepare  attributes for classification
-    attributes_train = {}
-    attributes_test = {}
-    attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
-    attributes_test["gender"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="gender")
-    #attributes["age"] = prepare_attributes_for_classifier(user_info, attr_type="age")
-    #attributes["occupation"] = prepare_attributes_for_classifier(user_info, attr_type="occupation")
-    #attributes["location"] = prepare_attributes_for_classifier(user_info, attr_type="location")
-    print("Gender attributes train len: ", len(attributes_train["gender"]))
-    print("Gender attributes test len: ", len(attributes_test["gender"]))
-    #print("Age attributes len: ", len(attributes["age"]))
-    #print("Occupation attributes len: ", len(attributes["occupation"]))
-    #print("Location attributes len: ", len(attributes["location"]))
-    #print("gender attributes: ", attributes["gender"])
-    #print("age attributes: ", attributes["age"])
-    #print("occupation attributes: ", attributes["occupation"])
-    #print("location attributes: ", attributes["location"])
-
-    # Classify gender
-    apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-    #apply_logistic_regression(test_recommendations, attributes["age"])
-    #apply_logistic_regression(test_recommendations, attributes["occupation"], max_iter=120)
-    #apply_logistic_regression(test_recommendations, attributes["location"], max_iter=50000)
 
 """
 
