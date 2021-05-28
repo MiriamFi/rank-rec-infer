@@ -246,25 +246,40 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
 def apply_logistic_regression(X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), LogisticRegression())
     pipe.fit(X_train, y_train) # apply scaling on training data
-    print("True values: ", y_test)
+    #print("True values: ", y_test)
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
 
-    """
-    clf = LogisticRegression(random_state=0, max_iter=max_iter).fit(X_train, y_train)
-    print("True values: ", y_test)
-    print("Predicted values: ", clf.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", clf.predict_proba(X_test), "\n\n")
-    print("Score: ", clf.score(X_test, y_test))"""
 
-def apply_svm(X,y):
-    clf = svm.SVC().fit(X,y)
+def apply_svc(X_train, X_test, y_train, y_test):
+    pipe = make_pipeline(StandardScaler(), svm.SVC(probability=True))
+    pipe.fit(X_train, y_train) # apply scaling on training data
+    #print("True values: ", y_test)
+    print("Predicted values: ", pipe.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
+    print("Score: ", pipe.score(X_test, y_test))
+
+def apply_linear_svc(X_train, X_test, y_train, y_test):
+    pipe = make_pipeline(StandardScaler(), svm.LinearSVC(probability=True))
+    pipe.fit(X_train, y_train) # apply scaling on training data
+    #print("True values: ", y_test)
+    print("Predicted values: ", pipe.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
+    print("Score: ", pipe.score(X_test, y_test))
+
+def apply_nu_svc(X_train, X_test, y_train, y_test):
+    pipe = make_pipeline(StandardScaler(), svm.NuSVC(probability=True))
+    pipe.fit(X_train, y_train) # apply scaling on training data
+    #print("True values: ", y_test)
+    print("Predicted values: ", pipe.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
+    print("Score: ", pipe.score(X_test, y_test))
 
 def apply_random_forest(X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), RandomForestClassifier())
     pipe.fit(X_train, y_train) # apply scaling on training data
-    print("True values: ", y_test)
+    #print("True values: ", y_test)
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
@@ -405,6 +420,12 @@ def main():
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
         print("## Random forest ##")
         apply_random_forest(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
+        print("### SVC ###")
+        apply_svc(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
+        #print("### LinearSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
+        #print("### NuSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
 
     if INCLUDE_FEATURES["age"] == True:
         # Prepare age attributes for classification
@@ -419,6 +440,12 @@ def main():
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
         print("## Random forest ##")
         apply_random_forest(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
+        print("### SVC ###")
+        apply_svc(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
+        #print("### LinearSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
+        #print("### NuSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
 
     if INCLUDE_FEATURES["occupation"] == True:
         # Prepare occupation attributes for classification
@@ -433,6 +460,12 @@ def main():
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
         print("## Random forest ##")
         apply_random_forest(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
+        print("### SVC ###")
+        apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
+        #print("### LinearSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
+        #print("### NuSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
 
     if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["city"] == True:
         # Prepare location attributes for classification
@@ -447,6 +480,13 @@ def main():
         apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
         print("## Random forest ##")
         apply_random_forest(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
+        print("### SVC ###")
+        apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
+        #print("### LinearSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
+        #print("### NuSVC ###")
+        #apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
+        
 
 
 
