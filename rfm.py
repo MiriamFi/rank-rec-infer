@@ -3,6 +3,7 @@ import pandas as pd
 
 import copy
 import csv
+from rankfm import rankfm
 
 from rankfm.rankfm import RankFM
 from rankfm.evaluation import precision, recall
@@ -12,13 +13,18 @@ from sklearn import svm
 
 from uszipcode import SearchEngine
 
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import TimeSeriesSplit
+
 # Constants
 K = 10
 
 STATE = "state"
 CITY = "major_city"
 
-LOC_TYPE = STATE
+LOC_TYPE = CITY
 
 INCLUDE_FEATURES = {
         "gender" : True,
@@ -43,16 +49,34 @@ def load_data(filename, path="ml-100k/"):
     y = [] # ratings
     users = []
     items = []
+    data_user_item_tmp = {}
+    data_user_item = {}
+    ratings = np.zeros((943, 1682), dtype=np.double)
     with open(path+filename) as f:
         for line in f:
             (user, movieid, rating, ts) = line.split('\t')
             data.append({ "user_id": str(user), "item_id": str(movieid)})
             if float(rating) >= 4.0:
                     y.append(1.0)
+                    ratings[int(user) - 1, int(movieid) - 1] = 1.0
             else:
                 y.append(0.0)
+                ratings[int(user) - 1, int(movieid) - 1] = 0.0
             users.append(user)
             items.append(movieid)
+
+            # build user-item dict (based on timestamp)
+            user = int(user)
+            movieid = int(movieid)
+            if user - 1 not in data_user_item_tmp:
+                data_user_item_tmp[user - 1] = [ [movieid- 1, ts] ]
+            else:
+                data_user_item_tmp[user - 1].append([ movieid - 1, ts ])
+    
+    # sort each users' items
+    for key, items in data_user_item_tmp.items():
+        sorted_items = sorted(items, key=lambda x:x[1]) # sorted on timestamp
+        data_user_item[key] = [item[0] for item in sorted_items] #items are sorted on timestamp
 
     # Prepare data
     data = pd.DataFrame(data=data)
@@ -61,7 +85,7 @@ def load_data(filename, path="ml-100k/"):
     users = np.sort(np.unique(users))
     items = np.array(items)
     items = np.sort(np.unique(items))
-    return (data, y, users, items)
+    return (data, y, users, items, data_user_item, ratings)
 
 # load other user data -> age, gender ...
 def load_user_data(filename="u.user", path="ml-100k/"):
@@ -151,9 +175,39 @@ def write_recommendations_to_csv(recommendations, scores):
                 csv_writer.writerow([ usr, recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
             ind += 1
 
-def prepare_attributes_for_classifier(user_info, attr_type="gender"):
+def generate_recommendations(X_train, X_test, user_features, users):
+    # Build and train FM model
+    rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
+    rankfm.fit(X_train, user_features, epochs=20, verbose=True)
+
+    # Generate TopN Recommendations
+    recommendations = rankfm.recommend(users, n_items=K, filter_previous=True, cold_start="nan")
+    print("recommendations_train shape: ", recommendations.shape)
+
+    # Generate Model Scores for Validation Interactions
+    scores = rankfm.predict(X_test, cold_start="nan")
+    print("Scores shape: ", scores.shape)
+    print(pd.Series(scores).describe())
+    return rankfm, recommendations
+
+def evaluate_recommender(model, X_test):
+    # Evaluate model
+    rankfm_precision = precision(model, X_test, k=K)
+    rankfm_recall = recall(model, X_test, k=K)
+
+    print("precision: {:.3f}".format(rankfm_precision))
+    print("recall: {:.3f}".format(rankfm_recall))
+
+
+
+def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
     attr_classes = {}
     attributes = []
+    new_user_info = {}
+    for i in range(len(users)):
+        for key in user_info.keys():
+            if users[i] == key:
+                new_user_info[key] = user_info[key]
 
     def is_in_age_group(age, age_cat):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
@@ -165,8 +219,8 @@ def prepare_attributes_for_classifier(user_info, attr_type="gender"):
         zip_code = zip_code.to_dict()
         return zip_code[loc_type]
 
-    for usr_id in user_info.keys():
-        attr_value = user_info[usr_id][attr_type]
+    for usr_id in new_user_info.keys():
+        attr_value = new_user_info[usr_id][attr_type]
 
         if attr_type == "age":
             for age_cat in AGE_GROUPS.keys():
@@ -188,17 +242,75 @@ def prepare_attributes_for_classifier(user_info, attr_type="gender"):
 # X is recommendaitons for each user (943, 10)
 # z is true genders shape(943,1)
 # This does not have the correct splits, right now it is trained and tested on the same set
-def apply_logistic_regression(X, y, max_iter=100):
-    clf = LogisticRegression(random_state=0, max_iter=max_iter).fit(X, y)
-    print(clf.predict(X), "\n\n")
-    print(clf.predict_proba(X), "\n\n")
-    print(clf.score(X, y))
+def apply_logistic_regression(X_train, X_test, y_train, y_test, max_iter=100):
+    """pipe = make_pipeline(StandardScaler(), LogisticRegression())
+    print(pipe.fit(X, y) ) # apply scaling on training data
+    print(pipe.predict(X), "\n\n")
+    print(pipe.predict_proba(X), "\n\n")
+    print(pipe.score(X, y))"""
+    clf = LogisticRegression(random_state=0, max_iter=max_iter).fit(X_train, y_train)
+    print(clf.predict(X_test), "\n\n")
+    print(clf.predict_proba(X_test), "\n\n")
+    print(clf.score(X_test, y_test))
 
 def apply_svm(X,y):
     clf = svm.SVC().fit(X,y)
 
+def find_min_num_of_items(user_items):
+    min_items = 1000000
+    for usr in range(len(user_items)):
+        if len(user_items[usr]) < min_items:
+            min_items = len(user_items[usr])
+    return min_items
 
 
+def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
+    user_items = {}
+    user_items_train = {}
+    user_items_test = {}
+    X_train = []
+    y_train = []
+    X_test = []
+    y_test = []
+
+    
+
+    for usr in range(len(user_item)):
+        if ghost_size > 0 :
+            ghost_L = int(len(user_item[usr]) * ghost_size)
+            user_items[usr] = user_item[usr][:-ghost_L]
+        else:
+            user_items[usr] = user_item[usr]
+
+    min_items = find_min_num_of_items(user_item)
+    L = int(min_items * test_size)
+
+    for usr in range(len(user_item)):
+        user_items_test[usr] = user_items[usr][-L:]
+        user_items_train[usr] = user_items[usr][:-L]
+
+        for item in user_items_train[usr]:
+            X_train.append({ "user_id": str(usr+1), "item_id": str(item+1)})
+            y_train.append(ratings[usr, item])
+
+        for item in user_items_test[usr]:
+            X_test.append({ "user_id": str(usr+1), "item_id": str(item+1)})
+            y_test.append(ratings[usr, item])
+    
+    X_train = pd.DataFrame(data=X_train)
+    y_train = np.array(y_train)
+    X_test = pd.DataFrame(data=X_test)
+    y_test = np.array(y_test)
+
+
+    return (X_train, y_train, X_test, y_test, L)
+
+def get_set_users_items(x_train, x_test):
+    train_users = np.sort(x_train.user_id.unique())
+    test_users = np.sort(x_test.user_id.unique())
+    train_items = np.sort(x_train.item_id.unique())
+    test_items = np.sort(x_test.item_id.unique())
+    return(train_users, train_items, test_users, test_items)
 
 
 def main():
@@ -211,65 +323,101 @@ def main():
     user_features = load_user_features()
 
     # Load interaction data and create training and test sets
-    (X_train, y_train, train_users, train_items) = load_data("ua.base") 
-    (X_test, y_test, test_users, test_items) = load_data("ua.test")
-    
+    (X, y, users, items, user_items, ratings) = load_data("u.data") 
+
+    # Create train and test sets
+    (X_train1, y_train1, X_test1, y_test1, L1) = prepare_splits(user_items, ratings, test_size=0.2, ghost_size=0.1)
+    (X_train2, y_train2, X_test2, y_test2, L2) = prepare_splits(user_items, ratings, test_size=0.5)
 
     # Training and test set dimensions
-    print_matrix_dim(X_train, "X_train")
-    evaluate_matrix_sparsity(X_train, "X_train")
+    print_matrix_dim(X_train1, "X_train1")
+    evaluate_matrix_sparsity(X_train1, "X_train1")
 
-    print_matrix_dim(X_test, "X_test")
+    print_matrix_dim(X_test1, "X_test1")
+    evaluate_matrix_sparsity(X_test1, "X_test1")
+
+    print_matrix_dim(X_train2, "X_train2")
+    evaluate_matrix_sparsity(X_train2, "X_train2")
+
+    print_matrix_dim(X_test2, "X_test2")
+    evaluate_matrix_sparsity(X_test2, "X_test2")
+
+    # Get train and test users
+    (train_users1, train_items1, test_users1, test_items1) = get_set_users_items(X_train1, X_test1)
+    (train_users2, train_items2, test_users2, test_items2) = get_set_users_items(X_train2, X_test2)
+
+    print("L1: ", L1)
+    print("L2: ", L2)
 
     # User and Item stats
-    print_user_item_stats(train_users, test_users, "users")
-    print_user_item_stats(train_items, test_items, "items")
+    print("X train and test 1")
+    print_user_item_stats(train_users1, test_users1, "users")
+    print_user_item_stats(train_items1, test_items1, "items")
+    print("X train and test 2")
+    print_user_item_stats(train_users2, test_users2, "users")
+    print_user_item_stats(train_items2, test_items2, "items")
+    
+    # Generate recommendations_train
+    print("Recommender Round 1: ")
+    rankfm1, recommendations_train = generate_recommendations(X_train1, X_test1, user_features, train_users1)
+    evaluate_recommender(rankfm1, X_test1)
 
-    # Build and train FM model
-    rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
-    rankfm.fit(X_train, user_features, epochs=20, verbose=True)
+    # Generate recommendations_test
+    print("Recommender Round 2: ")
+    rankfm2, recommendations_test = generate_recommendations(X_train2, X_test2, user_features, train_users2)
+    evaluate_recommender(rankfm2, X_test2)
+    
 
-    # Generate TopN Recommendations for Test Users
-    test_recommendations = rankfm.recommend(test_users, n_items=K, filter_previous=True, cold_start="nan")
-    print("test_recommendations shape: ", test_recommendations.shape)
+    #Write recommendation results to file
+    #write_recommendations_to_csv(recommendations_train, scores)
 
-    # Generate Model Scores for Validation Interactions
-    test_scores = rankfm.predict(X_test, cold_start="nan")
-    print("Test scores shape: ", test_scores.shape)
-    print(pd.Series(test_scores).describe())
 
-    # Evaluate model
-    rankfm_precision = precision(rankfm, X_test, k=K)
-    rankfm_recall = recall(rankfm, X_test, k=K)
+    
 
-    print("precision: {:.3f}".format(rankfm_precision))
-    print("recall: {:.3f}".format(rankfm_recall))
 
-    # Write recommendation results to file
-    write_recommendations_to_csv(test_recommendations, test_scores)
+"""
+    # Load interaction data and create training and test sets
+    #(X_train, y_train, train_users, train_items) = load_data("ua.base") 
+    #(X_test, y_test, test_users, test_items) = load_data("ua.test")
+    (X, y, users, items) = load_data("u.data") 
+    X_train1, X_test1, y_train1, y_test1 = train_test_split(X, y, train_size=0.5, shuffle=False)
+    X_train2, X_test2, y_train2, y_test2 = train_test_split(X, y, train_size=0.7, shuffle=False)
+
+
+    #(X_train1, y_train1, train_users1, train_items1) = load_data("u1.base") 
+    #(X_test1, y_test1, test_users1, test_items1) = load_data("u1.test")
+
+    #(X_train2, y_train2, train_users2, train_items2) = load_data("u2.base") 
+    #(X_test2, y_test2, test_users2, test_items2) = load_data("u2.test")
+    
+
+    
 
     # Prepare  attributes for classification
-    attributes = {}
-    #attributes["gender"] = prepare_attributes_for_classifier(user_info, attr_type="gender")
+    attributes_train = {}
+    attributes_test = {}
+    attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
+    attributes_test["gender"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="gender")
     #attributes["age"] = prepare_attributes_for_classifier(user_info, attr_type="age")
     #attributes["occupation"] = prepare_attributes_for_classifier(user_info, attr_type="occupation")
-    attributes["location"] = prepare_attributes_for_classifier(user_info, attr_type="location")
-    #print("Gender attributes len: ", len(attributes["gender"]))
+    #attributes["location"] = prepare_attributes_for_classifier(user_info, attr_type="location")
+    print("Gender attributes train len: ", len(attributes_train["gender"]))
+    print("Gender attributes test len: ", len(attributes_test["gender"]))
     #print("Age attributes len: ", len(attributes["age"]))
     #print("Occupation attributes len: ", len(attributes["occupation"]))
-    print("Location attributes len: ", len(attributes["location"]))
+    #print("Location attributes len: ", len(attributes["location"]))
     #print("gender attributes: ", attributes["gender"])
     #print("age attributes: ", attributes["age"])
     #print("occupation attributes: ", attributes["occupation"])
-    print("location attributes: ", attributes["location"])
+    #print("location attributes: ", attributes["location"])
 
     # Classify gender
-    #apply_logistic_regression(test_recommendations, attributes["gender"])
+    apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
     #apply_logistic_regression(test_recommendations, attributes["age"])
     #apply_logistic_regression(test_recommendations, attributes["occupation"], max_iter=120)
-    apply_logistic_regression(test_recommendations, attributes["location"], max_iter=120)
+    #apply_logistic_regression(test_recommendations, attributes["location"], max_iter=50000)
 
-
+"""
 
 
 if __name__ == "__main__":
