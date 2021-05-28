@@ -93,7 +93,7 @@ def load_user_data(filename="u.user", path="ml-100k/"):
     with open(path+filename, 'r') as fin:
         for line in fin.readlines():
             user_id, age, gender, occu, zipcode = line.split('|')
-            user_info[int(user_id)-1] = {
+            user_info[int(user_id)] = {
                 'age': int(age),
                 'gender': gender,
                 'occupation': occu,
@@ -204,11 +204,24 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
     attr_classes = {}
     attributes = []
     new_user_info = {}
+
+    print_i = True
+    print("##prepare_attributes_for_classifier##")
+    print("len users: ", len(users))
+    print("len user_info: ", len(user_info))
+
     for i in range(len(users)):
         for key in user_info.keys():
-            if users[i] == key:
+            if print_i == True:
+                print("users type: ", type(users[i]))
+                print("user_info type: ", type(key))
+                print_i = False
+            if int(users[i]) == key:
                 new_user_info[key] = user_info[key]
 
+    if print_i == True:
+        print("Len new_user_info: ", len(new_user_info))
+        print_i = False
     def is_in_age_group(age, age_cat):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
     
@@ -356,6 +369,8 @@ def main():
     print("X train and test 2")
     print_user_item_stats(train_users2, test_users2, "users")
     print_user_item_stats(train_items2, test_items2, "items")
+
+    
     
     # Generate recommendations_train
     print("Recommender Round 1: ")
@@ -371,8 +386,38 @@ def main():
     #Write recommendation results to file
     #write_recommendations_to_csv(recommendations_train, scores)
 
-
     
+
+    # Classification
+    attributes_train = {}
+    attributes_test = {}
+
+    # Prepare gender attributes for classification
+    attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
+    attributes_test["gender"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="gender")
+    
+    print("Gender attributes train len: ", len(attributes_train["gender"]))
+    print("Gender attributes test len: ", len(attributes_test["gender"]))
+
+    # Classify gender
+    apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
+
+    #attributes["age"] = prepare_attributes_for_classifier(user_info, attr_type="age")
+    #attributes["occupation"] = prepare_attributes_for_classifier(user_info, attr_type="occupation")
+    #attributes["location"] = prepare_attributes_for_classifier(user_info, attr_type="location")
+    #print("Age attributes len: ", len(attributes["age"]))
+    #print("Occupation attributes len: ", len(attributes["occupation"]))
+    #print("Location attributes len: ", len(attributes["location"]))
+    #print("gender attributes: ", attributes["gender"])
+    #print("age attributes: ", attributes["age"])
+    #print("occupation attributes: ", attributes["occupation"])
+    #print("location attributes: ", attributes["location"])
+
+    # Classify gender
+    
+    #apply_logistic_regression(test_recommendations, attributes["age"])
+    #apply_logistic_regression(test_recommendations, attributes["occupation"], max_iter=120)
+    #apply_logistic_regression(test_recommendations, attributes["location"], max_iter=50000)
 
 
 """
