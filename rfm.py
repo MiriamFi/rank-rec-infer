@@ -32,13 +32,22 @@ COUNTY="county"
 
 LOC_TYPE = CITY
 
-INCLUDE_FEATURES = {
-        "gender" : False,
+INFER_ATTR = {
+        "gender" : True,
         "age" : False,
         "occupation" : False,
         "state" : False,
         "city" : False,
-        "county": True
+        "county": False
+        }
+
+INCLUDE_FEATURES = {
+        "gender" : True,
+        "age" : False,
+        "occupation" : False,
+        "state" : False,
+        "city" : False,
+        "county": False
         }
 
 AGE_GROUPS = {
@@ -46,6 +55,14 @@ AGE_GROUPS = {
     1 : [35,45],
     2 : [46,99]
 }
+
+CLASSIFIERS = {
+    "logistic_regression": True,
+    "svc" : True,
+    "random_forest" : True,
+}
+
+
 
 
 
@@ -298,6 +315,15 @@ def apply_random_forest(X_train, X_test, y_train, y_test):
     print("Score: ", pipe.score(X_test, y_test))
     #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
 
+def classify(classifier, X_train, X_test, y_train, y_test):
+    pipe = make_pipeline(StandardScaler(), classifier)
+    pipe.fit(X_train, y_train)
+    #print("True values: ", y_test)
+    print("Predicted values: ", pipe.predict(X_test), "\n\n")
+    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
+    print("Score: ", pipe.score(X_test, y_test))
+
+
 
 def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
     user_items = {}
@@ -356,6 +382,54 @@ def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
     L = int(min_items * test_size)"""
 
 
+def tune_parameters(X_train, X_test, y_train,  y_test):
+    # Set the parameters by cross-validation
+    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]},
+                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+
+    scores = ['precision', 'recall']
+
+    for score in scores:
+        print("# Tuning hyper-parameters for %s" % score)
+        print()
+
+        clf = GridSearchCV(
+            svm.SVC(), tuned_parameters, scoring='%s_macro' % score
+        )
+        clf.fit(X_train, y_train)
+
+        print("Best parameters set found on development set:")
+        print()
+        print(clf.best_params_)
+        print()
+        print("Grid scores on development set:")
+        print()
+        means = clf.cv_results_['mean_test_score']
+        stds = clf.cv_results_['std_test_score']
+        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+            print("%0.3f (+/-%0.03f) for %r"
+                % (mean, std * 2, params))
+        print()
+
+        print("Detailed classification report:")
+        print()
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.")
+        print()
+        y_true, y_pred = y_test, clf.predict(X_test)
+        print(classification_report(y_true, y_pred))
+        print()
+
+
+def get_classifier(clf_str):
+    classifier = None
+    if clf_str == "logistic_regression":
+        classifier = LogisticRegression()
+    elif clf_str == "svc":
+        classifier = svm.SVC(probability=True)
+    elif clf_str == "random_forest":
+        classifier = RandomForestClassifier()
+    return classifier
 
 
 
@@ -434,7 +508,32 @@ def main():
     # Classification
     attributes_train = {}
     attributes_test = {}
+    classifier = None
 
+    
+    for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
+            # Prepare gender attributes for classification
+            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
+            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            
+            print(attr, " attributes train len: ", len(attributes_train[attr]))
+            print(attr, " attributes test len: ", len(attributes_test[attr]))
+
+            # Classify attribute
+            for clf in CLASSIFIERS.keys():
+                if CLASSIFIERS[clf] == True:
+                    print("## ", clf, " for ", attr, " ##")
+                    classifier = get_classifier(clf)
+                    classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
+            """print("## Logistic regression for ", attr, " ##")
+            apply_logistic_regression(recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
+            print("## Random forest for ", attr, " ##")
+            apply_random_forest(recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
+            print("### SVC for ", attr, " ##")
+            apply_svc(recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr]) """
+    
+    """
 
     if INCLUDE_FEATURES["gender"] == True:
         # Prepare gender attributes for classification
@@ -444,7 +543,7 @@ def main():
         print("Gender attributes train len: ", len(attributes_train["gender"]))
         print("Gender attributes test len: ", len(attributes_test["gender"]))
 
-        
+        #tune_parameters(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
 
         # Classify gender
         print("## Logistic regression ##")
@@ -519,7 +618,7 @@ def main():
         #apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
         
 
-
+"""
 
 
 """
