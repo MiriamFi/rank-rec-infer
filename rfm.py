@@ -18,12 +18,17 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import roc_auc_score
+
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report
 
 # Constants
 K = 10
 
 STATE = "state"
 CITY = "major_city"
+COUNTY="county"
 
 LOC_TYPE = CITY
 
@@ -32,7 +37,8 @@ INCLUDE_FEATURES = {
         "age" : False,
         "occupation" : False,
         "state" : False,
-        "city" : True
+        "city" : False,
+        "county": True
         }
 
 AGE_GROUPS = {
@@ -117,6 +123,8 @@ def load_user_features():
         filename += "_s"
     elif INCLUDE_FEATURES["city"] == True:
         filename += "_c"
+    elif INCLUDE_FEATURES["county"] == True:
+        filename += "_t"
     filename += ".csv"
 
     usr_feat = pd.read_csv(filename)
@@ -178,7 +186,8 @@ def write_recommendations_to_csv(recommendations, scores):
 
 def generate_recommendations(X_train, X_test, user_features, users):
     # Build and train FM model
-    rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
+    rankfm = RankFM( loss='warp', alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
+    #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.10, learning_schedule='invscaling')
     rankfm.fit(X_train, user_features, epochs=20, verbose=True)
 
     # Generate TopN Recommendations
@@ -214,7 +223,7 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
     def is_in_age_group(age, age_cat):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
     
-    # Map zip code to state/city
+    # Map zip code to state/city/county
     def map_location(zipcode, loc_type):
         search = SearchEngine(simple_zipcode=True)
         zip_code = search.by_zipcode(zipcode)
@@ -250,6 +259,7 @@ def apply_logistic_regression(X_train, X_test, y_train, y_test):
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
+    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
 
 
 def apply_svc(X_train, X_test, y_train, y_test):
@@ -259,6 +269,7 @@ def apply_svc(X_train, X_test, y_train, y_test):
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
+    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
 
 def apply_linear_svc(X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), svm.LinearSVC(probability=True))
@@ -267,6 +278,7 @@ def apply_linear_svc(X_train, X_test, y_train, y_test):
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
+    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
 
 def apply_nu_svc(X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), svm.NuSVC(probability=True))
@@ -275,6 +287,7 @@ def apply_nu_svc(X_train, X_test, y_train, y_test):
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
+    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
 
 def apply_random_forest(X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), RandomForestClassifier())
@@ -283,6 +296,7 @@ def apply_random_forest(X_train, X_test, y_train, y_test):
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
     print("Score: ", pipe.score(X_test, y_test))
+    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
 
 
 def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
@@ -294,14 +308,6 @@ def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
     X_test = []
     y_test = []
 
-    def find_min_num_of_items(user_items):
-        min_items = 1000000
-        for usr in range(len(user_items)):
-            if len(user_items[usr]) < min_items:
-                min_items = len(user_items[usr])
-        return min_items
-    
-
     for usr in range(len(user_item)):
         if ghost_size > 0 :
             ghost_L = int(len(user_item[usr]) * ghost_size)
@@ -309,10 +315,8 @@ def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
         else:
             user_items[usr] = user_item[usr]
 
-    min_items = find_min_num_of_items(user_item)
-    L = int(min_items * test_size)
+        L = int(len(user_item[usr]) * test_size)
 
-    for usr in range(len(user_item)):
         user_items_test[usr] = user_items[usr][-L:]
         user_items_train[usr] = user_items[usr][:-L]
 
@@ -331,6 +335,30 @@ def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
 
 
     return (X_train, y_train, X_test, y_test, L)
+
+    """
+    def find_min_num_of_items(user_items):
+        min_items = 1000000
+        for usr in range(len(user_items)):
+            if len(user_items[usr]) < min_items:
+                min_items = len(user_items[usr])
+        return min_items
+    
+
+    for usr in range(len(user_item)):
+        if ghost_size > 0 :
+            ghost_L = int(len(user_item[usr]) * ghost_size)
+            user_items[usr] = user_item[usr][:-ghost_L]
+        else:
+            user_items[usr] = user_item[usr]
+
+    min_items = find_min_num_of_items(user_item)
+    L = int(min_items * test_size)"""
+
+
+
+
+
 
 def get_set_users_items(x_train, x_test):
     train_users = np.sort(x_train.user_id.unique())
@@ -386,6 +414,7 @@ def main():
 
     
     
+    
     # Generate recommendations_train
     print("Recommender Round 1: ")
     rankfm1, recommendations_train = generate_recommendations(X_train1, X_test1, user_features, train_users1)
@@ -414,6 +443,8 @@ def main():
         
         print("Gender attributes train len: ", len(attributes_train["gender"]))
         print("Gender attributes test len: ", len(attributes_test["gender"]))
+
+        
 
         # Classify gender
         print("## Logistic regression ##")
@@ -467,7 +498,7 @@ def main():
         #print("### NuSVC ###")
         #apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
 
-    if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["city"] == True:
+    if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["city"] == True or INCLUDE_FEATURES["county"] == True:
         # Prepare location attributes for classification
         attributes_train["location"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="location")
         attributes_test["location"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="location")

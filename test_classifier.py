@@ -8,6 +8,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn import svm
+from sklearn.metrics import roc_auc_score
 
 import pandas as pd
 
@@ -43,7 +44,7 @@ print(pipe.fit(X_train, y_train) ) # apply scaling on training data
 print(pipe.predict(X_test), "\n\n")
 print(pipe.predict_proba(X_test), "\n\n")
 print(pipe.score(X_test, y_test))
-"""
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
 pipe = make_pipeline(StandardScaler(), svm.SVC(probability=True))
@@ -51,3 +52,7 @@ print(pipe.fit(X_train, y_train) ) # apply scaling on training data
 print(pipe.predict(X_test), "\n\n")
 print(pipe.predict_proba(X_test), "\n\n")
 print(pipe.score(X_test, y_test))
+"""
+
+clf = LogisticRegression(solver="liblinear").fit(X,y)
+print(roc_auc_score(y, clf.predict_proba(X), multi_class='ovr'))
