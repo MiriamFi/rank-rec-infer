@@ -184,11 +184,32 @@ def evaluate_matrix_sparsity(x_set, set_name=""):
     print("\n")
 
 
+def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
+    conf_scores_train = rec_train.copy()
+    conf_scores_test = rec_test.copy()
 
-def write_recommendations_to_csv(recommendations, scores):
+    with open('recomended_items.csv','w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["User", "Item_tr",  "Item_te", "Rank", "Conf_score_tr",   "Conf_score_te"] )
+
+    ind = 0
+
+    for usr in range(rec_train.shape[0]):
+        for rnk in range(rec_train.shape[1]):
+            conf_scores_train[rnk][usr] = scores_train[ind]
+            conf_scores_test[rnk][usr] = scores_test[ind]
+            with open('recomended_items.csv','a', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
+            ind += 1
+
+
+
+   
+def write_rec_to_csv(recommendations, scores):
     confidence_scores = recommendations.copy()
 
-    with open('test_recomended_items.csv','w', newline='') as csvfile:
+    with open('single_recomended_items.csv','w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         csv_writer.writerow(["User", "Item", "Rank", "Confidence score"] )
 
@@ -196,7 +217,7 @@ def write_recommendations_to_csv(recommendations, scores):
     for usr in range(recommendations.shape[0]):
         for rnk in range(recommendations.shape[1]):
             confidence_scores[rnk][usr] = scores[ind]
-            with open('test_recomended_items.csv','a', newline='') as csvfile:
+            with open('single_recomended_items.csv','a', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 csv_writer.writerow([ usr, recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
             ind += 1
@@ -215,7 +236,7 @@ def generate_recommendations(X_train, X_test, user_features, users):
     scores = rankfm.predict(X_test, cold_start="nan")
     print("Scores shape: ", scores.shape)
     print(pd.Series(scores).describe())
-    return rankfm, recommendations
+    return rankfm, recommendations, scores
 
 def evaluate_recommender(model, X_test):
     # Evaluate model
@@ -269,59 +290,15 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
 
 # X is recommendaitons for each user (943, 10)
 # z is true genders shape(943,1)
-def apply_logistic_regression(X_train, X_test, y_train, y_test):
-    pipe = make_pipeline(StandardScaler(), LogisticRegression())
-    pipe.fit(X_train, y_train) # apply scaling on training data
-    #print("True values: ", y_test)
-    print("Predicted values: ", pipe.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    print("Score: ", pipe.score(X_test, y_test))
-    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
-
-
-def apply_svc(X_train, X_test, y_train, y_test):
-    pipe = make_pipeline(StandardScaler(), svm.SVC(probability=True))
-    pipe.fit(X_train, y_train) # apply scaling on training data
-    #print("True values: ", y_test)
-    print("Predicted values: ", pipe.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    print("Score: ", pipe.score(X_test, y_test))
-    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
-
-def apply_linear_svc(X_train, X_test, y_train, y_test):
-    pipe = make_pipeline(StandardScaler(), svm.LinearSVC(probability=True))
-    pipe.fit(X_train, y_train) # apply scaling on training data
-    #print("True values: ", y_test)
-    print("Predicted values: ", pipe.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    print("Score: ", pipe.score(X_test, y_test))
-    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
-
-def apply_nu_svc(X_train, X_test, y_train, y_test):
-    pipe = make_pipeline(StandardScaler(), svm.NuSVC(probability=True))
-    pipe.fit(X_train, y_train) # apply scaling on training data
-    #print("True values: ", y_test)
-    print("Predicted values: ", pipe.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    print("Score: ", pipe.score(X_test, y_test))
-    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
-
-def apply_random_forest(X_train, X_test, y_train, y_test):
-    pipe = make_pipeline(StandardScaler(), RandomForestClassifier())
-    pipe.fit(X_train, y_train) # apply scaling on training data
-    #print("True values: ", y_test)
-    print("Predicted values: ", pipe.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    print("Score: ", pipe.score(X_test, y_test))
-    #print("AUC: ", roc_auc_score(y_test, pipe.predict_proba(X_test), multi_class='ovr'))
-
 def classify(classifier, X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), classifier)
     pipe.fit(X_train, y_train)
     #print("True values: ", y_test)
     print("Predicted values: ", pipe.predict(X_test), "\n\n")
     print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    print("Score: ", pipe.score(X_test, y_test))
+    score = pipe.score(X_test, y_test)
+    print("Score: ", score)
+    return score
 
 
 
@@ -361,25 +338,6 @@ def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
 
 
     return (X_train, y_train, X_test, y_test, L)
-
-    """
-    def find_min_num_of_items(user_items):
-        min_items = 1000000
-        for usr in range(len(user_items)):
-            if len(user_items[usr]) < min_items:
-                min_items = len(user_items[usr])
-        return min_items
-    
-
-    for usr in range(len(user_item)):
-        if ghost_size > 0 :
-            ghost_L = int(len(user_item[usr]) * ghost_size)
-            user_items[usr] = user_item[usr][:-ghost_L]
-        else:
-            user_items[usr] = user_item[usr]
-
-    min_items = find_min_num_of_items(user_item)
-    L = int(min_items * test_size)"""
 
 
 def tune_parameters(X_train, X_test, y_train,  y_test):
@@ -491,17 +449,17 @@ def main():
     
     # Generate recommendations_train
     print("Recommender Round 1: ")
-    rankfm1, recommendations_train = generate_recommendations(X_train1, X_test1, user_features, train_users1)
+    rankfm1, recommendations_train, scores_train = generate_recommendations(X_train1, X_test1, user_features, train_users1)
     evaluate_recommender(rankfm1, X_test1)
 
     # Generate recommendations_test
     print("Recommender Round 2: ")
-    rankfm2, recommendations_test = generate_recommendations(X_train2, X_test2, user_features, train_users2)
+    rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features, train_users2)
     evaluate_recommender(rankfm2, X_test2)
     
 
     #Write recommendation results to file
-    #write_recommendations_to_csv(recommendations_train, scores)
+    write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
 
     
 
@@ -526,119 +484,7 @@ def main():
                     print("## ", clf, " for ", attr, " ##")
                     classifier = get_classifier(clf)
                     classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
-            """print("## Logistic regression for ", attr, " ##")
-            apply_logistic_regression(recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
-            print("## Random forest for ", attr, " ##")
-            apply_random_forest(recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
-            print("### SVC for ", attr, " ##")
-            apply_svc(recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr]) """
-    
-    """
 
-    if INCLUDE_FEATURES["gender"] == True:
-        # Prepare gender attributes for classification
-        attributes_train["gender"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="gender")
-        attributes_test["gender"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="gender")
-        
-        print("Gender attributes train len: ", len(attributes_train["gender"]))
-        print("Gender attributes test len: ", len(attributes_test["gender"]))
-
-        #tune_parameters(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-
-        # Classify gender
-        print("## Logistic regression ##")
-        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-        print("## Random forest ##")
-        apply_random_forest(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-        print("### SVC ###")
-        apply_svc(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-        #print("### LinearSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-        #print("### NuSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["gender"], attributes_test["gender"])
-
-    if INCLUDE_FEATURES["age"] == True:
-        # Prepare age attributes for classification
-        attributes_train["age"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="age")
-        attributes_test["age"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="age")
-        
-        print("Age attributes train len: ", len(attributes_train["age"]))
-        print("Age attributes test len: ", len(attributes_test["age"]))
-
-        # Classify age
-        print("## Logistic regression ##")
-        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
-        print("## Random forest ##")
-        apply_random_forest(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
-        print("### SVC ###")
-        apply_svc(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
-        #print("### LinearSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
-        #print("### NuSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["age"], attributes_test["age"])
-
-    if INCLUDE_FEATURES["occupation"] == True:
-        # Prepare occupation attributes for classification
-        attributes_train["occupation"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="occupation")
-        attributes_test["occupation"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="occupation")
-        
-        print("Occupation attributes train len: ", len(attributes_train["occupation"]))
-        print("Occupation attributes test len: ", len(attributes_test["occupation"]))
-
-        # Classify occupation
-        print("## Logistic regression ##")
-        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
-        print("## Random forest ##")
-        apply_random_forest(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
-        print("### SVC ###")
-        apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
-        #print("### LinearSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
-        #print("### NuSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["occupation"], attributes_test["occupation"])
-
-    if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["city"] == True or INCLUDE_FEATURES["county"] == True:
-        # Prepare location attributes for classification
-        attributes_train["location"] = prepare_attributes_for_classifier(user_info, test_users1, attr_type="location")
-        attributes_test["location"] = prepare_attributes_for_classifier(user_info, test_users2, attr_type="location")
-        
-        print("Location attributes train len: ", len(attributes_train["location"]))
-        print("Location attributes test len: ", len(attributes_test["location"]))
-
-        # Classify location
-        print("## Logistic regression ##")
-        apply_logistic_regression(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
-        print("## Random forest ##")
-        apply_random_forest(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
-        print("### SVC ###")
-        apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
-        #print("### LinearSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
-        #print("### NuSVC ###")
-        #apply_svc(recommendations_train, recommendations_test, attributes_train["location"], attributes_test["location"])
-        
-
-"""
-
-
-"""
-    # Load interaction data and create training and test sets
-    #(X_train, y_train, train_users, train_items) = load_data("ua.base") 
-    #(X_test, y_test, test_users, test_items) = load_data("ua.test")
-    (X, y, users, items) = load_data("u.data") 
-    X_train1, X_test1, y_train1, y_test1 = train_test_split(X, y, train_size=0.5, shuffle=False)
-    X_train2, X_test2, y_train2, y_test2 = train_test_split(X, y, train_size=0.7, shuffle=False)
-
-
-    #(X_train1, y_train1, train_users1, train_items1) = load_data("u1.base") 
-    #(X_test1, y_test1, test_users1, test_items1) = load_data("u1.test")
-
-    #(X_train2, y_train2, train_users2, train_items2) = load_data("u2.base") 
-    #(X_test2, y_test2, test_users2, test_items2) = load_data("u2.test")
-    
-
-
-"""
 
 
 if __name__ == "__main__":
