@@ -9,7 +9,7 @@ STATE = "state"
 CITY = "major_city"
 COUNTY = "county"
 
-LOC_TYPE = COUNTY
+LOC_TYPE = STATE
 
 AGE_GROUPS = {
     "age_0": [0,34],
@@ -18,7 +18,7 @@ AGE_GROUPS = {
 }
 INCLUDE_FEATURES = {
         "gender" : False,
-        "age" : False,
+        "age" : True,
         "occupation" : False,
         "location" : True
         }

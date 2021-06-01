@@ -30,22 +30,20 @@ STATE = "state"
 CITY = "major_city"
 COUNTY="county"
 
-LOC_TYPE = CITY
+LOC_TYPE = STATE
 
 INFER_ATTR = {
-        "gender" : True,
-        "age" : False,
+        "gender" : False,
+        "age" : True,
         "occupation" : False,
-        "state" : False,
-        "city" : False,
-        "county": False
+        "location": True
         }
 
 INCLUDE_FEATURES = {
-        "gender" : True,
-        "age" : False,
+        "gender" : False,
+        "age" : True,
         "occupation" : False,
-        "state" : False,
+        "state" : True,
         "city" : False,
         "county": False
         }
@@ -57,9 +55,9 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
-    "logistic_regression": True,
+    "log_reg": True,
     "svc" : True,
-    "random_forest" : True,
+    "ran_for" : True,
 }
 
 
@@ -206,21 +204,27 @@ def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
 
 
    
-def write_rec_to_csv(recommendations, scores):
-    confidence_scores = recommendations.copy()
+def write_clf_scores_to_csv(all_results):
 
-    with open('single_recomended_items.csv','w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["User", "Item", "Rank", "Confidence score"] )
+    with open('clf_scores.csv','w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["Clf\t",  "Gender\t\t\t",  "Age\t\t\t",  "Job\t\t\t",  LOC_TYPE] )
 
-    ind = 0
-    for usr in range(recommendations.shape[0]):
-        for rnk in range(recommendations.shape[1]):
-            confidence_scores[rnk][usr] = scores[ind]
-            with open('single_recomended_items.csv','a', newline='') as csvfile:
-                csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                csv_writer.writerow([ usr, recommendations[rnk][usr], rnk+1, confidence_scores[rnk][usr] ] )
-            ind += 1
+    output = {}
+    for result in all_results:
+        clf = result["clf"]
+        if clf not in output.keys():
+            output[clf] = {}
+        for attr in INFER_ATTR.keys():
+            if INFER_ATTR[attr]== True:
+                output[clf][attr] = result["score"]
+            else:
+                output[clf][attr] = "------------------"
+    for clf in output.keys():
+        with open('clf_scores.csv','a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["location"] ] )
+
 
 def generate_recommendations(X_train, X_test, user_features, users):
     # Build and train FM model
@@ -293,12 +297,17 @@ def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
 def classify(classifier, X_train, X_test, y_train, y_test):
     pipe = make_pipeline(StandardScaler(), classifier)
     pipe.fit(X_train, y_train)
+    results = {}
+    results["y_true"] = y_test
+    
+    results["y_pred"] = pipe.predict(X_test)
+    results["y_prob"] = pipe.predict_proba(X_test)
+    results["score"] = pipe.score(X_test, y_test)
     #print("True values: ", y_test)
-    print("Predicted values: ", pipe.predict(X_test), "\n\n")
-    print("Predicted probabilities: ", pipe.predict_proba(X_test), "\n\n")
-    score = pipe.score(X_test, y_test)
-    print("Score: ", score)
-    return score
+    print("Predicted values: ", results["y_pred"], "\n\n")
+    print("Predicted probabilities: ", results["y_prob"], "\n\n")
+    print("Score: ", results["score"])
+    return results
 
 
 
@@ -379,13 +388,16 @@ def tune_parameters(X_train, X_test, y_train,  y_test):
         print()
 
 
-def get_classifier(clf_str):
+def get_classifier(clf_str, attr):
     classifier = None
-    if clf_str == "logistic_regression":
-        classifier = LogisticRegression()
+    if clf_str == "log_reg":
+        if attr == "location":
+            classifier = LogisticRegression(max_iter=500)
+        else:
+            classifier = LogisticRegression()
     elif clf_str == "svc":
         classifier = svm.SVC(probability=True)
-    elif clf_str == "random_forest":
+    elif clf_str == "ran_for":
         classifier = RandomForestClassifier()
     return classifier
 
@@ -459,7 +471,7 @@ def main():
     
 
     #Write recommendation results to file
-    write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
+    #write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
 
     
 
@@ -467,7 +479,7 @@ def main():
     attributes_train = {}
     attributes_test = {}
     classifier = None
-
+    all_score_results = []
     
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
@@ -482,8 +494,12 @@ def main():
             for clf in CLASSIFIERS.keys():
                 if CLASSIFIERS[clf] == True:
                     print("## ", clf, " for ", attr, " ##")
-                    classifier = get_classifier(clf)
-                    classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
+                    classifier = get_classifier(clf, attr)
+                    score_results = classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
+                    score_results [attr] = attr
+                    score_results ["clf"] = clf
+                    all_score_results.append(score_results)
+    write_clf_scores_to_csv(all_score_results)
 
 
 
