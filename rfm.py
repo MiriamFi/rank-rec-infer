@@ -33,16 +33,16 @@ COUNTY="county"
 LOC_TYPE = STATE
 
 INFER_ATTR = {
-        "gender" : False,
+        "gender" : True,
         "age" : True,
-        "occupation" : False,
+        "occupation" : True,
         "location": True
         }
 
 INCLUDE_FEATURES = {
-        "gender" : False,
+        "gender" : True,
         "age" : True,
-        "occupation" : False,
+        "occupation" : True,
         "state" : True,
         "city" : False,
         "county": False
@@ -215,11 +215,11 @@ def write_clf_scores_to_csv(all_results):
         clf = result["clf"]
         if clf not in output.keys():
             output[clf] = {}
-        for attr in INFER_ATTR.keys():
-            if INFER_ATTR[attr]== True:
-                output[clf][attr] = result["score"]
-            else:
+            for attr in INFER_ATTR.keys():
                 output[clf][attr] = "------------------"
+        attr = result["attr"]
+        output[clf][attr] = result["score"]
+
     for clf in output.keys():
         with open('clf_scores.csv','a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -496,7 +496,7 @@ def main():
                     print("## ", clf, " for ", attr, " ##")
                     classifier = get_classifier(clf, attr)
                     score_results = classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
-                    score_results [attr] = attr
+                    score_results ["attr"] = attr
                     score_results ["clf"] = clf
                     all_score_results.append(score_results)
     write_clf_scores_to_csv(all_score_results)
