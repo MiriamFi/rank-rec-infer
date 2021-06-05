@@ -60,19 +60,23 @@ CLASSIFIERS = {
     "ran_for" : True,
 }
 
+NUM_USERS = 943
+NUM_ITEMS = 1682
+
 
 # Load interaction data
 def load_data(filename="u.data", path="ml-100k/"):
     data = [] # user id + movie id
+    ratings = [] #TODO
     with open(path+filename) as f:
         for line in f:
             (user, movieid, rating, ts) = line.split('\t')
-
             data.append({ "user_id": int(user), "item_id": int(movieid), "ts": int(ts.strip())})
 
 
     # Prepare data
     data = pd.DataFrame(data=data)
+    print(data.iloc[0])
     return data
 
 """
@@ -355,7 +359,7 @@ def evaluate_recommender(model, X_test):
 
 
 
-def prepare_attributes_for_classifier(user_info, users, attr_type="gender"):
+def prepare_attributes_for_classifier(user_info, users, attr_type):
     attr_classes = {}
     attributes = []
     new_user_info = {}
@@ -409,6 +413,22 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     print("Score: ", results["score"], "\n")
     return results
 
+def recs_to_matrix(recs):
+    rec_matrix = [] 
+    rec_matrix = np.zeros((NUM_USERS, NUM_ITEMS), dtype=np.double)
+    row_index = []
+    column_index = []
+    for i in range(NUM_USERS):
+        row_index.append(str(i+1))
+    for j in range(NUM_ITEMS):
+        column_index.append(str(j+1))
+    
+    for usr in range(recs.shape[0]):
+        for rnk in range(recs.shape[1]):
+            item = recs[rnk][usr]
+            rec_matrix[int(usr)][int(item)] = 1.0
+    rec_matrix = pd.DataFrame(data=rec_matrix, index=row_index, columns=column_index)
+    return rec_matrix
 
 """
 def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
@@ -493,16 +513,33 @@ def get_classifier(clf_str, attr):
     classifier = None
     if clf_str == "log_reg":
         if attr == "location":
-            classifier = LogisticRegression(max_iter=500)
+            classifier = LogisticRegression(max_iter=1000)
         else:
-            classifier = LogisticRegression()
+            classifier = LogisticRegression(max_iter=1000)
     elif clf_str == "svc":
         classifier = svm.SVC(probability=True)
     elif clf_str == "ran_for":
         classifier = RandomForestClassifier()
     return classifier
 
+def add_attr_to_recs(recs, attr, attr_values):
+    # Create an array of attr
+    #attr_values = pd.DataFrame(data=attr_values, columns=[attr])
+    recs[attr] = attr_values
+    return recs
 
+"""
+def add_attr_to_recs(recs, attr, user_info):
+    # Create an array of attr
+    additional_attr = []
+    for usr in user_info.keys():
+        additional_attr.append(user_info[usr][attr])
+    additional_attr = pd.DataFrame(additional_attr, columns=[attr])
+    print(additional_attr)
+    recs.join(additional_attr)
+    print(recs[attr])
+    return recs
+"""
 
 
 def get_set_users_items(x_train, x_test):
@@ -515,6 +552,8 @@ def get_set_users_items(x_train, x_test):
 
 def main():
     print("Program starting... \n")
+
+    # Legg til attributtene til ratings bortsett fra det som skal klassifiseres
 
     # Load user info
     user_info = load_user_data()
@@ -571,21 +610,38 @@ def main():
     classifier = None
     all_score_results = []
     
+    rec_train = recs_to_matrix(recommendations_train)
+    rec_test = recs_to_matrix(recommendations_test)
+    print("Rec train shape: ", rec_train.shape)
+    print("Rec test shape: ", rec_test.shape)
+
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            recs_train_ctx = copy.deepcopy(rec_train)
+            recs_test_ctx  = copy.deepcopy(rec_test)
             
-            print(attr, " attributes train len: ", len(attributes_train[attr]))
-            print(attr, " attributes test len: ", len(attributes_test[attr]))
+            print("recs before: ",  recs_train_ctx )
+            #print(attr, " attributes train len: ", len(attributes_train[attr]))
+            #print(attr, " attributes test len: ", len(attributes_test[attr]))
+
+            for attr2 in INFER_ATTR.keys():
+                if INFER_ATTR[attr2] == True and attr != attr2:
+                    attr_values_train = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr2)
+                    attr_values_test = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr2)
+                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attr_values_train)
+                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attr_values_test)
+            print("recs: ", recs_train_ctx)
 
             # Classify attribute
             for clf in CLASSIFIERS.keys():
                 if CLASSIFIERS[clf] == True:
+                    
                     print("## ", clf, " for ", attr, " ##")
                     classifier = get_classifier(clf, attr)
-                    score_results = classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
+                    score_results = classify(classifier, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
                     score_results ["attr"] = attr
                     score_results ["clf"] = clf
                     score_results["users"] = test_users2
