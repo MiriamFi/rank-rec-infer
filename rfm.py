@@ -66,7 +66,7 @@ CLASSIFIERS = {
 
 
 # Load interaction data
-def load_data(filename, path="ml-100k/"):
+def load_data(filename="u.data", path="ml-100k/"):
     data = [] # user id + movie id
     y = [] # ratings
     users = []
@@ -225,6 +225,62 @@ def write_clf_scores_to_csv(all_results):
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["location"] ] )
 
+def get_output_filename(base, result):
+    filename = base
+    if result["attr"] == "gender":
+        filename += "_g"
+    elif result["attr"] == "age":
+        filename += "_a"
+    elif result["attr"] == "occupation":
+        filename += "_o"
+    elif result["attr"] == "location":
+        if LOC_TYPE == STATE:
+            filename += "_s"
+        elif LOC_TYPE == COUNTY:
+            filename += "_t"
+        elif LOC_TYPE == CITY:
+            filename += "_c"
+    filename += ".csv"
+    return filename
+
+def write_clf_preds_to_csv(result):
+    # Make a separate file for each clf - attr pair
+    base = "output/prediction_values/clf_pred"
+    filename = get_output_filename(base, result)
+    #class_labels = ["c_" + x for x in range(len(result["y_prob"]))]
+
+    with open(filename,'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["User", "y_true", "y_pred"])
+    for i in range(len(result["users"])):
+        
+        with open(filename,'a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow([ result["users"][i], result["y_true"][i],  result["y_pred"][i] ] )
+
+def write_clf_probs_to_csv(result):
+    # Make a separate file for each clf - attr pair
+    
+    base = "output/prediction_probabilities/clf_prob"
+    filename = get_output_filename(base, result)
+    class_labels = []
+    attr = result["attr"]
+    for i in range(len(result["y_prob"][0])):
+        class_prob = attr + str(i)
+        class_labels.append("c_" + str(i))
+
+    with open(filename,'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(class_labels)
+
+    for i in range(len(result["users"])):
+        with open(filename,'a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(result["y_prob"] )
+
+    
+    # Best way to deal with this is to first make a dataframe and use "user_features.to_csv(filename, index=False)""
+
 
 def generate_recommendations(X_train, X_test, user_features, users):
     # Build and train FM model
@@ -303,9 +359,6 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     results["y_pred"] = pipe.predict(X_test)
     results["y_prob"] = pipe.predict_proba(X_test)
     results["score"] = pipe.score(X_test, y_test)
-    #print("True values: ", y_test)
-    print("Predicted values: ", results["y_pred"], "\n\n")
-    print("Predicted probabilities: ", results["y_prob"], "\n\n")
     print("Score: ", results["score"])
     return results
 
@@ -422,7 +475,7 @@ def main():
     user_features = load_user_features()
 
     # Load interaction data and create training and test sets
-    (X, y, users, items, user_items, ratings) = load_data("u.data") 
+    (X, y, users, items, user_items, ratings) = load_data() 
 
     # Create train and test sets
     (X_train1, y_train1, X_test1, y_test1, L1) = prepare_splits(user_items, ratings, ghost_size=0.1)
@@ -498,9 +551,23 @@ def main():
                     score_results = classify(classifier, recommendations_train, recommendations_test, attributes_train[attr], attributes_test[attr])
                     score_results ["attr"] = attr
                     score_results ["clf"] = clf
+                    score_results["users"] = test_users2
                     all_score_results.append(score_results)
+                    write_clf_preds_to_csv(score_results)
+                    #write_clf_probs_to_csv(score_results)
     write_clf_scores_to_csv(all_score_results)
-
+    
+"""    user_features =[]
+    for usr_id in user_info.keys():
+        user_features.append({"user_id": str(usr_id)})
+    user_features = pd.DataFrame(data=user_features)
+    for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
+            # Prepare gender attributes for classification
+            user_feat = prepare_attributes_for_classifier(user_info, train_users1, attr_type=attr)
+            user_feat =pd.DataFrame(data=user_feat, columns=[attr])
+            user_features = add_attr_to_recs(user_features, attr, user_feat)
+        """
 
 
 if __name__ == "__main__":

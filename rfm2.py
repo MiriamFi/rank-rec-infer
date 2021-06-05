@@ -36,14 +36,14 @@ INFER_ATTR = {
         "gender" : True,
         "age" : True,
         "occupation" : True,
-        "location": True
+        "location": False
         }
 
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
         "occupation" : True,
-        "state" : True,
+        "state" : False,
         "city" : False,
         "county": False
         }
@@ -79,52 +79,6 @@ def load_data(filename="u.data", path="ml-100k/"):
     print(data.iloc[0])
     return data
 
-"""
-
-# Load interaction data
-def load_data(filename="u.data", path="ml-100k/"):
-    data = [] # user id + movie id
-    y = [] # ratings
-    users = []
-    items = []
-    data_user_item_tmp = {}
-    data_user_item = {}
-    ratings = np.zeros((943, 1682), dtype=np.double)
-    with open(path+filename) as f:
-        for line in f:
-            (user, movieid, rating, ts) = line.split('\t')
-            data.append({ "user_id": str(user), "item_id": str(movieid)})
-            if float(rating) >= 4.0:
-                    y.append(1.0)
-                    ratings[int(user) - 1, int(movieid) - 1] = 1.0
-            else:
-                y.append(0.0)
-                ratings[int(user) - 1, int(movieid) - 1] = 0.0
-            users.append(user)
-            items.append(movieid)
-
-            # build user-item dict (based on timestamp)
-            user = int(user)
-            movieid = int(movieid)
-            if user - 1 not in data_user_item_tmp:
-                data_user_item_tmp[user - 1] = [ [movieid- 1, ts] ]
-            else:
-                data_user_item_tmp[user - 1].append([ movieid - 1, ts ])
-    
-    # sort each users' items
-    for key, items in data_user_item_tmp.items():
-        sorted_items = sorted(items, key=lambda x:x[1]) # sorted on timestamp
-        data_user_item[key] = [item[0] for item in sorted_items] #items are sorted on timestamp
-
-    # Prepare data
-    data = pd.DataFrame(data=data)
-    y = np.array(y)
-    users = np.array(users)
-    users = np.sort(np.unique(users))
-    items = np.array(items)
-    items = np.sort(np.unique(items))
-    return (data, y, users, items, data_user_item, ratings)
-"""
 
 # load other user data -> age, gender ...
 def load_user_data(filename="u.user", path="ml-100k/"):
@@ -399,6 +353,40 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
     return attributes
 
 
+
+def prepare_attributes_for_recommender(user_info,  attr_type):
+    attr_classes = {}
+    attributes = []
+
+    def is_in_age_group(age, age_cat):
+        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
+    
+    # Map zip code to state/city/county
+    def map_location(zipcode, loc_type):
+        search = SearchEngine(simple_zipcode=True)
+        zip_code = search.by_zipcode(zipcode)
+        zip_code = zip_code.to_dict()
+        return zip_code[loc_type]
+
+    for usr_id in range(user_info):
+        attr_value = user_info[str(usr_id)][attr_type]
+
+        if attr_type == "age":
+            for age_cat in AGE_GROUPS.keys():
+                if is_in_age_group(attr_value, age_cat):
+                    new_attr_value = age_cat
+        else:
+            if attr_type == "location":
+                attr_value = map_location(attr_value, LOC_TYPE)
+            # Create dict of attribute labels
+            if attr_value not in attr_classes.keys():
+                attr_classes[attr_value] = len(attr_classes)
+            new_attr_value = attr_classes[attr_value]
+
+        # Create array of attribute representations
+        attributes.append(new_attr_value)
+    return attributes
+
 # X is recommendaitons for each user (943, 10)
 # z is true genders shape(943,1)
 def classify(classifier, X_train, X_test, y_train, y_test):
@@ -431,42 +419,6 @@ def recs_to_matrix(recs):
     return rec_matrix
 
 """
-def prepare_splits( user_item, ratings, test_size=0.1, ghost_size=0):
-    user_items = {}
-    user_items_train = {}
-    user_items_test = {}
-    X_train = []
-    y_train = []
-    X_test = []
-    y_test = []
-
-    for usr in range(len(user_item)):
-        if ghost_size > 0 :
-            ghost_L = int(len(user_item[usr]) * ghost_size)
-            user_items[usr] = user_item[usr][:-ghost_L]
-        else:
-            user_items[usr] = user_item[usr]
-
-        L = int(len(user_item[usr]) * test_size)
-
-        user_items_test[usr] = user_items[usr][-L:]
-        user_items_train[usr] = user_items[usr][:-L]
-
-        for item in user_items_train[usr]:
-            X_train.append({ "user_id": str(usr+1), "item_id": str(item+1)})
-            y_train.append(ratings[usr, item])
-
-        for item in user_items_test[usr]:
-            X_test.append({ "user_id": str(usr+1), "item_id": str(item+1)})
-            y_test.append(ratings[usr, item])
-    
-    X_train = pd.DataFrame(data=X_train)
-    y_train = np.array(y_train)
-    X_test = pd.DataFrame(data=X_test)
-    y_test = np.array(y_test)
-
-
-    return (X_train, y_train, X_test, y_test, L)
 
 
 def tune_parameters(X_train, X_test, y_train,  y_test):
@@ -528,19 +480,6 @@ def add_attr_to_recs(recs, attr, attr_values):
     recs[attr] = attr_values
     return recs
 
-"""
-def add_attr_to_recs(recs, attr, user_info):
-    # Create an array of attr
-    additional_attr = []
-    for usr in user_info.keys():
-        additional_attr.append(user_info[usr][attr])
-    additional_attr = pd.DataFrame(additional_attr, columns=[attr])
-    print(additional_attr)
-    recs.join(additional_attr)
-    print(recs[attr])
-    return recs
-"""
-
 
 def get_set_users_items(x_train, x_test):
     train_users = np.sort(x_train.user_id.unique())
@@ -593,15 +532,17 @@ def main():
     print("X train and test 2")
     print_user_item_stats(train_users2, test_users2, "users")
     print_user_item_stats(train_items2, test_items2, "items")
+    
 
+    print(user_features)
     # Generate recommendations_train
     print("Recommender Round 1: ")
-    rankfm1, recommendations_train, scores_train = generate_recommendations(X_train1, X_test1, user_features, train_users1, use_features=False)
+    rankfm1, recommendations_train, scores_train = generate_recommendations(X_train1, X_test1, user_features, train_users1, use_features=True)
     evaluate_recommender(rankfm1, X_test1)
 
     # Generate recommendations_test
     print("Recommender Round 2: ")
-    rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features, train_users2, use_features=False)
+    rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features, train_users2, use_features=True)
     evaluate_recommender(rankfm2, X_test2)
 
     # Classification
@@ -620,19 +561,20 @@ def main():
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+    
+    for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
             recs_train_ctx = copy.deepcopy(rec_train)
             recs_test_ctx  = copy.deepcopy(rec_test)
             
-            print("recs before: ",  recs_train_ctx )
+            #print("recs before: ",  recs_train_ctx )
             #print(attr, " attributes train len: ", len(attributes_train[attr]))
             #print(attr, " attributes test len: ", len(attributes_test[attr]))
 
             for attr2 in INFER_ATTR.keys():
                 if INFER_ATTR[attr2] == True and attr != attr2:
-                    attr_values_train = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr2)
-                    attr_values_test = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr2)
-                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attr_values_train)
-                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attr_values_test)
+                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
+                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
             print("recs: ", recs_train_ctx)
 
             # Classify attribute
@@ -654,7 +596,25 @@ def main():
     
 
 
-    
+     for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
+            # Prepare gender attributes for classification
+            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
+            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            
+            recs_train_ctx = copy.deepcopy(rec_train)
+            recs_test_ctx  = copy.deepcopy(rec_test)
+            
+            print("recs before: ",  recs_train_ctx )
+            #print(attr, " attributes train len: ", len(attributes_train[attr]))
+            #print(attr, " attributes test len: ", len(attributes_test[attr]))
+
+            for attr2 in INFER_ATTR.keys():
+                if INFER_ATTR[attr2] == True and attr != attr2:
+                    attr_values_train = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr2)
+                    attr_values_test = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr2)
+                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attr_values_train)
+                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attr_values_test)
 
     
     

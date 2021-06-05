@@ -47,12 +47,7 @@ def prepare_splits(data, train_size=0.9, test_size=0.1):
         print("X_test: ", X_test)
         X_test = X_test.drop(columns=['thrs', 'thrs_train', 'thrs_test'], axis=1)
         print("X_test: ", X_test)
-    
-    
-    
-    
-
-
+  
     return (X_train, X_test)
 
 

@@ -1,0 +1,380 @@
+# Changed classifier input to matrix, but indexes are int.
+
+
+Program starting...
+
+User Info Loaded!
+Loaded user features from user_features/feat_g_a_o_s.csv
+User features shape:  (943, 79)
+
+user_id          196
+item_id          242
+ts         881250949
+Name: 0, dtype: int64
+X_train:         user_id  item_id         ts  thrs_train
+0          196      242  881250949        True
+2           22      377  878887116        True
+4          166      346  886397596        True
+10          62      257  879372434        True
+12         200      222  876042340        True
+...        ...      ...        ...         ...
+99982      279       64  875308510        True
+99986      913      690  880824288        True
+99988      421      498  892241344        True
+99991      676      538  892685437        True
+99992      721      262  877137285        True
+
+[39633 rows x 4 columns]
+X_train:         user_id  item_id
+0          196      242
+2           22      377
+4          166      346
+10          62      257
+12         200      222
+...        ...      ...
+99982      279       64
+99986      913      690
+99988      421      498
+99991      676      538
+99992      721      262
+
+[39633 rows x 2 columns]
+X_test:         user_id  item_id         ts  thrs_train  thrs_test  thrs
+5          298      474  884182806       False       True  True
+6          115      265  881171488       False       True  True
+7          253      465  891628467       False       True  True
+18         291     1042  874834944       False       True  True
+36         181     1081  878962623       False       True  True
+...        ...      ...        ...         ...        ...   ...
+99994      378       78  880056976       False       True  True
+99995      880      476  880175444       False       True  True
+99996      716      204  879795543       False       True  True
+99997      276     1090  874795795       False       True  True
+99999       12      203  879959583       False       True  True
+
+[29942 rows x 6 columns]
+X_test:         user_id  item_id
+5          298      474
+6          115      265
+7          253      465
+18         291     1042
+36         181     1081
+...        ...      ...
+99994      378       78
+99995      880      476
+99996      716      204
+99997      276     1090
+99999       12      203
+
+[29942 rows x 2 columns]
+X_train:         user_id  item_id         ts  thrs_train
+0          196      242  881250949        True
+2           22      377  878887116        True
+4          166      346  886397596        True
+5          298      474  884182806        True
+6          115      265  881171488        True
+...        ...      ...        ...         ...
+99994      378       78  880056976        True
+99995      880      476  880175444        True
+99996      716      204  879795543        True
+99997      276     1090  874795795        True
+99999       12      203  879959583        True
+
+[69575 rows x 4 columns]
+X_train:         user_id  item_id
+0          196      242
+2           22      377
+4          166      346
+5          298      474
+6          115      265
+...        ...      ...
+99994      378       78
+99995      880      476
+99996      716      204
+99997      276     1090
+99999       12      203
+
+[69575 rows x 2 columns]
+X_test:         user_id  item_id         ts  thrs_train
+1          186      302  891717742       False
+3          244       51  880606923       False
+8          305      451  886324817       False
+9            6       86  883603013       False
+11         286     1014  879781125       False
+...        ...      ...        ...         ...
+99980      864      685  888891900       False
+99987      660      229  891406212       False
+99989      495     1091  888637503       False
+99990      806      421  882388897       False
+99998       13      225  882399156       False
+
+[30425 rows x 4 columns]
+X_test:         user_id  item_id
+1          186      302
+3          244       51
+8          305      451
+9            6       86
+11         286     1014
+...        ...      ...
+99980      864      685
+99987      660      229
+99989      495     1091
+99990      806      421
+99998       13      225
+
+[30425 rows x 2 columns]
+Matrix Dimensions for  X_train1
+X_train1  shape: (39633, 2)
+X_train1  unique users: 943
+X_train1  unique items: 1440
+
+
+X_train1  matrix sparsity: 97.1%
+
+
+Matrix Dimensions for  X_test1
+X_test1  shape: (29942, 2)
+X_test1  unique users: 943
+X_test1  unique items: 1465
+
+
+X_test1  matrix sparsity: 97.8%
+
+
+Matrix Dimensions for  X_train2
+X_train2  shape: (69575, 2)
+X_train2  unique users: 943
+X_train2  unique items: 1575
+
+
+X_train2  matrix sparsity: 95.3%
+
+
+Matrix Dimensions for  X_test2
+X_test2  shape: (30425, 2)
+X_test2  unique users: 943
+X_test2  unique items: 1574
+
+
+X_test2  matrix sparsity: 98.0%
+
+
+X train and test 1
+Stats for  users
+Train  users : 943
+Test  users 943
+cold-start  users : set()
+
+
+Stats for  items
+Train  items : 1440
+Test  items 1465
+cold-start  items : {'1578', '765', '1532', '1422', '726', '1657', '1104', '1654', '1598', '1293', '777', '1222', '1364', '1459', '1450', '1638', '1419', '1501', '442', '1617', '598', '1634', '1230', '438', '1480', '1531', '992', '1481', '1548', '1155', '1550', '927', '1644', '1175', '1303', '1156', '668', '1446', '1594', '1370', '1246', '400', '1639', '1597', '1490', '1609', '1521', '1354', '1412', '1443', '1495', '1250', '1626', '1285', '1600', '1676', '1032', '1505', '745', '1540', '1096', '1672', '784', '1231', '572', '817', '1471', '816', '1435', '1542', '415', '573', '1596', '1374', '1610', '1660', '1602', '1517', '1658', '1403', '1528', '1003', '1599', '1642', '1534', '1595', '1444', '838', '1200', '1454', '804', '1522', '138', '1662', '1310', '1002', '1314', '1210', '1309', '1027', '439', '1162', '1144', '1397', '1541', '35', '1523', '1456', '830', '852', '775', '388', '1474', '1416', '1402', '858', '788', '1553', '1477', '1239', '1448', '1509', '1486', '791', '437', '1043', '1325', '1223', '37', '1253', '1467', '1611', '1515', '920', '78'}
+
+
+X train and test 2
+Stats for  users
+Train  users : 943
+Test  users 943
+cold-start  users : set()
+
+
+Stats for  items
+Train  items : 1575
+Test  items 1574
+cold-start  items : {'1682', '1460', '1593', '1106', '1653', '1680', '1494', '1432', '1627', '1590', '1646', '1492', '1677', '1572', '1526', '1570', '1581', '1628', '1675', '1498', '1546', '1236', '1681', '1571', '677', '1614', '1606', '1659', '1613', '1618', '1621', '1661', '1365', '911', '1667', '1671', '1580', '1569', '1640', '1663', '1579', '1674', '913', '1645', '1447', '1436', '1648', '1583', '1543', '1669', '1565', '1508', '1452', '1637', '1679', '1130', '1562', '1624', '1588', '1563', '1576', '1649', '1632', '1493', '600', '910', '1664', '1577', '1647', '1603', '1189', '1678', '1327', '1549', '1673', '1398', '1666', '1497', '1275', '1520', '1582', '897', '1186', '1489', '1235', '1668', '1575', '1510', '1499', '1586', '599', '1525', '1633', '626', '1453', '957', '1408', '1616', '1665', '1458', '1504', '1651', '1476', '1584', '1650', '1625', '814'}
+
+
+Recommender Round 1:
+
+training epoch: 0
+log likelihood: -21247.25
+
+training epoch: 1
+log likelihood: -21174.51953125
+
+training epoch: 2
+log likelihood: -20719.529296875
+
+training epoch: 3
+log likelihood: -19884.720703125
+
+training epoch: 4
+log likelihood: -19211.109375
+
+training epoch: 5
+log likelihood: -18752.759765625
+
+training epoch: 6
+log likelihood: -18516.3203125
+
+training epoch: 7
+log likelihood: -18014.7109375
+
+training epoch: 8
+log likelihood: -17855.23046875
+
+training epoch: 9
+log likelihood: -17622.3203125
+
+training epoch: 10
+log likelihood: -17504.109375
+
+training epoch: 11
+log likelihood: -17292.98046875
+
+training epoch: 12
+log likelihood: -17081.009765625
+
+training epoch: 13
+log likelihood: -17094.55078125
+
+training epoch: 14
+log likelihood: -16962.220703125
+
+training epoch: 15
+log likelihood: -16978.220703125
+
+training epoch: 16
+log likelihood: -16881.2109375
+
+training epoch: 17
+log likelihood: -16860.359375
+
+training epoch: 18
+log likelihood: -16680.359375
+
+training epoch: 19
+log likelihood: -16650.529296875
+recommendations_train shape:  (943, 100)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.393082
+std          1.017336
+min         -2.920688
+25%         -0.340259
+50%          0.332318
+75%          1.074060
+max          4.085955
+dtype: float64
+precision: 0.085
+recall: 0.445
+Recommender Round 2:
+
+training epoch: 0
+log likelihood: -37675.98828125
+
+training epoch: 1
+log likelihood: -37809.23046875
+
+training epoch: 2
+log likelihood: -35559.80859375
+
+training epoch: 3
+log likelihood: -33812.19921875
+
+training epoch: 4
+log likelihood: -33046.3515625
+
+training epoch: 5
+log likelihood: -32423.919921875
+
+training epoch: 6
+log likelihood: -31916.919921875
+
+training epoch: 7
+log likelihood: -31463.25
+
+training epoch: 8
+log likelihood: -31049.939453125
+
+training epoch: 9
+log likelihood: -30665.98046875
+
+training epoch: 10
+log likelihood: -30605.529296875
+
+training epoch: 11
+log likelihood: -30490.109375
+
+training epoch: 12
+log likelihood: -30364.369140625
+
+training epoch: 13
+log likelihood: -30262.490234375
+
+training epoch: 14
+log likelihood: -30170.689453125
+
+training epoch: 15
+log likelihood: -30138.099609375
+
+training epoch: 16
+log likelihood: -30309.419921875
+
+training epoch: 17
+log likelihood: -30176.080078125
+
+training epoch: 18
+log likelihood: -30131.94921875
+
+training epoch: 19
+log likelihood: -30012.25
+recommendations_train shape:  (943, 100)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.304910
+std          1.089012
+min         -2.978245
+25%         -0.469954
+50%          0.236114
+75%          1.041634
+max          4.765085
+dtype: float64
+precision: 0.072
+recall: 0.397
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+gender  attributes train len:  943
+gender  attributes test len:  943
+##  log_reg  for  gender  ##
+Score:  0.6850477200424178
+
+##  svc  for  gender  ##
+Score:  0.711558854718982
+
+##  ran_for  for  gender  ##
+Score:  0.7168610816542949
+
+age  attributes train len:  943
+age  attributes test len:  943
+##  log_reg  for  age  ##
+Score:  0.5471898197242842
+
+##  svc  for  age  ##
+Score:  0.5874867444326617
+
+##  ran_for  for  age  ##
+Score:  0.630965005302227
+
+occupation  attributes train len:  943
+occupation  attributes test len:  943
+##  log_reg  for  occupation  ##
+Score:  0.2492046659597031
+
+##  svc  for  occupation  ##
+Score:  0.21314952279957583
+
+##  ran_for  for  occupation  ##
+Score:  0.30116648992576883
+
+location  attributes train len:  943
+location  attributes test len:  943
+##  log_reg  for  location  ##
+Score:  0.1728525980911983
+
+##  svc  for  location  ##
+Score:  0.1325556733828208
+
+##  ran_for  for  location  ##
+Score:  0.28101802757158006
