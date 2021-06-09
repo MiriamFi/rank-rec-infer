@@ -6,7 +6,7 @@ import csv
 from rankfm import rankfm
 
 from rankfm.rankfm import RankFM
-from rankfm.evaluation import precision, recall
+from rankfm.evaluation import precision, recall, hit_rate
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -25,7 +25,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 
 # Constants
-K = 10
+K = 50
 
 STATE = "state"
 CITY = "major_city"
@@ -87,7 +87,7 @@ def load_data(filename="u.data", path="ml-100k/"):
 
     # Prepare data
     data = pd.DataFrame(data=data)
-    print(data.iloc[0])
+    #print(data.iloc[0])
     return data
 
 
@@ -146,23 +146,23 @@ def prepare_splits(data, train_size=0.9, test_size=0.1):
     thres_train = pd.DataFrame(thrs_train, columns=["thrs_train"])
     data = data.join(thres_train)
     X_train = data[data['thrs_train'] == True]
-    print("X_train: ", X_train)
+    #print("X_train: ", X_train)
     X_train = X_train.drop(columns=['thrs_train','ts'], axis=1)
-    print("X_train: ", X_train)
+    #print("X_train: ", X_train)
     if train_size + test_size == 1.0:
         X_test = data[data['thrs_train'] == False]
-        print("X_test: ", X_test)
+        #print("X_test: ", X_test)
         X_test = X_test.drop(columns=['thrs_train','ts'], axis=1)
-        print("X_test: ", X_test)
+        #print("X_test: ", X_test)
     else:
         thrs_test = (ranks/counts) <= (train_size + test_size)
         thres_test = pd.DataFrame(thrs_test, columns=["thrs_test"])
         data = data.join(thres_test)
         data["thrs"] = data["thrs_test"] > data["thrs_train"]
         X_test = data[data['thrs'] == True]
-        print("X_test: ", X_test)
+        #print("X_test: ", X_test)
         X_test = X_test.drop(columns=['thrs', 'thrs_train', 'thrs_test', 'ts'], axis=1)
-        print("X_test: ", X_test)
+        #print("X_test: ", X_test)
   
     X_train = X_train.applymap(str)
     X_test = X_test.applymap(str)
@@ -312,9 +312,11 @@ def evaluate_recommender(model, X_test):
     # Evaluate model
     rankfm_precision = precision(model, X_test, k=K)
     rankfm_recall = recall(model, X_test, k=K)
+    rankfm_hit_rate = hit_rate(model, X_test, k=K)
 
     print("precision: {:.3f}".format(rankfm_precision))
     print("recall: {:.3f}".format(rankfm_recall))
+    print("hit rate: {:.3f}".format(rankfm_hit_rate))
 
 
 
@@ -405,8 +407,8 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     results["score"] = pipe.score(X_test, y_test)
     print("Score: ", results["score"], "\n")
 
-    print("Y_test: ", y_test)
-    print("proba: ", results["y_prob"])
+    #print("Y_test: ", y_test)
+    #print("proba: ", results["y_prob"])
 
     #roc_auc = roc_auc_score(y_test, results["y_prob"], multi_class='ovr')
     #print("AUC: ", roc_auc)
