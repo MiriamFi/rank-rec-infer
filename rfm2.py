@@ -24,6 +24,11 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 
+from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import label_binarize
+from sklearn.preprocessing import OneHotEncoder
+
 # Constants
 K = 50
 
@@ -36,15 +41,15 @@ LOC_TYPE = CITY
 INFER_ATTR = {
         "gender" : True,
         "age" : True,
-        "occupation" : False,
+        "occupation" : True,
         "location": False
         }
 
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
-        "occupation" : False,
-        "state" : False,
+        "occupation" : True,
+        "state" : True,
         "city" : False,
         "county": False
         }
@@ -414,6 +419,39 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     #print("AUC: ", roc_auc)
     return results
 
+def get_roc_auc_score(y_test, y_score):
+    # Compute ROC curve and ROC area for each class
+    print("y_score shape: ", y_score.shape)
+    y_test = pd.DataFrame(data=y_test)
+    n_classes = y_score.shape[1]
+    classes = []
+    for i in range(n_classes):
+        classes.append(i)
+
+    if n_classes == 2:
+        enc = OneHotEncoder()
+        y_test = enc.fit_transform(y_test).toarray()
+    else:
+        y_test = label_binarize(y_test, classes=classes)
+    
+    print("classes: ", classes)
+    print("y_test shape: ", y_test.shape)
+
+    
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # Compute micro-average ROC curve and ROC area
+    fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+    print("roc_auc: ",roc_auc["micro"])
+    return roc_auc["micro"]
+
+
 def recs_to_matrix(recs):
     rec_matrix = [] 
     rec_matrix = np.zeros((NUM_USERS, NUM_ITEMS), dtype=np.double)
@@ -622,6 +660,7 @@ def main():
                     score_results ["clf"] = clf
                     score_results["users"] = test_users2
                     all_score_results.append(score_results)
+                    auc = get_roc_auc_score(attributes_test[attr], score_results["y_prob"])
                     write_clf_preds_to_csv(score_results)
                     #write_clf_probs_to_csv(score_results)
             
