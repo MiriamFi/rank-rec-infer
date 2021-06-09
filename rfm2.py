@@ -11,6 +11,7 @@ from rankfm.evaluation import precision, recall
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
+from sklearn.dummy import DummyClassifier
 
 from uszipcode import SearchEngine
 
@@ -24,25 +25,25 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 
 # Constants
-K = 100
+K = 10
 
 STATE = "state"
 CITY = "major_city"
 COUNTY="county"
 
-LOC_TYPE = STATE
+LOC_TYPE = CITY
 
 INFER_ATTR = {
         "gender" : True,
         "age" : True,
-        "occupation" : True,
+        "occupation" : False,
         "location": False
         }
 
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
-        "occupation" : True,
+        "occupation" : False,
         "state" : False,
         "city" : False,
         "county": False
@@ -55,13 +56,23 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
+    "dummy" : True,
     "log_reg": True,
     "svc" : True,
-    "ran_for" : True,
+    "ran_for" : True
 }
 
 NUM_USERS = 943
 NUM_ITEMS = 1682
+
+statistics = {
+    "males" : 0,
+    "age0": 0,
+    "age1": 0,
+    "age2": 0,
+
+}
+
 
 
 # Load interaction data
@@ -92,6 +103,14 @@ def load_user_data(filename="u.user", path="ml-100k/"):
                 'occupation': occu,
                 'location': str(zipcode).strip()
             }
+            if gender == "M":
+                statistics["males"] += 1
+            if int(age) < 35:
+                statistics["age0"] += 1 
+            elif  int(age) <= 45:
+                statistics["age1"] += 1   
+            elif int(age) < 99:
+                statistics["age2"] += 1     
         print('User Info Loaded!')
     return user_info
 
@@ -184,25 +203,29 @@ def evaluate_matrix_sparsity(x_set, set_name=""):
     print(set_name, " matrix sparsity: {}%".format(round(100 * sparsity, 1)))
     print("\n")
 
-"""
+
 def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
     conf_scores_train = rec_train.copy()
     conf_scores_test = rec_test.copy()
 
-    with open('recomended_items.csv','w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["User", "Item_tr",  "Item_te", "Rank", "Conf_score_tr",   "Conf_score_te"] )
+    if K > 20:
+        print("Recommendations are not written to file for K higher than 20.")
+    else:
 
-    ind = 0
+        with open('recomended_items.csv','w', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(["User", "Item_tr",  "Item_te", "Rank", "Conf_score_tr",   "Conf_score_te"] )
 
-    for usr in range(rec_train.shape[0]):
-        for rnk in range(rec_train.shape[1]):
-            conf_scores_train[rnk][usr] = scores_train[ind]
-            conf_scores_test[rnk][usr] = scores_test[ind]
-            with open('recomended_items.csv','a', newline='') as csvfile:
-                csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
-            ind += 1
+        ind = 0
+
+        for usr in range(rec_train.shape[0]):
+            for rnk in range(rec_train.shape[1]):
+                conf_scores_train[rnk][usr] = scores_train[ind]
+                conf_scores_test[rnk][usr] = scores_test[ind]
+                with open('recomended_items.csv','a', newline='') as csvfile:
+                    csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
+                ind += 1
 
 
 
@@ -261,29 +284,11 @@ def write_clf_preds_to_csv(result):
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             csv_writer.writerow([ result["users"][i], result["y_true"][i],  result["y_pred"][i] ] )
 
-def write_clf_probs_to_csv(result):
-    # Make a separate file for each clf - attr pair
-    
-    base = "output/prediction_probabilities/clf_prob"
-    filename = get_output_filename(base, result)
-    class_labels = []
-    attr = result["attr"]
-    for i in range(len(result["y_prob"][0])):
-        class_prob = attr + str(i)
-        class_labels.append("c_" + str(i))
 
-    with open(filename,'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(class_labels)
-
-    for i in range(len(result["users"])):
-        with open(filename,'a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(result["y_prob"] )
 
     
     # Best way to deal with this is to first make a dataframe and use "user_features.to_csv(filename, index=False)""
-"""
+
 
 def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
     # Build and train FM model
@@ -399,6 +404,12 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     results["y_prob"] = pipe.predict_proba(X_test)
     results["score"] = pipe.score(X_test, y_test)
     print("Score: ", results["score"], "\n")
+
+    print("Y_test: ", y_test)
+    print("proba: ", results["y_prob"])
+
+    #roc_auc = roc_auc_score(y_test, results["y_prob"], multi_class='ovr')
+    #print("AUC: ", roc_auc)
     return results
 
 def recs_to_matrix(recs):
@@ -420,6 +431,25 @@ def recs_to_matrix(recs):
 
 """
 
+def write_clf_probs_to_csv(result):
+    # Make a separate file for each clf - attr pair
+    
+    base = "output/prediction_probabilities/clf_prob"
+    filename = get_output_filename(base, result)
+    class_labels = []
+    attr = result["attr"]
+    for i in range(len(result["y_prob"][0])):
+        class_prob = attr + str(i)
+        class_labels.append("c_" + str(i))
+
+    with open(filename,'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(class_labels)
+
+    for i in range(len(result["users"])):
+        with open(filename,'a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(result["y_prob"] )
 
 def tune_parameters(X_train, X_test, y_train,  y_test):
     # Set the parameters by cross-validation
@@ -463,11 +493,10 @@ def tune_parameters(X_train, X_test, y_train,  y_test):
 
 def get_classifier(clf_str, attr):
     classifier = None
-    if clf_str == "log_reg":
-        if attr == "location":
-            classifier = LogisticRegression(max_iter=1000)
-        else:
-            classifier = LogisticRegression(max_iter=1000)
+    if clf_str == "dummy":
+        classifier = DummyClassifier(strategy="most_frequent")
+    elif clf_str == "log_reg":
+        classifier = LogisticRegression(max_iter=1000)
     elif clf_str == "svc":
         classifier = svm.SVC(probability=True)
     elif clf_str == "ran_for":
@@ -545,6 +574,9 @@ def main():
     rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features, train_users2, use_features=True)
     evaluate_recommender(rankfm2, X_test2)
 
+    #Write recommendation results to file
+    write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
+
     # Classification
     attributes_train = {}
     attributes_test = {}
@@ -575,7 +607,7 @@ def main():
                 if INFER_ATTR[attr2] == True and attr != attr2:
                     recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
                     recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
-            print("recs: ", recs_train_ctx)
+            #print("recs: ", recs_train_ctx)
 
             # Classify attribute
             for clf in CLASSIFIERS.keys():
@@ -588,49 +620,16 @@ def main():
                     score_results ["clf"] = clf
                     score_results["users"] = test_users2
                     all_score_results.append(score_results)
-                    #write_clf_preds_to_csv(score_results)
+                    write_clf_preds_to_csv(score_results)
                     #write_clf_probs_to_csv(score_results)
-
-"""
-
-    
-
-
-     for attr in INFER_ATTR.keys():
-        if INFER_ATTR[attr] == True:
-            # Prepare gender attributes for classification
-            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
-            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
             
-            recs_train_ctx = copy.deepcopy(rec_train)
-            recs_test_ctx  = copy.deepcopy(rec_test)
-            
-            print("recs before: ",  recs_train_ctx )
-            #print(attr, " attributes train len: ", len(attributes_train[attr]))
-            #print(attr, " attributes test len: ", len(attributes_test[attr]))
-
-            for attr2 in INFER_ATTR.keys():
-                if INFER_ATTR[attr2] == True and attr != attr2:
-                    attr_values_train = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr2)
-                    attr_values_test = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr2)
-                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attr_values_train)
-                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attr_values_test)
-
-    
-    
-    
-    
-    
-
-    #Write recommendation results to file
-    #write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
-
-    
-
-    
     write_clf_scores_to_csv(all_score_results)
-    
-"""
+
+    print("Males: ", str(statistics["males"] /943))
+    print("Age under 35: ", str(statistics["age0"] /943))
+    print("Age under 45: ", str(statistics["age1"] /943))
+    print("Age over 45: ", str(statistics["age2"] /943))
+
 
 
 if __name__ == "__main__":

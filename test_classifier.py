@@ -52,7 +52,17 @@ print(pipe.fit(X_train, y_train) ) # apply scaling on training data
 print(pipe.predict(X_test), "\n\n")
 print(pipe.predict_proba(X_test), "\n\n")
 print(pipe.score(X_test, y_test))
-"""
+
 
 clf = LogisticRegression(solver="liblinear").fit(X,y)
 print(roc_auc_score(y, clf.predict_proba(X), multi_class='ovr'))
+"""
+
+import numpy as np
+from sklearn.dummy import DummyClassifier
+#X = np.array([-1, 1, 1, 1])
+#y = np.array([0, 1, 1, 1])
+dummy_clf = DummyClassifier(strategy="most_frequent")
+print(dummy_clf.fit(X, y))
+print(dummy_clf.predict(X))
+print(dummy_clf.score(X, y))

@@ -17,9 +17,9 @@ AGE_GROUPS = {
     "age_2": [46,99]
 }
 INCLUDE_FEATURES = {
-        "gender" : False,
+        "gender" : True,
         "age" : True,
-        "occupation" : False,
+        "occupation" : True,
         "location" : True
         }
 
