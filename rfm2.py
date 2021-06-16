@@ -30,26 +30,26 @@ from sklearn.preprocessing import label_binarize
 from sklearn.preprocessing import OneHotEncoder
 
 # Constants
-K = 50
+K = 30
 
 STATE = "state"
 CITY = "major_city"
 COUNTY="county"
 
-LOC_TYPE = CITY
+LOC_TYPE = COUNTY
 
 INFER_ATTR = {
         "gender" : True,
         "age" : True,
-        "occupation" : True,
+        "occupation" : False,
         "location": False
         }
 
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
-        "occupation" : True,
-        "state" : True,
+        "occupation" : False,
+        "state" : False,
         "city" : False,
         "county": False
         }
@@ -249,7 +249,7 @@ def write_clf_scores_to_csv(all_results):
             for attr in INFER_ATTR.keys():
                 output[clf][attr] = "------------------"
         attr = result["attr"]
-        output[clf][attr] = result["score"]
+        output[clf][attr] = result["roc_auc"]
 
     for clf in output.keys():
         with open('clf_scores.csv','a', newline='') as csvfile:
@@ -291,13 +291,11 @@ def write_clf_preds_to_csv(result):
 
 
 
-    
-    # Best way to deal with this is to first make a dataframe and use "user_features.to_csv(filename, index=False)""
 
 
 def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
     # Build and train FM model
-    rankfm = RankFM(factors=10, loss='warp', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
+    rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
     #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
     if use_features == True:
         rankfm.fit(X_train, user_features, epochs=20, verbose=True)
@@ -415,29 +413,20 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     #print("Y_test: ", y_test)
     #print("proba: ", results["y_prob"])
 
-    #roc_auc = roc_auc_score(y_test, results["y_prob"], multi_class='ovr')
-    #print("AUC: ", roc_auc)
     return results
 
 def get_roc_auc_score(y_test, y_score):
-    # Compute ROC curve and ROC area for each class
+    #Create one-hot encoding
     print("y_score shape: ", y_score.shape)
     y_test = pd.DataFrame(data=y_test)
     n_classes = y_score.shape[1]
-    classes = []
-    for i in range(n_classes):
-        classes.append(i)
 
-    if n_classes == 2:
-        enc = OneHotEncoder()
-        y_test = enc.fit_transform(y_test).toarray()
-    else:
-        y_test = label_binarize(y_test, classes=classes)
+    enc = OneHotEncoder()
+    y_test = enc.fit_transform(y_test).toarray()
     
-    print("classes: ", classes)
     print("y_test shape: ", y_test.shape)
 
-    
+    # Compute ROC curve and ROC area for each class
     fpr = dict()
     tpr = dict()
     roc_auc = dict()
@@ -536,7 +525,7 @@ def get_classifier(clf_str, attr):
     if clf_str == "dummy":
         classifier = DummyClassifier(strategy="most_frequent")
     elif clf_str == "log_reg":
-        classifier = LogisticRegression(max_iter=1000)
+        classifier = LogisticRegression(max_iter=500)
     elif clf_str == "svc":
         classifier = svm.SVC(probability=True)
     elif clf_str == "ran_for":
@@ -660,7 +649,7 @@ def main():
                     score_results ["clf"] = clf
                     score_results["users"] = test_users2
                     all_score_results.append(score_results)
-                    auc = get_roc_auc_score(attributes_test[attr], score_results["y_prob"])
+                    score_results["roc_auc"] = get_roc_auc_score(attributes_test[attr], score_results["y_prob"])
                     write_clf_preds_to_csv(score_results)
                     #write_clf_probs_to_csv(score_results)
             
