@@ -9,7 +9,7 @@ STATE = "state"
 CITY = "major_city"
 COUNTY = "county"
 
-LOC_TYPE = STATE
+LOC_TYPE = COUNTY
 
 AGE_GROUPS = {
     "age_0": [0,34],

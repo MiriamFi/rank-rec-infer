@@ -37,17 +37,20 @@ from sklearn.metrics import classification_report
 # Constants
 N = 50
 
-STATE = "state"
-CITY = "major_city"
-COUNTY="county"
 
-LOC_TYPE = STATE
+USZ_NAMES = {
+    "state" : "state",
+    "county": "county",
+    "city" : "major_city"
+}
 
 INFER_ATTR = {
         "gender" : True,
         "age" :  True,
         "occupation" : False,
-        "location": False
+        "state" : False,
+        "city" : False,
+        "county": False
         }
 
 INCLUDE_FEATURES = {
@@ -88,12 +91,10 @@ statistics = {
 # Load interaction data
 def load_interaction_data(filename="u.data", path="ml-100k/"):
     data = [] # user id + movie id
-    ratings = [] #TODO
     with open(path+filename) as f:
         for line in f:
             (user, movieid, rating, ts) = line.split('\t')
             data.append({ "user_id": int(user), "item_id": int(movieid), "ts": int(ts.strip())})
-
 
     # Prepare data
     data = pd.DataFrame(data=data)
@@ -112,7 +113,9 @@ def load_user_data(filename="u.user", path="ml-100k/"):
                 'age': int(age),
                 'gender': gender,
                 'occupation': occu,
-                'location': str(zipcode).strip()
+                'state': str(zipcode).strip(),
+                'county': str(zipcode).strip(),
+                'city': str(zipcode).strip()
             }
             if gender == "M":
                 statistics["males"] += 1
@@ -200,11 +203,11 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
     
     # Map zip code to state/city/county
-    def map_location(zipcode, loc_type):
+    def map_location(zipcode, attr_type):
         search = SearchEngine(simple_zipcode=True)
         zip_code = search.by_zipcode(zipcode)
         zip_code = zip_code.to_dict()
-        return zip_code[loc_type]
+        return zip_code[USZ_NAMES[attr_type]]
 
     for usr_id in new_user_info.keys():
         attr_value = new_user_info[usr_id][attr_type]
@@ -214,8 +217,8 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
                 if is_in_age_group(attr_value, age_cat):
                     new_attr_value = age_cat
         else:
-            if attr_type == "location":
-                attr_value = map_location(attr_value, LOC_TYPE)
+            if attr_type == "state" or attr_type == "county" or attr_type == "city":
+                attr_value = map_location(attr_value, attr_type)
             # Create dict of attribute labels
             if attr_value not in attr_classes.keys():
                 attr_classes[attr_value] = len(attr_classes)
@@ -328,13 +331,13 @@ def get_output_filename(base, result):
         filename += "_a"
     elif result["attr"] == "occupation":
         filename += "_o"
-    elif result["attr"] == "location":
-        if LOC_TYPE == STATE:
-            filename += "_s"
-        elif LOC_TYPE == COUNTY:
-            filename += "_t"
-        elif LOC_TYPE == CITY:
-            filename += "_c"
+    elif result["attr"] == "state":
+        filename += "_s"
+    elif result["attr"] == "county":
+        filename += "_t"
+    elif result["attr"] == "city":
+        filename += "_c"
+            
     filename += ".csv"
     return filename
 
@@ -458,7 +461,7 @@ def write_clf_scores_to_csv(all_results):
 
     with open('clf_scores.csv','w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["Clf\t",  "Gender\t\t\t",  "Age\t\t\t",  "Job\t\t\t",  LOC_TYPE] )
+        csv_writer.writerow(["Clf\t",  "Gender\t\t\t",  "Age\t\t\t",  "Job\t\t\t",  "State\t\t\t", "County\t\t\t", "City\t\t\t",] )
 
     output = {}
     for result in all_results:
@@ -473,7 +476,7 @@ def write_clf_scores_to_csv(all_results):
     for clf in output.keys():
         with open('clf_scores.csv','a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["location"] ] )
+            csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["state"], output[clf]["county"], output[clf]["city"] ] )
 
 def write_clf_preds_to_csv(result):
     # Make a separate file for each clf - attr pair
