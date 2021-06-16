@@ -30,7 +30,7 @@ from sklearn.preprocessing import label_binarize
 from sklearn.preprocessing import OneHotEncoder
 
 # Constants
-K = 30
+N = 50
 
 STATE = "state"
 CITY = "major_city"
@@ -213,8 +213,8 @@ def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
     conf_scores_train = rec_train.copy()
     conf_scores_test = rec_test.copy()
 
-    if K > 20:
-        print("Recommendations are not written to file for K higher than 20.")
+    if N > 20:
+        print("Recommendations are not written to file for N higher than 20.")
     else:
 
         with open('recomended_items.csv','w', newline='') as csvfile:
@@ -302,7 +302,7 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
     else:
         rankfm.fit(X_train, epochs=20, verbose=True)
     # Generate TopN Recommendations
-    recommendations = rankfm.recommend(users, n_items=K, filter_previous=True, cold_start="nan")
+    recommendations = rankfm.recommend(users, n_items=N, filter_previous=True, cold_start="nan")
     print("recommendations_train shape: ", recommendations.shape)
 
     # Generate Model Scores for Validation Interactions
@@ -313,9 +313,9 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
 
 def evaluate_recommender(model, X_test):
     # Evaluate model
-    rankfm_precision = precision(model, X_test, k=K)
-    rankfm_recall = recall(model, X_test, k=K)
-    rankfm_hit_rate = hit_rate(model, X_test, k=K)
+    rankfm_precision = precision(model, X_test, k=N)
+    rankfm_recall = recall(model, X_test, k=N)
+    rankfm_hit_rate = hit_rate(model, X_test, k=N)
 
     print("precision: {:.3f}".format(rankfm_precision))
     print("recall: {:.3f}".format(rankfm_recall))
