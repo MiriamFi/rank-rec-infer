@@ -41,11 +41,11 @@ STATE = "state"
 CITY = "major_city"
 COUNTY="county"
 
-LOC_TYPE = COUNTY
+LOC_TYPE = STATE
 
 INFER_ATTR = {
         "gender" : True,
-        "age" : True,
+        "age" :  True,
         "occupation" : False,
         "location": False
         }
@@ -104,6 +104,7 @@ def load_interaction_data(filename="u.data", path="ml-100k/"):
 # load user data
 def load_user_data(filename="u.user", path="ml-100k/"):
     user_info = {}
+    #user_features = []
     with open(path+filename, 'r') as fin:
         for line in fin.readlines():
             user_id, age, gender, occu, zipcode = line.split('|')
@@ -120,9 +121,11 @@ def load_user_data(filename="u.user", path="ml-100k/"):
             elif  int(age) <= 45:
                 statistics["age1"] += 1   
             elif int(age) < 99:
-                statistics["age2"] += 1     
+                statistics["age2"] += 1   
+            #user_features.append({"user_id": str(user_id)})  
         print('User Info Loaded!')
     return user_info
+    #return (user_info, user_features)
 
 # Load user features
 def load_user_features():
@@ -183,39 +186,6 @@ def prepare_splits(data, train_size=0.9, test_size=0.1):
     return (X_train, X_test)
 
 
-def prepare_attributes_for_recommender(user_info,  attr_type):
-    attr_classes = {}
-    attributes = []
-
-    def is_in_age_group(age, age_cat):
-        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
-    
-    # Map zip code to state/city/county
-    def map_location(zipcode, loc_type):
-        search = SearchEngine(simple_zipcode=True)
-        zip_code = search.by_zipcode(zipcode)
-        zip_code = zip_code.to_dict()
-        return zip_code[loc_type]
-
-    for usr_id in range(user_info):
-        attr_value = user_info[str(usr_id)][attr_type]
-
-        if attr_type == "age":
-            for age_cat in AGE_GROUPS.keys():
-                if is_in_age_group(attr_value, age_cat):
-                    new_attr_value = age_cat
-        else:
-            if attr_type == "location":
-                attr_value = map_location(attr_value, LOC_TYPE)
-            # Create dict of attribute labels
-            if attr_value not in attr_classes.keys():
-                attr_classes[attr_value] = len(attr_classes)
-            new_attr_value = attr_classes[attr_value]
-
-        # Create array of attribute representations
-        attributes.append(new_attr_value)
-    return attributes
-
 def prepare_attributes_for_classifier(user_info, users, attr_type):
     attr_classes = {}
     attributes = []
@@ -263,7 +233,7 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
     rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
     #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
     if use_features == True:
-        rankfm.fit(X_train, user_features, epochs=20, verbose=True)
+        rankfm.fit(X_train, user_features=user_features, epochs=20, verbose=True)
     else:
         rankfm.fit(X_train, epochs=20, verbose=True)
     # Generate TopN Recommendations
@@ -283,6 +253,7 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
 def classify(classifier, X_train, X_test, y_train, y_test):
     # X is recommendaitons for each user (943, 10)
     # z is true genders shape(943,1)
+
     pipe = make_pipeline(StandardScaler(), classifier)
     pipe.fit(X_train, y_train)
     results = {}
@@ -302,17 +273,21 @@ def classify(classifier, X_train, X_test, y_train, y_test):
 
 def evaluate_recommender(model, X_test):
     # Evaluate model
-    rankfm_precision = precision(model, X_test, k=N)
-    rankfm_recall = recall(model, X_test, k=N)
-    rankfm_hit_rate = hit_rate(model, X_test, k=N)
+    scores = {}
+    scores["p"] = precision(model, X_test, k=N)
+    scores["r"] = recall(model, X_test, k=N)
+    scores["hr"] = hit_rate(model, X_test, k=N)
 
-    print("precision: {:.3f}".format(rankfm_precision))
-    print("recall: {:.3f}".format(rankfm_recall))
-    print("hit rate: {:.3f}".format(rankfm_hit_rate))
+    print("precision: {:.3f}".format(scores["p"]))
+    print("recall: {:.3f}".format(scores["r"]))
+    print("hit rate: {:.3f}".format(scores["hr"]))
+
+    return scores
 
 def get_roc_auc_score(y_test, y_score):
     #Create one-hot encoding
     print("y_score shape: ", y_score.shape)
+    print("y_score: ", y_score)
     y_test = pd.DataFrame(data=y_test)
     n_classes = y_score.shape[1]
 
@@ -466,6 +441,19 @@ def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
                     csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
                 ind += 1
 
+def write_rec_scores_to_csv(all_results):
+
+    with open('rec_scores.csv','w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='|', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["Nr\t",  "P@K\t\t\t",  "R@K\t\t\t",  "HR\t\t\t"] )
+
+
+    for round in all_results.keys():
+        result = all_results[round]
+        with open('rec_scores.csv','a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow([ round, result["p"],  result["r"],  result["hr"] ] )
+
 def write_clf_scores_to_csv(all_results):
 
     with open('clf_scores.csv','w', newline='') as csvfile:
@@ -516,9 +504,11 @@ def main():
 
     # Load user info
     user_info = load_user_data()
+    #(user_info, user_features) = load_user_data()
 
     # Load user features
     user_features = load_user_features()
+    
 
     # Load interaction data and create training and test sets
     interaction_data = load_interaction_data() 
@@ -553,20 +543,23 @@ def main():
     print_user_item_stats(train_users2, test_users2, "users")
     print_user_item_stats(train_items2, test_items2, "items")
     
+    #print(user_features)
 
-    print(user_features)
     # Generate recommendations_train
+    rec_scores = {}
     print("Recommender Round 1: ")
     rankfm1, recommendations_train, scores_train = generate_recommendations(X_train1, X_test1, user_features, train_users1, use_features=True)
-    evaluate_recommender(rankfm1, X_test1)
+    rec_scores["round1"] = evaluate_recommender(rankfm1, X_test1)
 
     # Generate recommendations_test
     print("Recommender Round 2: ")
     rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features, train_users2, use_features=True)
-    evaluate_recommender(rankfm2, X_test2)
+    rec_scores["round2"] = evaluate_recommender(rankfm2, X_test2)
 
     #Write recommendation results to file
     write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
+    write_rec_scores_to_csv(rec_scores)
+
 
     # Classification
     attributes_train = {}
@@ -584,6 +577,7 @@ def main():
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            #print(attributes_test[attr])
     
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
@@ -635,6 +629,46 @@ if __name__ == "__main__":
 
 
 """
+def prepare_attributes_for_recommender(user_info,  user_features):
+    attr_classes = {}
+    for attr_type in INFER_ATTR.keys():
+        if INFER_ATTR[attr_type] == True:
+            attr_classes[attr_type] = {}
+
+    def is_in_age_group(age, age_cat):
+        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
+    
+    # Map zip code to state/city/county
+    def map_location(zipcode, loc_type):
+        search = SearchEngine(simple_zipcode=True)
+        zip_code = search.by_zipcode(zipcode)
+        zip_code = zip_code.to_dict()
+        return zip_code[loc_type]
+
+    
+    for usr_id in range(len(user_info)):
+        for attr_type in INFER_ATTR.keys():
+            if INFER_ATTR[attr_type] == True:
+                attr_value = user_info[usr_id+1][attr_type]
+
+                if attr_type == "age":
+                    for age_cat in AGE_GROUPS.keys():
+                        if is_in_age_group(attr_value, age_cat):
+                            new_attr_value = age_cat
+                else:
+                    if attr_type == "location":
+                        attr_value = map_location(attr_value, LOC_TYPE)
+                    # Create dict of attribute labels
+                    if attr_value not in attr_classes[attr_type].keys():
+                        attr_classes[attr_type][attr_value] = len(attr_classes[attr_type])
+                    new_attr_value = attr_classes[attr_type][attr_value]
+
+                # Create array of attribute representations
+                user_features[usr_id][attr_type] = new_attr_value
+    for cls in attr_classes.keys():
+        print(attr_classes[cls])
+    user_features = pd.DataFrame(data=user_features)
+    return user_features
 
 def write_clf_probs_to_csv(result):
     # Make a separate file for each clf - attr pair
