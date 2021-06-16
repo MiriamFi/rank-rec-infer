@@ -1,33 +1,38 @@
+# Imports
 import numpy as np
 import pandas as pd
+from uszipcode import SearchEngine
 
+
+# Utility imports
 import copy
 import csv
-from rankfm import rankfm
 
+# RankFM imports
+from rankfm import rankfm
 from rankfm.rankfm import RankFM
 from rankfm.evaluation import precision, recall, hit_rate
 
+# Sklearn classifier imports
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
 from sklearn.dummy import DummyClassifier
 
-from uszipcode import SearchEngine
+# Sklearn metric imports
+from sklearn.metrics import roc_curve, auc
 
+# Sklearn pipeline imports
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import OneHotEncoder
 
+# Sklearn hyperparameter optimization imports
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import label_binarize
-from sklearn.preprocessing import OneHotEncoder
+
+
 
 # Constants
 N = 50
@@ -78,10 +83,10 @@ statistics = {
 
 }
 
-
+### Data Loader functions ###
 
 # Load interaction data
-def load_data(filename="u.data", path="ml-100k/"):
+def load_interaction_data(filename="u.data", path="ml-100k/"):
     data = [] # user id + movie id
     ratings = [] #TODO
     with open(path+filename) as f:
@@ -96,7 +101,7 @@ def load_data(filename="u.data", path="ml-100k/"):
     return data
 
 
-# load other user data -> age, gender ...
+# load user data
 def load_user_data(filename="u.user", path="ml-100k/"):
     user_info = {}
     with open(path+filename, 'r') as fin:
@@ -144,6 +149,8 @@ def load_user_features():
     return usr_feat
 
 
+### Data preparation functions ###
+
 def prepare_splits(data, train_size=0.9, test_size=0.1):
     ranks = data.groupby('user_id')['ts'].rank(method='first')
     counts = data['user_id'].map(data.groupby('user_id')['ts'].apply(len))
@@ -175,153 +182,39 @@ def prepare_splits(data, train_size=0.9, test_size=0.1):
     X_test = X_test.sort_values(by=['user_id'])
     return (X_train, X_test)
 
-# Print Matrix Dimensions for training/test sets
-def print_matrix_dim(x_set, set_name=""):
-    print("Matrix Dimensions for ", set_name)
-    print(set_name, " shape: {}".format(x_set.shape))
-    print(set_name, " unique users: {}".format(x_set.user_id.nunique()))
-    print(set_name, " unique items: {}".format(x_set.item_id.nunique()))
-    print("\n")
 
+def prepare_attributes_for_recommender(user_info,  attr_type):
+    attr_classes = {}
+    attributes = []
 
-# Get cold-start users and items
-def get_coldstart_units(train_units, test_units, unit_name="units"):
-    cold_start_units = set(test_units) - set(train_units)
-    return cold_start_units
+    def is_in_age_group(age, age_cat):
+        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
+    
+    # Map zip code to state/city/county
+    def map_location(zipcode, loc_type):
+        search = SearchEngine(simple_zipcode=True)
+        zip_code = search.by_zipcode(zipcode)
+        zip_code = zip_code.to_dict()
+        return zip_code[loc_type]
 
+    for usr_id in range(user_info):
+        attr_value = user_info[str(usr_id)][attr_type]
 
-# Prints user and item stats
-def print_user_item_stats(train_units, test_units, unit_name="units"):
-    print("Stats for ", unit_name)
-    print("Train ", unit_name, ": {}".format(len(train_units)))
-    print("Test ", unit_name, "{}".format(len(test_units)))
-    cold_start_units = get_coldstart_units(train_units, test_units, unit_name)
-    print("cold-start ", unit_name, ": {}".format(cold_start_units))
-    print("\n")
+        if attr_type == "age":
+            for age_cat in AGE_GROUPS.keys():
+                if is_in_age_group(attr_value, age_cat):
+                    new_attr_value = age_cat
+        else:
+            if attr_type == "location":
+                attr_value = map_location(attr_value, LOC_TYPE)
+            # Create dict of attribute labels
+            if attr_value not in attr_classes.keys():
+                attr_classes[attr_value] = len(attr_classes)
+            new_attr_value = attr_classes[attr_value]
 
-
-#Evaluate X_train Matrix Sparsity
-def evaluate_matrix_sparsity(x_set, set_name=""):
-    unique_users = x_set.user_id.nunique()
-    unique_items = x_set.item_id.nunique()
-    sparsity = 1 - (len(x_set) / (unique_users * unique_items))
-    print(set_name, " matrix sparsity: {}%".format(round(100 * sparsity, 1)))
-    print("\n")
-
-
-def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
-    conf_scores_train = rec_train.copy()
-    conf_scores_test = rec_test.copy()
-
-    if N > 20:
-        print("Recommendations are not written to file for N higher than 20.")
-    else:
-
-        with open('recomended_items.csv','w', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(["User", "Item_tr",  "Item_te", "Rank", "Conf_score_tr",   "Conf_score_te"] )
-
-        ind = 0
-
-        for usr in range(rec_train.shape[0]):
-            for rnk in range(rec_train.shape[1]):
-                conf_scores_train[rnk][usr] = scores_train[ind]
-                conf_scores_test[rnk][usr] = scores_test[ind]
-                with open('recomended_items.csv','a', newline='') as csvfile:
-                    csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
-                ind += 1
-
-
-
-   
-def write_clf_scores_to_csv(all_results):
-
-    with open('clf_scores.csv','w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["Clf\t",  "Gender\t\t\t",  "Age\t\t\t",  "Job\t\t\t",  LOC_TYPE] )
-
-    output = {}
-    for result in all_results:
-        clf = result["clf"]
-        if clf not in output.keys():
-            output[clf] = {}
-            for attr in INFER_ATTR.keys():
-                output[clf][attr] = "------------------"
-        attr = result["attr"]
-        output[clf][attr] = result["roc_auc"]
-
-    for clf in output.keys():
-        with open('clf_scores.csv','a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["location"] ] )
-
-def get_output_filename(base, result):
-    filename = base
-    if result["attr"] == "gender":
-        filename += "_g"
-    elif result["attr"] == "age":
-        filename += "_a"
-    elif result["attr"] == "occupation":
-        filename += "_o"
-    elif result["attr"] == "location":
-        if LOC_TYPE == STATE:
-            filename += "_s"
-        elif LOC_TYPE == COUNTY:
-            filename += "_t"
-        elif LOC_TYPE == CITY:
-            filename += "_c"
-    filename += ".csv"
-    return filename
-
-def write_clf_preds_to_csv(result):
-    # Make a separate file for each clf - attr pair
-    base = "output/prediction_values/clf_pred"
-    filename = get_output_filename(base, result)
-    #class_labels = ["c_" + x for x in range(len(result["y_prob"]))]
-
-    with open(filename,'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["User", "y_true", "y_pred"])
-    for i in range(len(result["users"])):
-        
-        with open(filename,'a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ result["users"][i], result["y_true"][i],  result["y_pred"][i] ] )
-
-
-
-
-
-def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
-    # Build and train FM model
-    rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
-    #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
-    if use_features == True:
-        rankfm.fit(X_train, user_features, epochs=20, verbose=True)
-    else:
-        rankfm.fit(X_train, epochs=20, verbose=True)
-    # Generate TopN Recommendations
-    recommendations = rankfm.recommend(users, n_items=N, filter_previous=True, cold_start="nan")
-    print("recommendations_train shape: ", recommendations.shape)
-
-    # Generate Model Scores for Validation Interactions
-    scores = rankfm.predict(X_test, cold_start="nan")
-    print("Scores shape: ", scores.shape)
-    print(pd.Series(scores).describe())
-    return rankfm, recommendations, scores
-
-def evaluate_recommender(model, X_test):
-    # Evaluate model
-    rankfm_precision = precision(model, X_test, k=N)
-    rankfm_recall = recall(model, X_test, k=N)
-    rankfm_hit_rate = hit_rate(model, X_test, k=N)
-
-    print("precision: {:.3f}".format(rankfm_precision))
-    print("recall: {:.3f}".format(rankfm_recall))
-    print("hit rate: {:.3f}".format(rankfm_hit_rate))
-
-
+        # Create array of attribute representations
+        attributes.append(new_attr_value)
+    return attributes
 
 def prepare_attributes_for_classifier(user_info, users, attr_type):
     attr_classes = {}
@@ -363,43 +256,33 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
     return attributes
 
 
+### Recommender system functions ###
 
-def prepare_attributes_for_recommender(user_info,  attr_type):
-    attr_classes = {}
-    attributes = []
+def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
+    # Build and train FM model
+    rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
+    #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
+    if use_features == True:
+        rankfm.fit(X_train, user_features, epochs=20, verbose=True)
+    else:
+        rankfm.fit(X_train, epochs=20, verbose=True)
+    # Generate TopN Recommendations
+    recommendations = rankfm.recommend(users, n_items=N, filter_previous=True, cold_start="nan")
+    print("recommendations_train shape: ", recommendations.shape)
 
-    def is_in_age_group(age, age_cat):
-        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
-    
-    # Map zip code to state/city/county
-    def map_location(zipcode, loc_type):
-        search = SearchEngine(simple_zipcode=True)
-        zip_code = search.by_zipcode(zipcode)
-        zip_code = zip_code.to_dict()
-        return zip_code[loc_type]
+    # Generate Model Scores for Validation Interactions
+    scores = rankfm.predict(X_test, cold_start="nan")
+    print("Scores shape: ", scores.shape)
+    print(pd.Series(scores).describe())
+    return rankfm, recommendations, scores
 
-    for usr_id in range(user_info):
-        attr_value = user_info[str(usr_id)][attr_type]
 
-        if attr_type == "age":
-            for age_cat in AGE_GROUPS.keys():
-                if is_in_age_group(attr_value, age_cat):
-                    new_attr_value = age_cat
-        else:
-            if attr_type == "location":
-                attr_value = map_location(attr_value, LOC_TYPE)
-            # Create dict of attribute labels
-            if attr_value not in attr_classes.keys():
-                attr_classes[attr_value] = len(attr_classes)
-            new_attr_value = attr_classes[attr_value]
 
-        # Create array of attribute representations
-        attributes.append(new_attr_value)
-    return attributes
+### Classification functions ###
 
-# X is recommendaitons for each user (943, 10)
-# z is true genders shape(943,1)
 def classify(classifier, X_train, X_test, y_train, y_test):
+    # X is recommendaitons for each user (943, 10)
+    # z is true genders shape(943,1)
     pipe = make_pipeline(StandardScaler(), classifier)
     pipe.fit(X_train, y_train)
     results = {}
@@ -412,8 +295,20 @@ def classify(classifier, X_train, X_test, y_train, y_test):
 
     #print("Y_test: ", y_test)
     #print("proba: ", results["y_prob"])
-
     return results
+
+
+### Evaluation functions ###
+
+def evaluate_recommender(model, X_test):
+    # Evaluate model
+    rankfm_precision = precision(model, X_test, k=N)
+    rankfm_recall = recall(model, X_test, k=N)
+    rankfm_hit_rate = hit_rate(model, X_test, k=N)
+
+    print("precision: {:.3f}".format(rankfm_precision))
+    print("recall: {:.3f}".format(rankfm_recall))
+    print("hit rate: {:.3f}".format(rankfm_hit_rate))
 
 def get_roc_auc_score(y_test, y_score):
     #Create one-hot encoding
@@ -441,6 +336,34 @@ def get_roc_auc_score(y_test, y_score):
     return roc_auc["micro"]
 
 
+
+### Utility functions ###
+
+# Get cold-start users and items
+def get_coldstart_units(train_units, test_units, unit_name="units"):
+    cold_start_units = set(test_units) - set(train_units)
+    return cold_start_units
+
+# Generates an output file name
+def get_output_filename(base, result):
+    filename = base
+    if result["attr"] == "gender":
+        filename += "_g"
+    elif result["attr"] == "age":
+        filename += "_a"
+    elif result["attr"] == "occupation":
+        filename += "_o"
+    elif result["attr"] == "location":
+        if LOC_TYPE == STATE:
+            filename += "_s"
+        elif LOC_TYPE == COUNTY:
+            filename += "_t"
+        elif LOC_TYPE == CITY:
+            filename += "_c"
+    filename += ".csv"
+    return filename
+
+# Turns recommendations into a matrix
 def recs_to_matrix(recs):
     rec_matrix = [] 
     rec_matrix = np.zeros((NUM_USERS, NUM_ITEMS), dtype=np.double)
@@ -458,68 +381,7 @@ def recs_to_matrix(recs):
     rec_matrix = pd.DataFrame(data=rec_matrix, index=row_index, columns=column_index)
     return rec_matrix
 
-"""
-
-def write_clf_probs_to_csv(result):
-    # Make a separate file for each clf - attr pair
-    
-    base = "output/prediction_probabilities/clf_prob"
-    filename = get_output_filename(base, result)
-    class_labels = []
-    attr = result["attr"]
-    for i in range(len(result["y_prob"][0])):
-        class_prob = attr + str(i)
-        class_labels.append("c_" + str(i))
-
-    with open(filename,'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(class_labels)
-
-    for i in range(len(result["users"])):
-        with open(filename,'a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(result["y_prob"] )
-
-def tune_parameters(X_train, X_test, y_train,  y_test):
-    # Set the parameters by cross-validation
-    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]},
-                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
-
-    scores = ['precision', 'recall']
-
-    for score in scores:
-        print("# Tuning hyper-parameters for %s" % score)
-        print()
-
-        clf = GridSearchCV(
-            svm.SVC(), tuned_parameters, scoring='%s_macro' % score
-        )
-        clf.fit(X_train, y_train)
-
-        print("Best parameters set found on development set:")
-        print()
-        print(clf.best_params_)
-        print()
-        print("Grid scores on development set:")
-        print()
-        means = clf.cv_results_['mean_test_score']
-        stds = clf.cv_results_['std_test_score']
-        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-            print("%0.3f (+/-%0.03f) for %r"
-                % (mean, std * 2, params))
-        print()
-
-        print("Detailed classification report:")
-        print()
-        print("The model is trained on the full development set.")
-        print("The scores are computed on the full evaluation set.")
-        print()
-        y_true, y_pred = y_test, clf.predict(X_test)
-        print(classification_report(y_true, y_pred))
-        print()
-
-"""
-
+# Returns classifier object
 def get_classifier(clf_str, attr):
     classifier = None
     if clf_str == "dummy":
@@ -532,19 +394,119 @@ def get_classifier(clf_str, attr):
         classifier = RandomForestClassifier()
     return classifier
 
+# Adds user attributes to recommendations
 def add_attr_to_recs(recs, attr, attr_values):
-    # Create an array of attr
-    #attr_values = pd.DataFrame(data=attr_values, columns=[attr])
     recs[attr] = attr_values
     return recs
 
-
-def get_set_users_items(x_train, x_test):
+# Returns users and items for given set
+def get_users_items(x_train, x_test):
     train_users = np.sort(x_train.user_id.unique())
     test_users = np.sort(x_test.user_id.unique())
     train_items = np.sort(x_train.item_id.unique())
     test_items = np.sort(x_test.item_id.unique())
     return(train_users, train_items, test_users, test_items)
+
+
+
+### Print functions ###
+
+# Print Matrix Dimensions for training/test sets
+def print_matrix_dim(x_set, set_name=""):
+    print("Matrix Dimensions for ", set_name)
+    print(set_name, " shape: {}".format(x_set.shape))
+    print(set_name, " unique users: {}".format(x_set.user_id.nunique()))
+    print(set_name, " unique items: {}".format(x_set.item_id.nunique()))
+    print("\n")
+
+
+# Prints user and item stats
+def print_user_item_stats(train_units, test_units, unit_name="units"):
+    print("Stats for ", unit_name)
+    print("Train ", unit_name, ": {}".format(len(train_units)))
+    print("Test ", unit_name, "{}".format(len(test_units)))
+    cold_start_units = get_coldstart_units(train_units, test_units, unit_name)
+    print("cold-start ", unit_name, ": {}".format(cold_start_units))
+    print("\n")
+
+
+#Evaluate X_train Matrix Sparsity
+def evaluate_matrix_sparsity(x_set, set_name=""):
+    unique_users = x_set.user_id.nunique()
+    unique_items = x_set.item_id.nunique()
+    sparsity = 1 - (len(x_set) / (unique_users * unique_items))
+    print(set_name, " matrix sparsity: {}%".format(round(100 * sparsity, 1)))
+    print("\n")
+
+
+
+
+### Write to csv functions ###
+
+def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
+    conf_scores_train = rec_train.copy()
+    conf_scores_test = rec_test.copy()
+
+    if N > 20:
+        print("Recommendations are not written to file for N higher than 20.")
+    else:
+
+        with open('recomended_items.csv','w', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(["User", "Item_tr",  "Item_te", "Rank", "Conf_score_tr",   "Conf_score_te"] )
+
+        ind = 0
+
+        for usr in range(rec_train.shape[0]):
+            for rnk in range(rec_train.shape[1]):
+                conf_scores_train[rnk][usr] = scores_train[ind]
+                conf_scores_test[rnk][usr] = scores_test[ind]
+                with open('recomended_items.csv','a', newline='') as csvfile:
+                    csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
+                ind += 1
+
+def write_clf_scores_to_csv(all_results):
+
+    with open('clf_scores.csv','w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["Clf\t",  "Gender\t\t\t",  "Age\t\t\t",  "Job\t\t\t",  LOC_TYPE] )
+
+    output = {}
+    for result in all_results:
+        clf = result["clf"]
+        if clf not in output.keys():
+            output[clf] = {}
+            for attr in INFER_ATTR.keys():
+                output[clf][attr] = "------------------"
+        attr = result["attr"]
+        output[clf][attr] = result["roc_auc"]
+
+    for clf in output.keys():
+        with open('clf_scores.csv','a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["location"] ] )
+
+def write_clf_preds_to_csv(result):
+    # Make a separate file for each clf - attr pair
+    base = "output/prediction_values/clf_pred"
+    filename = get_output_filename(base, result)
+    #class_labels = ["c_" + x for x in range(len(result["y_prob"]))]
+
+    with open(filename,'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(["User", "y_true", "y_pred"])
+    for i in range(len(result["users"])):
+        
+        with open(filename,'a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow([ result["users"][i], result["y_true"][i],  result["y_pred"][i] ] )
+
+
+
+
+
+
 
 
 def main():
@@ -559,15 +521,15 @@ def main():
     user_features = load_user_features()
 
     # Load interaction data and create training and test sets
-    interaction_data = load_data() 
+    interaction_data = load_interaction_data() 
 
     # Create train and test sets
     (X_train1, X_test1) = prepare_splits(interaction_data, train_size=0.4, test_size=0.3)
     (X_train2, X_test2) = prepare_splits(interaction_data, train_size=0.7, test_size=0.3)
 
     # Get train and test users
-    (train_users1, train_items1, test_users1, test_items1) = get_set_users_items(X_train1, X_test1)
-    (train_users2, train_items2, test_users2, test_items2) = get_set_users_items(X_train2, X_test2)
+    (train_users1, train_items1, test_users1, test_items1) = get_users_items(X_train1, X_test1)
+    (train_users2, train_items2, test_users2, test_items2) = get_users_items(X_train2, X_test2)
 
     # Training and test set dimensions
     print_matrix_dim(X_train1, "X_train1")
@@ -664,3 +626,73 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+"""
+
+def write_clf_probs_to_csv(result):
+    # Make a separate file for each clf - attr pair
+    
+    base = "output/prediction_probabilities/clf_prob"
+    filename = get_output_filename(base, result)
+    class_labels = []
+    attr = result["attr"]
+    for i in range(len(result["y_prob"][0])):
+        class_prob = attr + str(i)
+        class_labels.append("c_" + str(i))
+
+    with open(filename,'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow(class_labels)
+
+    for i in range(len(result["users"])):
+        with open(filename,'a', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(result["y_prob"] )
+
+def tune_parameters(X_train, X_test, y_train,  y_test):
+    # Set the parameters by cross-validation
+    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]},
+                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+
+    scores = ['precision', 'recall']
+
+    for score in scores:
+        print("# Tuning hyper-parameters for %s" % score)
+        print()
+
+        clf = GridSearchCV(
+            svm.SVC(), tuned_parameters, scoring='%s_macro' % score
+        )
+        clf.fit(X_train, y_train)
+
+        print("Best parameters set found on development set:")
+        print()
+        print(clf.best_params_)
+        print()
+        print("Grid scores on development set:")
+        print()
+        means = clf.cv_results_['mean_test_score']
+        stds = clf.cv_results_['std_test_score']
+        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+            print("%0.3f (+/-%0.03f) for %r"
+                % (mean, std * 2, params))
+        print()
+
+        print("Detailed classification report:")
+        print()
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.")
+        print()
+        y_true, y_pred = y_test, clf.predict(X_test)
+        print(classification_report(y_true, y_pred))
+        print()
+
+"""
+
