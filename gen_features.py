@@ -7,8 +7,9 @@ OCC_NUM = 21
 
 STATE = "state"
 CITY = "major_city"
+COUNTY = "county"
 
-LOC_TYPE = STATE
+LOC_TYPE = COUNTY
 
 AGE_GROUPS = {
     "age_0": [0,34],
@@ -16,9 +17,9 @@ AGE_GROUPS = {
     "age_2": [46,99]
 }
 INCLUDE_FEATURES = {
-        "gender" : False,
-        "age" : False,
-        "occupation" : False,
+        "gender" : True,
+        "age" : True,
+        "occupation" : True,
         "location" : True
         }
 
@@ -136,6 +137,8 @@ def add_location_feature(user_info, user_features, loc_type):
                 locations[user_loc] = "state_" + str(len(locations))
             elif loc_type == CITY:
                 locations[user_loc] = "city_" + str(len(locations))
+            elif loc_type == COUNTY:
+                locations[user_loc] = "county_" + str(len(locations))
     #print("locations: ", locations)
 
     # Generate user features
@@ -170,6 +173,8 @@ def get_new_file_name():
             filename += "_s"
         if LOC_TYPE == CITY:
             filename += "_c"
+        if LOC_TYPE == COUNTY:
+            filename += "_t"
     filename += ".csv"
     return filename
 
