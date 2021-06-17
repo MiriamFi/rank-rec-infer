@@ -47,19 +47,19 @@ USZ_NAMES = {
 INFER_ATTR = {
         "gender" : True,
         "age" :  True,
-        "occupation" : False,
-        "state" : False,
+        "occupation" : True,
+        "state" : True,
+        "county": False,
         "city" : False,
-        "county": False
         }
 
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
-        "occupation" : False,
-        "state" : False,
-        "city" : False,
-        "county": False
+        "occupation" : True,
+        "state" : True,
+        "county": False,
+        "city" : False
         }
 
 AGE_GROUPS = {
