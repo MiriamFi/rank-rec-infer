@@ -21,21 +21,26 @@ from sklearn.dummy import DummyClassifier
 
 # Sklearn metric imports
 from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import accuracy_score
 
 # Sklearn pipeline imports
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
 
-# Sklearn hyperparameter optimization imports
+# Sklearn CV and hyperparameter tuning imports
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
+from sklearn.model_selection import KFold
 
 
 
 
 # Constants
 N = 50
+
+K_OUTER = 5
+K_INNER = 3
 
 
 USZ_NAMES = {
@@ -157,7 +162,7 @@ def load_user_features():
 
 ### Data preparation functions ###
 
-def prepare_splits(data, train_size=0.9, test_size=0.1):
+def prepare_rec_splits(data, train_size=0.9, test_size=0.1):
     ranks = data.groupby('user_id')['ts'].rank(method='first')
     counts = data['user_id'].map(data.groupby('user_id')['ts'].apply(len))
     thrs_train = (ranks/counts) <= train_size
@@ -271,6 +276,29 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     #print("proba: ", results["y_prob"])
     return results
 
+def cross_validate(X_r1, X_r2, y_r1, y_r2):
+    # configure the cross-validation procedure
+    cv_outer = KFold(n_splits=K_OUTER, shuffle=True, random_state=1)
+
+    # enumerate splits
+    outer_results = list()
+
+    for train_ix, test_ix in cv_outer.split(X_r1):
+        # split data
+        train_ix_str  = [str(x+1) for x in train_ix]
+        test_ix_str  = [str(x+1) for x in test_ix]
+        X_train = X_r1[X_r1.index.isin(train_ix_str)]
+        X_test = X_r2[X_r2.index.isin(test_ix_str)]
+
+        y_r1 = np.array(y_r1)
+        y_r2 = np.array(y_r2)
+        y_train, y_test = y_r1[train_ix], y_r2[test_ix]
+        
+        
+        print("X_train shape: ", X_train.shape)
+        print("X_test shape: ", X_test.shape)
+        print("y_train shape: ", y_train.shape)
+        print("y_test shape: ", y_test.shape)
 
 ### Evaluation functions ###
 
@@ -507,7 +535,7 @@ def main():
 
     # Load user info
     user_info = load_user_data()
-    #(user_info, user_features) = load_user_data()
+    
 
     # Load user features
     user_features = load_user_features()
@@ -515,10 +543,11 @@ def main():
 
     # Load interaction data and create training and test sets
     interaction_data = load_interaction_data() 
+    users = np.sort(interaction_data.user_id.unique())
 
     # Create train and test sets
-    (X_train1, X_test1) = prepare_splits(interaction_data, train_size=0.4, test_size=0.3)
-    (X_train2, X_test2) = prepare_splits(interaction_data, train_size=0.7, test_size=0.3)
+    (X_train1, X_test1) = prepare_rec_splits(interaction_data, train_size=0.4, test_size=0.3)
+    (X_train2, X_test2) = prepare_rec_splits(interaction_data, train_size=0.7, test_size=0.3)
 
     # Get train and test users
     (train_users1, train_items1, test_users1, test_items1) = get_users_items(X_train1, X_test1)
@@ -564,16 +593,20 @@ def main():
     write_rec_scores_to_csv(rec_scores)
 
 
+
+    #Classifier
+    # X = interaction_data + extra attributes
+    # y = true value for attribute
+
     # Classification
     attributes_train = {}
     attributes_test = {}
-    classifier = None
-    all_score_results = []
     
     rec_train = recs_to_matrix(recommendations_train)
     rec_test = recs_to_matrix(recommendations_test)
     print("Rec train shape: ", rec_train.shape)
     print("Rec test shape: ", rec_test.shape)
+
 
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
@@ -595,7 +628,44 @@ def main():
                 if INFER_ATTR[attr2] == True and attr != attr2:
                     recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
                     recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
-            #print("recs: ", recs_train_ctx)
+            
+            cross_validate( recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
+
+"""
+    # Classification
+    attributes_train = {}
+    attributes_test = {}
+    classifier = None
+    all_score_results = []
+    
+    rec_train = recs_to_matrix(recommendations_train)
+    rec_test = recs_to_matrix(recommendations_test)
+    print("Rec train shape: ", rec_train.shape)
+    print("Rec test shape: ", rec_test.shape)
+
+
+    for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
+            # Prepare gender attributes for classification
+            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
+            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            #print(attributes_test[attr])
+    
+    for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
+            recs_train_ctx = copy.deepcopy(rec_train)
+            recs_test_ctx  = copy.deepcopy(rec_test)
+            
+            #print("recs before: ",  recs_train_ctx )
+            #print(attr, " attributes train len: ", len(attributes_train[attr]))
+            #print(attr, " attributes test len: ", len(attributes_test[attr]))
+
+            for attr2 in INFER_ATTR.keys():
+                if INFER_ATTR[attr2] == True and attr != attr2:
+                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
+                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
+            
+
 
             # Classify attribute
             for clf in CLASSIFIERS.keys():
@@ -619,7 +689,7 @@ def main():
     print("Age under 45: ", str(statistics["age1"] /943))
     print("Age over 45: ", str(statistics["age2"] /943))
 
-
+"""
 
 if __name__ == "__main__":
     main()

@@ -13,10 +13,14 @@ X, y = make_classification(n_samples=1000, n_features=20, random_state=1, n_info
 # configure the cross-validation procedure
 cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
 
+print(y)
 # enumerate splits
 outer_results = list()
 for train_ix, test_ix in cv_outer.split(X):
 	# split data
+
+	print("train_ix: ", train_ix)
+	print("test_ix: ", test_ix)
 	X_train, X_test = X[train_ix, :], X[test_ix, :]
 	y_train, y_test = y[train_ix], y[test_ix]
 
@@ -51,6 +55,6 @@ for train_ix, test_ix in cv_outer.split(X):
 
 	# report progress
 	print('>acc=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
-    
+
 # summarize the estimated performance of the model
 print('Accuracy: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
