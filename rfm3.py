@@ -294,11 +294,47 @@ def cross_validate(X_r1, X_r2, y_r1, y_r2):
         y_r2 = np.array(y_r2)
         y_train, y_test = y_r1[train_ix], y_r2[test_ix]
         
-        
         print("X_train shape: ", X_train.shape)
         print("X_test shape: ", X_test.shape)
         print("y_train shape: ", y_train.shape)
         print("y_test shape: ", y_test.shape)
+
+        # configure the cross-validation procedure
+        cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
+
+        # define the model
+        model = RandomForestClassifier(random_state=1)
+
+        # define search space
+        space = dict()
+        space['n_estimators'] = [10, 100, 500]
+        space['max_features'] = [2, 4, 6]
+
+        # define search
+        search = GridSearchCV(model, space, scoring='accuracy', cv=cv_inner, refit=True)
+
+        # execute search
+        result = search.fit(X_train, y_train)
+
+        # get the best performing model fit on the whole training set
+        best_model = result.best_estimator_
+
+        # evaluate model on the hold out dataset
+        y_pred = best_model.predict(X_test)
+
+        # evaluate the model
+        acc = accuracy_score(y_test, y_pred)
+
+        # store the result
+        outer_results.append(acc)
+
+        # report progress
+        print('>acc=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
+    
+    # summarize the estimated performance of the model
+    print('Accuracy: %.3f (%.3f)' % (np.mean(outer_results), np.std(outer_results)))
+
+
 
 ### Evaluation functions ###
 
