@@ -74,22 +74,26 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
-    "dummy" : True,
-    "log_reg": True,
-    "svc" : True,
+    "dummy" : False,
+    "log_reg": False,
+    "svc" : False,
     "ran_for" : True
 }
+
+RAN_FOR_HPARAMS = {
+        "n_estimators" : [10,100,500],
+        "max_features" : [2, 4, 6]
+}
+CLF_HPARAMS = {
+    "dummy" : None,
+    "log_reg": None,
+    "svc" : None,
+    "ran_for" : RAN_FOR_HPARAMS}
 
 NUM_USERS = 943
 NUM_ITEMS = 1682
 
-statistics = {
-    "males" : 0,
-    "age0": 0,
-    "age1": 0,
-    "age2": 0,
 
-}
 
 ### Data Loader functions ###
 
@@ -122,14 +126,6 @@ def load_user_data(filename="u.user", path="ml-100k/"):
                 'county': str(zipcode).strip(),
                 'city': str(zipcode).strip()
             }
-            if gender == "M":
-                statistics["males"] += 1
-            if int(age) < 35:
-                statistics["age0"] += 1 
-            elif  int(age) <= 45:
-                statistics["age1"] += 1   
-            elif int(age) < 99:
-                statistics["age2"] += 1   
             #user_features.append({"user_id": str(user_id)})  
         print('User Info Loaded!')
     return user_info
@@ -276,7 +272,7 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     #print("proba: ", results["y_prob"])
     return results
 
-def cross_validate(X_r1, X_r2, y_r1, y_r2):
+def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
     # configure the cross-validation procedure
     cv_outer = KFold(n_splits=K_OUTER, shuffle=True, random_state=1)
 
@@ -300,15 +296,16 @@ def cross_validate(X_r1, X_r2, y_r1, y_r2):
         print("y_test shape: ", y_test.shape)
 
         # configure the cross-validation procedure
-        cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
+        cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
 
         # define the model
         model = RandomForestClassifier(random_state=1)
 
         # define search space
-        space = dict()
-        space['n_estimators'] = [10, 100, 500]
-        space['max_features'] = [2, 4, 6]
+        space = CLF_HPARAMS[clf]
+        #space = dict()
+        #space['n_estimators'] = [10, 100, 500]
+        #space['max_features'] = [2, 4, 6]
 
         # define search
         search = GridSearchCV(model, space, scoring='accuracy', cv=cv_inner, refit=True)
@@ -665,7 +662,9 @@ def main():
                     recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
                     recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
             
-            cross_validate( recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
+            for clf in CLASSIFIERS.keys():
+                if CLASSIFIERS[clf] == True:
+                    cross_validate( clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
 
 """
     # Classification
@@ -720,10 +719,6 @@ def main():
             
     write_clf_scores_to_csv(all_score_results)
 
-    print("Males: ", str(statistics["males"] /943))
-    print("Age under 35: ", str(statistics["age0"] /943))
-    print("Age under 45: ", str(statistics["age1"] /943))
-    print("Age over 45: ", str(statistics["age2"] /943))
 
 """
 
