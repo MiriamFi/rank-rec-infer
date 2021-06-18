@@ -74,9 +74,9 @@ AGE_GROUPS = {
 
 CLASSIFIERS = {
     "dummy" : False,
-    "log_reg": False,
+    "log_reg": True,
     "svc" : False,
-    "ran_for" : True
+    "ran_for" : False
 }
 
 RAN_FOR_HPARAMS = {
@@ -88,11 +88,18 @@ RAN_FOR_HPARAMS = {
         #'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
 }
 
+LOG_REG_HPARAM = {
+    'solver' : ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
+    'C' : [100, 10, 1.0, 0.1, 0.01],
+    'penalty' : [ 'l2']
+}
+
 CLF_HPARAMS = {
     "dummy" : None,
-    "log_reg": None,
+    "log_reg": LOG_REG_HPARAM,
     "svc" : None,
     "ran_for" : RAN_FOR_HPARAMS}
+
 
 NUM_USERS = 943
 NUM_ITEMS = 1682
@@ -426,7 +433,7 @@ def get_classifier(clf_str):
     if clf_str == "dummy":
         classifier = DummyClassifier(strategy="most_frequent")
     elif clf_str == "log_reg":
-        classifier = LogisticRegression(max_iter=500)
+        classifier = LogisticRegression(max_iter=1000)
     elif clf_str == "svc":
         classifier = svm.SVC(probability=True)
     elif clf_str == "ran_for":

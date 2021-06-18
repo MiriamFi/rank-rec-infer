@@ -299,7 +299,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
 
         # define the model
-        model =  get_classifier(clf)
+        model = RandomForestClassifier(random_state=1)
 
         # define search space
         space = CLF_HPARAMS[clf]
@@ -421,7 +421,7 @@ def recs_to_matrix(recs):
     return rec_matrix
 
 # Returns classifier object
-def get_classifier(clf_str):
+def get_classifier(clf_str, attr):
     classifier = None
     if clf_str == "dummy":
         classifier = DummyClassifier(strategy="most_frequent")

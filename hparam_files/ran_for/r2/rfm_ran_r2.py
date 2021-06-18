@@ -80,13 +80,13 @@ CLASSIFIERS = {
 }
 
 RAN_FOR_HPARAMS = {
-        "n_estimators" : [100, 250, 500, 1000, 1500, 2000],
-        "max_features" : [2, 5, 10, 15, 20],
-        #'bootstrap': [True, False],
-        #'min_samples_leaf': [1, 2, 4],
-        #'min_samples_split': [2, 5, 10],
-        #'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+        "n_estimators" : [100],
+        "max_features" : [ 4],
+        'bootstrap': [True, False],
+        'min_samples_leaf': [1, 2, 4],
+        'min_samples_split': [2, 5, 10],
 }
+
 
 CLF_HPARAMS = {
     "dummy" : None,
@@ -299,7 +299,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
 
         # define the model
-        model =  get_classifier(clf)
+        model = RandomForestClassifier(random_state=1)
 
         # define search space
         space = CLF_HPARAMS[clf]
@@ -421,7 +421,7 @@ def recs_to_matrix(recs):
     return rec_matrix
 
 # Returns classifier object
-def get_classifier(clf_str):
+def get_classifier(clf_str, attr):
     classifier = None
     if clf_str == "dummy":
         classifier = DummyClassifier(strategy="most_frequent")
