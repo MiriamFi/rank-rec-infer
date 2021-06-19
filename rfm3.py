@@ -24,7 +24,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import accuracy_score
 
 # Sklearn pipeline imports
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
 
@@ -80,8 +80,8 @@ CLASSIFIERS = {
 }
 
 RAN_FOR_HPARAMS = {
-        "n_estimators" : [100, 250, 500, 1000, 1500, 2000],
-        "max_features" : [2, 5, 10, 15, 20],
+        "ran_for__n_estimators" : [100, 500],
+        "ran_for__max_features" : [2, 6],
         #'bootstrap': [True, False],
         #'min_samples_leaf': [1, 2, 4],
         #'min_samples_split': [2, 5, 10],
@@ -299,7 +299,8 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
 
         # define the model
-        model =  get_classifier(clf)
+        classifier =  get_classifier(clf)
+        pipe = Pipeline(steps=[('scaler', StandardScaler()), (clf, classifier)])
 
         # define search space
         space = CLF_HPARAMS[clf]
@@ -308,7 +309,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         #space['max_features'] = [2, 4, 6]
 
         # define search
-        search = GridSearchCV(model, space, scoring='accuracy', cv=cv_inner, refit=True)
+        search = GridSearchCV(pipe, space, scoring='accuracy', cv=cv_inner, refit=True)
 
         # execute search
         result = search.fit(X_train, y_train)
