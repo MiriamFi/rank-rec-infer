@@ -2,14 +2,11 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from tensorboard.notebook import display
 from uszipcode import SearchEngine
 
 # Utility imports
 import copy
 import csv
-from sklearn.metrics import (accuracy_score, f1_score, confusion_matrix, make_scorer, roc_curve,
-                             auc, average_precision_score, roc_auc_score)
 
 # RankFM imports
 from rankfm import rankfm
@@ -23,17 +20,14 @@ from sklearn import svm, preprocessing
 from sklearn.dummy import DummyClassifier
 
 # Sklearn metric imports
-from sklearn.metrics import roc_curve, auc, f1_score
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_curve, auc, accuracy_score
 
 # Sklearn pipeline imports
-from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.pipeline import  Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import OneHotEncoder
 
 # Sklearn CV and hyperparameter tuning imports
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
 
 # Constants
@@ -284,36 +278,15 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
 
 ### Classification functions ###
 
-def classify(classifier, X_train, X_test, y_train, y_test):
-    # X is recommendaitons for each user (943, 10)
-    # z is true genders shape(943,1)
-
-    pipe = make_pipeline(StandardScaler(), classifier)
-    pipe.fit(X_train, y_train)
-    results = {}
-    results["y_true"] = y_test
-
-    results["y_pred"] = pipe.predict(X_test)
-    results["y_prob"] = pipe.predict_proba(X_test)
-    results["score"] = pipe.score(X_test, y_test)
-    print("Score: ", results["score"], "\n")
-
-    # print("Y_test: ", y_test)
-    # print("proba: ", results["y_prob"])
-    return results
-
 
 def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     # configure the cross-validation procedure
     cv_outer = KFold(n_splits=K_OUTER, shuffle=True, random_state=1)
 
-    # categories = set(y_r1)
-
-    # print('y_r1: ', y_r1)
 
     # enumerate splits
     outer_results = list()
-    #outer_res = list ()
+
 
     for train_ix, test_ix in cv_outer.split(X_r1):
         # split data
@@ -330,68 +303,47 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
         X_train = preprocessing.normalize(X_train, norm='l2')
         X_test = preprocessing.normalize(X_test, norm='l2')
 
-
-        # print("y_train: ", y_train)
-        # print("y_test: ", y_test)
-        # print("y_train shape: ", y_train.shape)
-        # print("y_test shape: ", y_test.shape)
-
         # configure the cross-validation procedure
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
-        #from sklearn.preprocessing import MinMaxScaler
-        # define the model
-        # trans = MinMaxScaler()
         classifier = get_classifier(clf)
         pipe = Pipeline(steps=[('scaler', StandardScaler()), (clf, classifier)]) # ('scaler', StandardScaler()) ('t', trans)
 
-        # define search space
+        # define search space and search
         space = CLF_HPARAMS[clf]
-        # space = dict()
-        # space['n_estimators'] = [10, 100, 500]
-        # space['max_features'] = [2, 4, 6]
 
-        # print(" IS HERE 1")
-        # define search
         search = GridSearchCV(pipe, space, scoring='accuracy', cv=cv_inner, refit=True)
-        # print(" IS HERE 2")
+
         # execute search
         result = search.fit(X_train, y_train)
-        # print(" IS HERE 3")
+
         # get the best performing model fit on the whole training set
         best_model = result.best_estimator_
-        # print(" IS HERE 4")
+
         # evaluate model on the hold out dataset
-        # y_pred = best_model.predict(X_test)
         y_pred = best_model.predict(X_test)
-        # y_prob = best_model.predict_proba(X_test)
-        # print(" IS HERE 5")
 
         # evaluate the model
         acc = accuracy_score(y_test, y_pred)
-        # f1 = f1_score(y_test, y_pred)
-        # auc = get_roc_auc_score(y_test, y_prob)
 
         # store the result
         outer_results.append(acc)
-        # outer_res.append(f1)
 
         # report progress
         print('>acc=%.3f,  est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_), "\n")
-        # print('>f1=%.3f,  est=%.3f, cfg=%s' % (f1, result.best_score_, result.best_params_), "\n")
 
     # summarize the estimated performance of the model
     print('Accuracy: %.3f (%.3f)' % (np.mean(outer_results), np.std(outer_results)), "\n")
-    # print('f1-score: %.3f (%.3f)' % (np.mean(outer_res), np.std(outer_res)), "\n")
 
     y_predict = search.predict(X_test)
-    # display(pd.crosstab(columns=y_predict_RFC, index=y_test, normalize=True).round(3))
+
     clf_accuracy = accuracy_score(y_test, y_predict)
     print('accuracy: {:.3f}'.format(clf_accuracy))
-    # print('f1-score: {:.3f}'.format(f1_score(y_test, y_predict_RFC)))
+
 
     y_prob = search.predict_proba(X_test)
     auc_score = plot_roc_auc(y_test, y_prob, clf, attr)
     print("auc: ", auc_score)
+
     return (clf_accuracy, auc_score)
 
 
@@ -411,48 +363,9 @@ def evaluate_recommender(model, X_test):
     return scores
 
 
-def get_roc_auc_score(y_test, y_score):
-    # Create one-hot encoding
-    y_test = np.array(y_test)
-    y_test = y_test.reshape(-1, 1)
-
-    enc = OneHotEncoder()
-    y_test = enc.fit_transform(y_test).toarray()
-
-    print("y_score shape: ", y_score.shape)
-    # print("y_score: ", y_score)
-    print("y_test shape: ", y_test.shape)
-    # print("y_test: ", y_test)
-
-    # y_test = pd.DataFrame(data=y_test)
-    # y_score = pd.DataFrame(data=y_score)
-
-    # enc = OneHotEncoder(categories=categories)
-    # y_test = enc.fit_transform(y_test).toarray()
-    # y_score = enc.fit_transform(y_score).toarray()
-    n_classes = y_test.shape[1]
-
-    # Compute ROC curve and ROC area for each class
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
-
-    # Compute micro-average ROC curve and ROC area
-    fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
-    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-    print("roc_auc: ", roc_auc["micro"])
-    return roc_auc["micro"]
-
 def plot_roc_auc(y_test, y_prob, clf, attr):
     fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1], pos_label=1)
-    # y_predict_LR = search.predict_proba(X_test)[:, 1]
-    # fpr_LR, tpr_LR, thresholds = roc_curve(y_test, y_predict_LR, pos_label=1)
 
-    # print('ROC-AUC score: {:.3f}'.format(roc_auc_score(y_test, y_predict_RFC)))
-    # print('Average precision score: {:.3f}'.format(average_precision_score(y_test, y_predict_RFC)))
 
     clf_name = CLF_PLOT_NAME[clf]
     fig = plt.figure(figsize=(8, 4))
@@ -747,9 +660,6 @@ def main():
             recs_train_ctx = copy.deepcopy(rec_train)
             recs_test_ctx = copy.deepcopy(rec_test)
 
-            # print("recs before: ",  recs_train_ctx )
-            # print(attr, " attributes train len: ", len(attributes_train[attr]))
-            # print(attr, " attributes test len: ", len(attributes_test[attr]))
 
             for attr2 in INFER_ATTR.keys():
                 if INFER_ATTR[attr2] == True and attr != attr2:
@@ -758,6 +668,7 @@ def main():
 
             for clf in CLASSIFIERS.keys():
                 if CLASSIFIERS[clf] == True:
+                    print('\n')
                     print("CV with ", clf, " for ", attr)
                     result = {}
                     result['clf'] = clf
@@ -768,164 +679,6 @@ def main():
     write_clf_scores_to_csv(results, 'auc')
 
 
-"""
-    # Classification
-    attributes_train = {}
-    attributes_test = {}
-    classifier = None
-    all_score_results = []
-
-    rec_train = recs_to_matrix(recommendations_train)
-    rec_test = recs_to_matrix(recommendations_test)
-    print("Rec train shape: ", rec_train.shape)
-    print("Rec test shape: ", rec_test.shape)
-
-
-    for attr in INFER_ATTR.keys():
-        if INFER_ATTR[attr] == True:
-            # Prepare gender attributes for classification
-            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
-            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
-            #print(attributes_test[attr])
-
-    for attr in INFER_ATTR.keys():
-        if INFER_ATTR[attr] == True:
-            recs_train_ctx = copy.deepcopy(rec_train)
-            recs_test_ctx  = copy.deepcopy(rec_test)
-
-            #print("recs before: ",  recs_train_ctx )
-            #print(attr, " attributes train len: ", len(attributes_train[attr]))
-            #print(attr, " attributes test len: ", len(attributes_test[attr]))
-
-            for attr2 in INFER_ATTR.keys():
-                if INFER_ATTR[attr2] == True and attr != attr2:
-                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
-                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
-
-
-
-            # Classify attribute
-            for clf in CLASSIFIERS.keys():
-                if CLASSIFIERS[clf] == True:
-
-                    print("## ", clf, " for ", attr, " ##")
-                    classifier = get_classifier(clf, attr)
-                    score_results = classify(classifier, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
-                    score_results ["attr"] = attr
-                    score_results ["clf"] = clf
-                    score_results["users"] = test_users2
-                    all_score_results.append(score_results)
-                    score_results["roc_auc"] = get_roc_auc_score(attributes_test[attr], score_results["y_prob"])
-                    write_clf_preds_to_csv(score_results)
-                    #write_clf_probs_to_csv(score_results)
-
-    write_clf_scores_to_csv(all_score_results)
-
-
-"""
 
 if __name__ == "__main__":
     main()
-
-"""
-def prepare_attributes_for_recommender(user_info,  user_features):
-    attr_classes = {}
-    for attr_type in INFER_ATTR.keys():
-        if INFER_ATTR[attr_type] == True:
-            attr_classes[attr_type] = {}
-
-    def is_in_age_group(age, age_cat):
-        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
-
-    # Map zip code to state/city/county
-    def map_location(zipcode, loc_type):
-        search = SearchEngine(simple_zipcode=True)
-        zip_code = search.by_zipcode(zipcode)
-        zip_code = zip_code.to_dict()
-        return zip_code[loc_type]
-
-
-    for usr_id in range(len(user_info)):
-        for attr_type in INFER_ATTR.keys():
-            if INFER_ATTR[attr_type] == True:
-                attr_value = user_info[usr_id+1][attr_type]
-
-                if attr_type == "age":
-                    for age_cat in AGE_GROUPS.keys():
-                        if is_in_age_group(attr_value, age_cat):
-                            new_attr_value = age_cat
-                else:
-                    if attr_type == "location":
-                        attr_value = map_location(attr_value, LOC_TYPE)
-                    # Create dict of attribute labels
-                    if attr_value not in attr_classes[attr_type].keys():
-                        attr_classes[attr_type][attr_value] = len(attr_classes[attr_type])
-                    new_attr_value = attr_classes[attr_type][attr_value]
-
-                # Create array of attribute representations
-                user_features[usr_id][attr_type] = new_attr_value
-    for cls in attr_classes.keys():
-        print(attr_classes[cls])
-    user_features = pd.DataFrame(data=user_features)
-    return user_features
-
-def write_clf_probs_to_csv(result):
-    # Make a separate file for each clf - attr pair
-
-    base = "output/prediction_probabilities/clf_prob"
-    filename = get_output_filename(base, result)
-    class_labels = []
-    attr = result["attr"]
-    for i in range(len(result["y_prob"][0])):
-        class_prob = attr + str(i)
-        class_labels.append("c_" + str(i))
-
-    with open(filename,'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(class_labels)
-
-    for i in range(len(result["users"])):
-        with open(filename,'a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(result["y_prob"] )
-
-def tune_parameters(X_train, X_test, y_train,  y_test):
-    # Set the parameters by cross-validation
-    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]},
-                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
-
-    scores = ['precision', 'recall']
-
-    for score in scores:
-        print("# Tuning hyper-parameters for %s" % score)
-        print()
-
-        clf = GridSearchCV(
-            svm.SVC(), tuned_parameters, scoring='%s_macro' % score
-        )
-        clf.fit(X_train, y_train)
-
-        print("Best parameters set found on development set:")
-        print()
-        print(clf.best_params_)
-        print()
-        print("Grid scores on development set:")
-        print()
-        means = clf.cv_results_['mean_test_score']
-        stds = clf.cv_results_['std_test_score']
-        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-            print("%0.3f (+/-%0.03f) for %r"
-                % (mean, std * 2, params))
-        print()
-
-        print("Detailed classification report:")
-        print()
-        print("The model is trained on the full development set.")
-        print("The scores are computed on the full evaluation set.")
-        print()
-        y_true, y_pred = y_test, clf.predict(X_test)
-        print(classification_report(y_true, y_pred))
-        print()
-
-"""
-
