@@ -105,6 +105,12 @@ CLF_HPARAMS = {
     "svc": SVC_HPARAMS,
     "ran_for": RAN_FOR_HPARAMS}
 
+CLF_PLOT_NAME = {
+    "dummy": 'MFC',
+    "log_reg": 'LGC',
+    "svc": 'SVC',
+    "ran_for": 'RFC'}
+
 NUM_USERS = 943
 NUM_ITEMS = 1682
 
@@ -373,13 +379,14 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
 
     y_predict = search.predict(X_test)
     # display(pd.crosstab(columns=y_predict_RFC, index=y_test, normalize=True).round(3))
-    print('accuracy: {:.3f}'.format(accuracy_score(y_test, y_predict)))
+    clf_accuracy = accuracy_score(y_test, y_predict)
+    print('accuracy: {:.3f}'.format(clf_accuracy))
     # print('f1-score: {:.3f}'.format(f1_score(y_test, y_predict_RFC)))
 
     y_prob = search.predict_proba(X_test)
     auc_score = plot_roc_auc(y_test, y_prob, clf, attr)
     print("auc: ", auc_score)
-    return auc_score
+    return (clf_accuracy, auc_score)
 
 
 ### Evaluation functions ###
@@ -441,13 +448,13 @@ def plot_roc_auc(y_test, y_prob, clf, attr):
     # print('ROC-AUC score: {:.3f}'.format(roc_auc_score(y_test, y_predict_RFC)))
     # print('Average precision score: {:.3f}'.format(average_precision_score(y_test, y_predict_RFC)))
 
-
+    clf_name = CLF_PLOT_NAME[clf]
     fig = plt.figure(figsize=(8, 4))
     # plt.plot(fpr_LR, tpr_LR, linestyle='-', label='Log. Reg.')
-    plt.plot(fpr, tpr, linestyle='-.', lw=2, label='RFC')
+    plt.plot(fpr, tpr, linestyle='-.', lw=2, label=clf_name)
     plt.legend()
     auc_score = auc(x=fpr, y=tpr)
-    plt.title('RFC AUC: {:.3f}'.format( auc(x=fpr, y=tpr)), fontsize=14)
+    plt.title(clf_name + ' AUC: {:.3f}'.format( auc(x=fpr, y=tpr)), fontsize=14)
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     #plt.show()
@@ -616,7 +623,7 @@ def write_clf_scores_to_csv(all_results, metric):
             for attr in INFER_ATTR.keys():
                 output[clf][attr] = "------------------"
         attr = result["attr"]
-        output[clf][attr] = result["roc_auc"]
+        output[clf][attr] = result[metric]
 
     for clf in output.keys():
         with open(filename, 'a', newline='') as csvfile:
@@ -719,12 +726,15 @@ def main():
     print("Rec train shape: ", rec_train.shape)
     print("Rec test shape: ", rec_test.shape)
 
+    results = []
+
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
             # print(attributes_test[attr])
+            
 
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
@@ -743,7 +753,13 @@ def main():
             for clf in CLASSIFIERS.keys():
                 if CLASSIFIERS[clf] == True:
                     print("CV for ", attr)
-                    cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
+                    result = {}
+                    result['clf'] = clf
+                    result['attr'] = attr
+                    (result['acc'], result['auc']) = cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
+                    results.append(result)
+    write_clf_scores_to_csv(results, 'acc')
+    write_clf_scores_to_csv(results, 'auc')
 
 
 """
