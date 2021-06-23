@@ -24,7 +24,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import accuracy_score
 
 # Sklearn pipeline imports
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
 
@@ -80,30 +80,30 @@ CLASSIFIERS = {
 }
 
 RAN_FOR_HPARAMS = {
-        "n_estimators" : [100, 250, 500, 1000, 1500, 2000],
-        "max_features" : [2, 5, 10, 15, 20],
+        "ran_for__n_estimators" : [100, 500],
+        "ran_for__max_features" : [2, 6],
         #'bootstrap': [True, False],
         #'min_samples_leaf': [1, 2, 4],
         #'min_samples_split': [2, 5, 10],
         #'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
 }
 
-LOG_REG_HPARAM = {
-    'solver' : ['newton-cg', 'lbfgs', 'sag', 'saga'],
-    'C' : [100, 10, 1.0, 0.1, 0.01],
-    'penalty' : ['none', 'l2']
+LOG_REG_HPARAMS = {
+    'log_reg__solver' : ['newton-cg', 'lbfgs', 'sag', 'saga'],
+    'log_reg__C' : [100, 10, 1.0, 0.1, 0.01],
+    'log_reg__penalty' : ['none', 'l2']
 }
 
 CLF_HPARAMS = {
     "dummy" : None,
-    "log_reg": LOG_REG_HPARAM,
+    "log_reg": LOG_REG_HPARAMS,
     "svc" : None,
     "ran_for" : RAN_FOR_HPARAMS}
-
 
 NUM_USERS = 943
 NUM_ITEMS = 1682
 
+#Variales
 
 
 ### Data Loader functions ###
@@ -287,6 +287,11 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
     # configure the cross-validation procedure
     cv_outer = KFold(n_splits=K_OUTER, shuffle=True, random_state=1)
 
+    
+    #categories = set(y_r1)
+
+    #print('y_r1: ', y_r1)
+
     # enumerate splits
     outer_results = list()
 
@@ -300,13 +305,20 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         y_r1 = np.array(y_r1)
         y_r2 = np.array(y_r2)
         y_train, y_test = y_r1[train_ix], y_r2[test_ix]
+
+        #print("y_train: ", y_train)
+        #print("y_test: ", y_test)
+        #print("y_train shape: ", y_train.shape)
+        #print("y_test shape: ", y_test.shape)
         
 
         # configure the cross-validation procedure
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
 
+
         # define the model
-        model =  get_classifier(clf)
+        classifier =  get_classifier(clf)
+        pipe = Pipeline(steps=[('scaler', StandardScaler()), (clf, classifier)])
 
         # define search space
         space = CLF_HPARAMS[clf]
@@ -314,26 +326,31 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         #space['n_estimators'] = [10, 100, 500]
         #space['max_features'] = [2, 4, 6]
 
+        #print(" IS HERE 1")
         # define search
-        search = GridSearchCV(model, space, scoring='accuracy', cv=cv_inner, refit=True)
-
+        search = GridSearchCV(pipe, space, scoring='accuracy', cv=cv_inner, refit=True)
+        #print(" IS HERE 2")
         # execute search
         result = search.fit(X_train, y_train)
-
+        #print(" IS HERE 3")
         # get the best performing model fit on the whole training set
         best_model = result.best_estimator_
-
+        #print(" IS HERE 4")
         # evaluate model on the hold out dataset
+        #y_pred = best_model.predict(X_test)
         y_pred = best_model.predict(X_test)
+        #y_prob = best_model.predict_proba(X_test)
+        #print(" IS HERE 5")
 
         # evaluate the model
         acc = accuracy_score(y_test, y_pred)
+        #auc = get_roc_auc_score(y_test, y_prob)
 
         # store the result
         outer_results.append(acc)
 
         # report progress
-        print('>acc=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_), "\n")
+        print('>acc=%.3f,  est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_), "\n")
     
     # summarize the estimated performance of the model
     print('Accuracy: %.3f (%.3f)' % (np.mean(outer_results), np.std(outer_results)), "\n")
@@ -357,15 +374,27 @@ def evaluate_recommender(model, X_test):
 
 def get_roc_auc_score(y_test, y_score):
     #Create one-hot encoding
-    print("y_score shape: ", y_score.shape)
-    print("y_score: ", y_score)
-    y_test = pd.DataFrame(data=y_test)
-    n_classes = y_score.shape[1]
+    y_test = np.array(y_test)
+    y_test = y_test.reshape(-1, 1)
 
     enc = OneHotEncoder()
     y_test = enc.fit_transform(y_test).toarray()
     
+    print("y_score shape: ", y_score.shape)
+    #print("y_score: ", y_score)
     print("y_test shape: ", y_test.shape)
+    #print("y_test: ", y_test)
+
+    #y_test = pd.DataFrame(data=y_test)
+    #y_score = pd.DataFrame(data=y_score)
+
+    #enc = OneHotEncoder(categories=categories)
+    #y_test = enc.fit_transform(y_test).toarray()
+    #y_score = enc.fit_transform(y_score).toarray()
+    n_classes = y_test.shape[1]
+    
+    
+    
 
     # Compute ROC curve and ROC area for each class
     fpr = dict()
@@ -433,7 +462,7 @@ def get_classifier(clf_str):
     if clf_str == "dummy":
         classifier = DummyClassifier(strategy="most_frequent")
     elif clf_str == "log_reg":
-        classifier = LogisticRegression(max_iter=500)
+        classifier = LogisticRegression(max_iter=10000)
     elif clf_str == "svc":
         classifier = svm.SVC(probability=True)
     elif clf_str == "ran_for":

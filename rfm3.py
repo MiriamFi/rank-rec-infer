@@ -20,8 +20,8 @@ from sklearn import svm
 from sklearn.dummy import DummyClassifier
 
 # Sklearn metric imports
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_curve, auc, make_scorer
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 # Sklearn pipeline imports
 from sklearn.pipeline import make_pipeline, Pipeline
@@ -52,18 +52,18 @@ INFER_ATTR = {
         "gender" : True,
         "age" :  True,
         "occupation" : True,
-        "state" : True,
+        "state" : False,
         "county": False,
-        "city" : False,
+        "city" : True,
         }
 
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
         "occupation" : True,
-        "state" : True,
+        "state" : False,
         "county": False,
-        "city" : False
+        "city" : True
         }
 
 AGE_GROUPS = {
@@ -76,27 +76,46 @@ CLASSIFIERS = {
     "dummy" : False,
     "log_reg": False,
     "svc" : False,
-    "ran_for" : True
+    "ran_for" : False
 }
 
 RAN_FOR_HPARAMS = {
-        "ran_for__n_estimators" : [100, 500],
-        "ran_for__max_features" : [2, 6],
-        #'bootstrap': [True, False],
-        #'min_samples_leaf': [1, 2, 4],
-        #'min_samples_split': [2, 5, 10],
-        #'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+        "ran_for__n_estimators" : [100, 1000],
+        "ran_for__max_features" : [2,20],
+        #'ran_for__bootstrap': [True, False],
+        #'ran_for__min_samples_leaf': [1, 2, 4, 8],
+        #'ran_for__min_samples_split': [2, 10, 20],
+        #'ran_for__max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+}
+
+LOG_REG_HPARAMS = {
+    'log_reg__solver' : ['saga'],
+    'log_reg__C' : [ 0.1, 0.01, 0.001],
+    'log_reg__penalty' : [ 'elasticnet'],
+    'log_reg__l1_ratio' : [0.25, 0.5, 0.75],
+    'log_reg__max_iter' : [10000]
+}
+
+SVC_HPARAMS = {
+    'svc__kernels' : ['linear', 'poly', 'rbf', 'sigmoid'],
+    'svc__C' : [100, 10, 1.0, 0.1, 0.01],
+    'svc__probability' : [True]
+}
+
+DUMMY_HPARAMS = {
+    'dummy__strategy' : ['most_frequent']
 }
 
 CLF_HPARAMS = {
-    "dummy" : None,
-    "log_reg": None,
-    "svc" : None,
+    "dummy" : DUMMY_HPARAMS,
+    "log_reg": LOG_REG_HPARAMS,
+    "svc" : SVC_HPARAMS,
     "ran_for" : RAN_FOR_HPARAMS}
 
 NUM_USERS = 943
 NUM_ITEMS = 1682
 
+#Variales
 
 
 ### Data Loader functions ###
@@ -238,10 +257,11 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
 def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
     # Build and train FM model
-    rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
+    rankfm = RankFM(factors=20, loss='bpr')
+    #rankfm = RankFM(factors=15, loss='bpr', alpha=0.005, beta=0.1, sigma=0.1, learning_rate=0.1, learning_schedule='constant', learning_exponent=0.15)
     #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
     if use_features == True:
-        rankfm.fit(X_train, user_features=user_features, epochs=20, verbose=True)
+        rankfm.fit(X_train, user_features=user_features, epochs=20,  verbose=True)
     else:
         rankfm.fit(X_train, epochs=20, verbose=True)
     # Generate TopN Recommendations
@@ -276,9 +296,27 @@ def classify(classifier, X_train, X_test, y_train, y_test):
     #print("proba: ", results["y_prob"])
     return results
 
+
 def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
     # configure the cross-validation procedure
     cv_outer = KFold(n_splits=K_OUTER, shuffle=True, random_state=1)
+
+    y_r1 = np.array(y_r1)
+    #y_r1 = y_r1.reshape(-1, 1)
+    y_r2 = np.array(y_r2)
+    #y_r2 = y_r2.reshape(-1, 1)
+
+    #enc = OneHotEncoder()
+    #y_r1 = enc.fit_transform(y_r1).toarray()
+    #y_r2 = enc.fit_transform(y_r2).toarray()
+
+    #print("y_r1 shape: ", y_r1.shape)
+    #print("y_r2 shape: ", y_r2.shape)
+    #print("y_r1: ", y_r1)
+    #print("y_r2: ", y_r2)
+    #categories = set(y_r1)
+
+    #print('y_r1: ', y_r1)
 
     # enumerate splits
     outer_results = list()
@@ -290,13 +328,19 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         X_train = X_r1[X_r1.index.isin(train_ix_str)]
         X_test = X_r2[X_r2.index.isin(test_ix_str)]
 
-        y_r1 = np.array(y_r1)
-        y_r2 = np.array(y_r2)
+        #y_r1 = np.array(y_r1)
+        #y_r2 = np.array(y_r2)
         y_train, y_test = y_r1[train_ix], y_r2[test_ix]
+
+        #print("y_train: ", y_train)
+        #print("y_test: ", y_test)
+        #print("y_train shape: ", y_train.shape)
+        #print("y_test shape: ", y_test.shape)
         
 
         # configure the cross-validation procedure
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
+
 
         # define the model
         classifier =  get_classifier(clf)
@@ -308,26 +352,36 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
         #space['n_estimators'] = [10, 100, 500]
         #space['max_features'] = [2, 4, 6]
 
+        myscore = make_scorer(roc_auc_score, average='micro', multi_class='ovo',needs_proba=True)
+        #print(" IS HERE 1")
         # define search
-        search = GridSearchCV(pipe, space, scoring='accuracy', cv=cv_inner, refit=True)
-
+        search = GridSearchCV(pipe, space, scoring=myscore, cv=cv_inner, refit=True)
+        #print(" IS HERE 2")
         # execute search
         result = search.fit(X_train, y_train)
-
+        #print(" IS HERE 3")
         # get the best performing model fit on the whole training set
         best_model = result.best_estimator_
-
+        #print(" IS HERE 4")
         # evaluate model on the hold out dataset
+        #y_pred = best_model.predict(X_test)
         y_pred = best_model.predict(X_test)
+        y_prob = best_model.predict_proba(X_test)
+        #print(" IS HERE 5")
+
+        print("y_prob shape: ", y_prob.shape)
+        print("y_test shape: ", y_test.shape)
 
         # evaluate the model
         acc = accuracy_score(y_test, y_pred)
+        auc = roc_auc_score(y_test, y_prob, average='micro', multi_class='ovo')
+        #auc = get_roc_auc_score(y_test, y_prob)
 
         # store the result
         outer_results.append(acc)
 
         # report progress
-        print('>acc=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_), "\n")
+        print('>acc=%.3f, auc=%.3f,  est=%.3f, cfg=%s' % (acc, auc, result.best_score_, result.best_params_), "\n")
     
     # summarize the estimated performance of the model
     print('Accuracy: %.3f (%.3f)' % (np.mean(outer_results), np.std(outer_results)), "\n")
@@ -351,15 +405,29 @@ def evaluate_recommender(model, X_test):
 
 def get_roc_auc_score(y_test, y_score):
     #Create one-hot encoding
-    print("y_score shape: ", y_score.shape)
-    print("y_score: ", y_score)
-    y_test = pd.DataFrame(data=y_test)
-    n_classes = y_score.shape[1]
+    #y_test = np.array(y_test)
+    #y_test = y_test.reshape(-1, 1)
 
-    enc = OneHotEncoder()
-    y_test = enc.fit_transform(y_test).toarray()
+    print("y_score: ", y_score)
+    #enc = OneHotEncoder()
+    #y_test = enc.fit_transform(y_test).toarray()
+    y_score = np.array(y_score[0])
+    #y_score= y_score.reshape(-1, 1)
+    print("y_score: ", y_score)
+    #print("y_score: ", y_score)
+    print("y_test: ", y_test)
+    #print("y_test: ", y_test)
+
+    #y_test = pd.DataFrame(data=y_test)
+    #y_score = pd.DataFrame(data=y_score)
+
+    #enc = OneHotEncoder(categories=categories)
+    #y_test = enc.fit_transform(y_test).toarray()
+    #y_score = enc.fit_transform(y_score).toarray()
+    n_classes = y_test.shape[1]
     
-    print("y_test shape: ", y_test.shape)
+    
+    
 
     # Compute ROC curve and ROC area for each class
     fpr = dict()
@@ -425,11 +493,11 @@ def recs_to_matrix(recs):
 def get_classifier(clf_str):
     classifier = None
     if clf_str == "dummy":
-        classifier = DummyClassifier(strategy="most_frequent")
+        classifier = DummyClassifier()
     elif clf_str == "log_reg":
-        classifier = LogisticRegression(max_iter=500)
+        classifier = LogisticRegression()
     elif clf_str == "svc":
-        classifier = svm.SVC(probability=True)
+        classifier = svm.SVC()
     elif clf_str == "ran_for":
         classifier = RandomForestClassifier()
     return classifier
@@ -505,6 +573,9 @@ def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
                     csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                     csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
                 ind += 1
+
+def write_recommendations_to_csv(recommendations, filename):
+    recommendations.to_csv(path_or_buf=filename, index=False)
 
 def write_rec_scores_to_csv(all_results):
 
@@ -626,6 +697,7 @@ def main():
     #Write recommendation results to file
     write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
     write_rec_scores_to_csv(rec_scores)
+    
 
 
 
@@ -641,6 +713,9 @@ def main():
     rec_test = recs_to_matrix(recommendations_test)
     print("Rec train shape: ", rec_train.shape)
     print("Rec test shape: ", rec_test.shape)
+
+    write_recommendations_to_csv(rec_train, "green.csv")
+    write_recommendations_to_csv(rec_test, "blue.csv")
 
 
     for attr in INFER_ATTR.keys():

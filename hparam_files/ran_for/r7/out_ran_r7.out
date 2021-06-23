@@ -1,0 +1,228 @@
+Program starting... 
+
+User Info Loaded!
+Loaded user features from user_features/feat_g_a_o_s.csv
+User features shape:  (943, 79) 
+
+Recommender Round 1: 
+
+training epoch: 0
+log likelihood: -15448.919921875
+
+training epoch: 1
+log likelihood: -13247.0595703125
+
+training epoch: 2
+log likelihood: -12798.4697265625
+
+training epoch: 3
+log likelihood: -12286.0
+
+training epoch: 4
+log likelihood: -11960.509765625
+
+training epoch: 5
+log likelihood: -11191.9296875
+
+training epoch: 6
+log likelihood: -10421.4404296875
+
+training epoch: 7
+log likelihood: -9968.900390625
+
+training epoch: 8
+log likelihood: -9478.8203125
+
+training epoch: 9
+log likelihood: -9055.08984375
+
+training epoch: 10
+log likelihood: -8670.5400390625
+
+training epoch: 11
+log likelihood: -8530.330078125
+
+training epoch: 12
+log likelihood: -8285.58984375
+
+training epoch: 13
+log likelihood: -8012.4599609375
+
+training epoch: 14
+log likelihood: -7793.52978515625
+
+training epoch: 15
+log likelihood: -7774.75
+
+training epoch: 16
+log likelihood: -7591.52001953125
+
+training epoch: 17
+log likelihood: -7350.43994140625
+
+training epoch: 18
+log likelihood: -7306.6201171875
+
+training epoch: 19
+log likelihood: -7300.66015625
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.926006
+std          1.309337
+min         -3.603956
+25%          0.011644
+50%          1.016245
+75%          1.925433
+max          4.192093
+dtype: float64
+precision: 0.087
+recall: 0.262
+hit rate: 0.915
+Recommender Round 2: 
+
+training epoch: 0
+log likelihood: -26424.720703125
+
+training epoch: 1
+log likelihood: -23149.33984375
+
+training epoch: 2
+log likelihood: -21894.650390625
+
+training epoch: 3
+log likelihood: -20156.130859375
+
+training epoch: 4
+log likelihood: -18492.359375
+
+training epoch: 5
+log likelihood: -17267.01953125
+
+training epoch: 6
+log likelihood: -16473.2109375
+
+training epoch: 7
+log likelihood: -15967.6396484375
+
+training epoch: 8
+log likelihood: -15333.330078125
+
+training epoch: 9
+log likelihood: -15202.5
+
+training epoch: 10
+log likelihood: -14604.009765625
+
+training epoch: 11
+log likelihood: -14403.41015625
+
+training epoch: 12
+log likelihood: -13982.51953125
+
+training epoch: 13
+log likelihood: -13950.8798828125
+
+training epoch: 14
+log likelihood: -13577.73046875
+
+training epoch: 15
+log likelihood: -13407.0302734375
+
+training epoch: 16
+log likelihood: -13396.919921875
+
+training epoch: 17
+log likelihood: -13286.580078125
+
+training epoch: 18
+log likelihood: -13097.849609375
+
+training epoch: 19
+log likelihood: -12924.1396484375
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.890835
+std          1.339515
+min         -3.293258
+25%         -0.006282
+50%          0.975949
+75%          1.888505
+max          4.448972
+dtype: float64
+precision: 0.072
+recall: 0.215
+hit rate: 0.876
+Recommendations are not written to file for N higher than 20.
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+CV for  gender
+
+>acc=0.714,  est=0.712, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1000} 
+
+>acc=0.688,  est=0.718, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.693,  est=0.720, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.734,  est=0.713, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1500} 
+
+>acc=0.723,  est=0.719, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+Accuracy: 0.711 (0.018) 
+
+CV for  age
+
+>acc=0.534,  est=0.592, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+>acc=0.566,  est=0.594, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.619,  est=0.581, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+>acc=0.580,  est=0.580, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.590,  est=0.585, cfg={'ran_for__max_features': 5, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+Accuracy: 0.578 (0.028) 
+
+CV for  occupation
+
+>acc=0.222,  est=0.228, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1500} 
+
+>acc=0.185,  est=0.243, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 100} 
+
+>acc=0.212,  est=0.229, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 500} 
+
+>acc=0.239,  est=0.219, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 1000} 
+
+>acc=0.229,  est=0.227, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+Accuracy: 0.217 (0.018) 
+
+CV for  state
+>acc=0.164,  est=0.150, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.116,  est=0.160, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 1000} 
+
+>acc=0.180,  est=0.163, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 250} 
+
+>acc=0.165,  est=0.159, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 250} 
+
+>acc=0.154,  est=0.156, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 8, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+Accuracy: 0.156 (0.021) 
+
+CV for  city
+>acc=0.053,  est=0.046, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+>acc=0.053,  est=0.058, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 500} 
+
+>acc=0.063,  est=0.040, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+>acc=0.037,  est=0.045, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 100} 
+
+>acc=0.059,  est=0.056, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 8, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 250} 
+
+Accuracy: 0.053 (0.009) 
+
+Linux idun-02-04 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
