@@ -67,10 +67,10 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
-    "dummy": True,
-    "log_reg": True,
-    "svc": True,
-    "ran_for": True
+    "dummy": False,
+    "log_reg": False,
+    "svc": False,
+    "ran_for": False
 }
 
 RAN_FOR_HPARAMS = {
@@ -258,7 +258,7 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
 def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
     # Build and train FM model
-    rankfm = RankFM(factors=20, loss='bpr', learning_schedule='constant')
+    rankfm = RankFM(factors=15, loss='bpr', learning_schedule='constant')
     #rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1,learning_schedule='invscaling')
 
     if use_features == True:
