@@ -73,9 +73,9 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
-    "dummy": False,
-    "log_reg": False,
-    "svc": False,
+    "dummy": True,
+    "log_reg": True,
+    "svc": True,
     "ran_for": True
 }
 
@@ -89,18 +89,24 @@ RAN_FOR_HPARAMS = {
 }
 
 LOG_REG_HPARAMS = {
-    'log_reg__solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
-    'log_reg__C': [100, 10, 1.0, 0.1, 0.01],
-    'log_reg__penalty': ['l2']
+    'log_reg__solver': ['lbfgs'],
+    'log_reg__C': [100, 10],
+    'log_reg__penalty': ['l2'],
+    'log_reg__max_iter' : [1000]
 }
 
 SVC_HPARAMS = {
-    'svc__kernels': ['linear', 'poly', 'rbf', 'sigmoid'],
-    'svc__C': [100, 10, 1.0, 0.1, 0.01]
+    'svc__kernel': ['linear'],
+    'svc__C': [100, 10],
+    'svc__probability' : [True]
+}
+
+DUMMY_HPARAMS ={
+    'dummy__strategy' : ["most_frequent"]
 }
 
 CLF_HPARAMS = {
-    "dummy": None,
+    "dummy": DUMMY_HPARAMS,
     "log_reg": LOG_REG_HPARAMS,
     "svc": SVC_HPARAMS,
     "ran_for": RAN_FOR_HPARAMS}
@@ -513,11 +519,11 @@ def recs_to_matrix(recs):
 def get_classifier(clf_str):
     classifier = None
     if clf_str == "dummy":
-        classifier = DummyClassifier(strategy="most_frequent")
+        classifier = DummyClassifier()
     elif clf_str == "log_reg":
-        classifier = LogisticRegression(max_iter=10000)
+        classifier = LogisticRegression()
     elif clf_str == "svc":
-        classifier = svm.SVC(probability=True)
+        classifier = svm.SVC()
     elif clf_str == "ran_for":
         classifier = RandomForestClassifier()
     return classifier
@@ -752,7 +758,7 @@ def main():
 
             for clf in CLASSIFIERS.keys():
                 if CLASSIFIERS[clf] == True:
-                    print("CV for ", attr)
+                    print("CV with ", clf, " for ", attr)
                     result = {}
                     result['clf'] = clf
                     result['attr'] = attr
