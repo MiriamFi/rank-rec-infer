@@ -1,8 +1,8 @@
 # Imports
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from uszipcode import SearchEngine
-
 
 # Utility imports
 import copy
@@ -16,24 +16,19 @@ from rankfm.evaluation import precision, recall, hit_rate
 # Sklearn classifier imports
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import svm
+from sklearn import svm, preprocessing
 from sklearn.dummy import DummyClassifier
 
 # Sklearn metric imports
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_curve, auc, accuracy_score
 
 # Sklearn pipeline imports
-from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.pipeline import  Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import OneHotEncoder
 
 # Sklearn CV and hyperparameter tuning imports
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
-
-
 
 # Constants
 N = 50
@@ -41,104 +36,110 @@ N = 50
 K_OUTER = 5
 K_INNER = 3
 
-
 USZ_NAMES = {
-    "state" : "state",
+    "state": "state",
     "county": "county",
-    "city" : "major_city"
+    "city": "major_city"
 }
 
 INFER_ATTR = {
-        "gender" : True,
-        "age" :  True,
-        "occupation" : True,
-        "state" : False,
-        "county": False,
-        "city" : True,
-        }
+    "gender": True,
+    "age": True,
+    "occupation": True,
+    "state": True,
+    "county": False,
+    "city": False,
+}
 
 INCLUDE_FEATURES = {
-        "gender" : True,
-        "age" : True,
-        "occupation" : True,
-        "state" : False,
-        "county": False,
-        "city" : True
-        }
+    "gender": True,
+    "age": True,
+    "occupation": True,
+    "state": True,
+    "county": False,
+    "city": False
+}
 
 AGE_GROUPS = {
-    0 : [0,34],
-    1 : [35,45],
-    2 : [46,99]
+    0: [0, 34],
+    1: [35, 45],
+    2: [46, 99]
 }
 
 CLASSIFIERS = {
-    "dummy" : False,
+    "dummy": False,
     "log_reg": True,
-    "svc" : False,
-    "ran_for" : False
+    "svc": False,
+    "ran_for": False
 }
 
 RAN_FOR_HPARAMS = {
-        "n_estimators" : [100, 250, 500, 1000, 1500],
-        "max_features" : [2, 5, 10, 15, 20],
-        #'bootstrap': [True, False],
-        'min_samples_leaf': [1, 2, 4, 8],
-        'min_samples_split': [2, 10, 20],
-        #'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+    "ran_for__n_estimators": [100, 500],
+    "ran_for__max_features": [2, 6],
+    # 'bootstrap': [True, False],
+    # 'min_samples_leaf': [1, 2, 4],
+    # 'min_samples_split': [2, 5, 10],
+    # 'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
 }
 
 LOG_REG_HPARAMS = {
-    'log_reg__solver' : ['saga'],
-    'log_reg__C' : [ 0.1, 0.01, 0.001],
-    'log_reg__penalty' : [ 'elasticnet'],
-    'log_reg__l1_ratio' : [0.25, 0.5, 0.75],
-    'log_reg__max_iter' : [10000]
+    'log_reg__solver': ['saga'],
+    'log_reg__C':  [ 1.0, 0.1, 0.01],
+    'log_reg__penalty': ['elasticnet'],
+    'log_reg__max_iter' : [1000],
+    'log_reg__l1_ratio' : [0.5]
 }
 
 SVC_HPARAMS = {
-    'svc__kernels' : ['linear', 'poly', 'rbf', 'sigmoid'],
-    'svc__C' : [100, 10, 1.0, 0.1, 0.01],
+    'svc__kernel': ['linear'],
+    'svc__C': [100, 10],
     'svc__probability' : [True]
 }
 
-DUMMY_HPARAMS = {
-    'dummy__strategy' : ['most_frequent']
+DUMMY_HPARAMS ={
+    'dummy__strategy' : ["most_frequent"]
 }
 
 CLF_HPARAMS = {
-    "dummy" : DUMMY_HPARAMS,
+    "dummy": DUMMY_HPARAMS,
     "log_reg": LOG_REG_HPARAMS,
-    "svc" : SVC_HPARAMS,
-    "ran_for" : RAN_FOR_HPARAMS}
+    "svc": SVC_HPARAMS,
+    "ran_for": RAN_FOR_HPARAMS}
+
+CLF_PLOT_NAME = {
+    "dummy": 'MFC',
+    "log_reg": 'LGC',
+    "svc": 'SVC',
+    "ran_for": 'RFC'}
 
 NUM_USERS = 943
 NUM_ITEMS = 1682
 
-#Variales
+
+# Variales
 
 
 ### Data Loader functions ###
 
 # Load interaction data
 def load_interaction_data(filename="u.data", path="ml-100k/"):
-    data = [] # user id + movie id
-    with open(path+filename) as f:
+    data = []  # user id + movie id
+    with open(path + filename) as f:
         for line in f:
             (user, movieid, rating, ts) = line.split('\t')
-            data.append({ "user_id": int(user), "item_id": int(movieid), "ts": int(ts.strip())})
+            data.append({"user_id": int(user), "item_id": int(movieid), "ts": int(ts.strip())})
 
     # Prepare data
     data = pd.DataFrame(data=data)
-    #print(data.iloc[0])
+    # print(data.iloc[0])
     return data
 
 
 # load user data
 def load_user_data(filename="u.user", path="ml-100k/"):
     user_info = {}
-    #user_features = []
-    with open(path+filename, 'r') as fin:
+    # user_features = []
+    with open(path + filename, 'r') as fin:
         for line in fin.readlines():
             user_id, age, gender, occu, zipcode = line.split('|')
             user_info[int(user_id)] = {
@@ -149,10 +150,11 @@ def load_user_data(filename="u.user", path="ml-100k/"):
                 'county': str(zipcode).strip(),
                 'city': str(zipcode).strip()
             }
-            #user_features.append({"user_id": str(user_id)})  
+            # user_features.append({"user_id": str(user_id)})
         print('User Info Loaded!')
     return user_info
-    #return (user_info, user_features)
+    # return (user_info, user_features)
+
 
 # Load user features
 def load_user_features():
@@ -184,28 +186,28 @@ def load_user_features():
 def prepare_rec_splits(data, train_size=0.9, test_size=0.1):
     ranks = data.groupby('user_id')['ts'].rank(method='first')
     counts = data['user_id'].map(data.groupby('user_id')['ts'].apply(len))
-    thrs_train = (ranks/counts) <= train_size
+    thrs_train = (ranks / counts) <= train_size
     thres_train = pd.DataFrame(thrs_train, columns=["thrs_train"])
     data = data.join(thres_train)
     X_train = data[data['thrs_train'] == True]
-    #print("X_train: ", X_train)
-    X_train = X_train.drop(columns=['thrs_train','ts'], axis=1)
-    #print("X_train: ", X_train)
+    # print("X_train: ", X_train)
+    X_train = X_train.drop(columns=['thrs_train', 'ts'], axis=1)
+    # print("X_train: ", X_train)
     if train_size + test_size == 1.0:
         X_test = data[data['thrs_train'] == False]
-        #print("X_test: ", X_test)
-        X_test = X_test.drop(columns=['thrs_train','ts'], axis=1)
-        #print("X_test: ", X_test)
+        # print("X_test: ", X_test)
+        X_test = X_test.drop(columns=['thrs_train', 'ts'], axis=1)
+        # print("X_test: ", X_test)
     else:
-        thrs_test = (ranks/counts) <= (train_size + test_size)
+        thrs_test = (ranks / counts) <= (train_size + test_size)
         thres_test = pd.DataFrame(thrs_test, columns=["thrs_test"])
         data = data.join(thres_test)
         data["thrs"] = data["thrs_test"] > data["thrs_train"]
         X_test = data[data['thrs'] == True]
-        #print("X_test: ", X_test)
+        # print("X_test: ", X_test)
         X_test = X_test.drop(columns=['thrs', 'thrs_train', 'thrs_test', 'ts'], axis=1)
-        #print("X_test: ", X_test)
-  
+        # print("X_test: ", X_test)
+
     X_train = X_train.applymap(str)
     X_test = X_test.applymap(str)
     X_train = X_train.sort_values(by=['user_id'])
@@ -225,7 +227,7 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
     def is_in_age_group(age, age_cat):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
-    
+
     # Map zip code to state/city/county
     def map_location(zipcode, attr_type):
         search = SearchEngine(simple_zipcode=True)
@@ -257,8 +259,9 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
 def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
     # Build and train FM model
-    rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
-    #rankfm = RankFM(factors=20, loss='warp', max_samples=20, alpha=0.01, sigma=0.1, learning_rate=0.1, learning_schedule='invscaling')
+    rankfm = RankFM(factors=15, loss='bpr', learning_schedule='constant')
+    #rankfm = RankFM(factors=10, loss='bpr', max_samples=10, alpha=0.01, sigma=0.1, learning_rate=0.1,learning_schedule='invscaling')
+
     if use_features == True:
         rankfm.fit(X_train, user_features=user_features, epochs=20, verbose=True)
     else:
@@ -274,112 +277,75 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
     return rankfm, recommendations, scores
 
 
-
 ### Classification functions ###
 
-def classify(classifier, X_train, X_test, y_train, y_test):
-    # X is recommendaitons for each user (943, 10)
-    # z is true genders shape(943,1)
 
-    pipe = make_pipeline(StandardScaler(), classifier)
-    pipe.fit(X_train, y_train)
-    results = {}
-    results["y_true"] = y_test
-    
-    results["y_pred"] = pipe.predict(X_test)
-    results["y_prob"] = pipe.predict_proba(X_test)
-    results["score"] = pipe.score(X_test, y_test)
-    print("Score: ", results["score"], "\n")
-
-    #print("Y_test: ", y_test)
-    #print("proba: ", results["y_prob"])
-    return results
-
-
-def cross_validate(clf, X_r1, X_r2, y_r1, y_r2):
+def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     # configure the cross-validation procedure
     cv_outer = KFold(n_splits=K_OUTER, shuffle=True, random_state=1)
 
-    y_r1 = np.array(y_r1)
-    #y_r1 = y_r1.reshape(-1, 1)
-    y_r2 = np.array(y_r2)
-    #y_r2 = y_r2.reshape(-1, 1)
-
-    #enc = OneHotEncoder()
-    #y_r1 = enc.fit_transform(y_r1).toarray()
-    #y_r2 = enc.fit_transform(y_r2).toarray()
-
-    #print("y_r1 shape: ", y_r1.shape)
-    #print("y_r2 shape: ", y_r2.shape)
-    print("y_r1: ", y_r1)
-    print("y_r2: ", y_r2)
-    #categories = set(y_r1)
-
-    #print('y_r1: ', y_r1)
 
     # enumerate splits
     outer_results = list()
 
+
     for train_ix, test_ix in cv_outer.split(X_r1):
         # split data
-        train_ix_str  = [str(x+1) for x in train_ix]
-        test_ix_str  = [str(x+1) for x in test_ix]
+        train_ix_str = [str(x + 1) for x in train_ix]
+        test_ix_str = [str(x + 1) for x in test_ix]
         X_train = X_r1[X_r1.index.isin(train_ix_str)]
         X_test = X_r2[X_r2.index.isin(test_ix_str)]
 
-        #y_r1 = np.array(y_r1)
-        #y_r2 = np.array(y_r2)
+        y_r1 = np.array(y_r1)
+        y_r2 = np.array(y_r2)
         y_train, y_test = y_r1[train_ix], y_r2[test_ix]
 
-        #print("y_train: ", y_train)
-        #print("y_test: ", y_test)
-        #print("y_train shape: ", y_train.shape)
-        #print("y_test shape: ", y_test.shape)
-        
+        # Normalize the data
+        X_train = preprocessing.normalize(X_train, norm='l2')
+        X_test = preprocessing.normalize(X_test, norm='l2')
 
         # configure the cross-validation procedure
         cv_inner = KFold(n_splits=K_INNER, shuffle=True, random_state=1)
+        classifier = get_classifier(clf)
+        pipe = Pipeline(steps=[('scaler', StandardScaler()), (clf, classifier)]) # ('scaler', StandardScaler()) ('t', trans)
 
-
-        # define the model
-        classifier =  get_classifier(clf)
-        pipe = Pipeline(steps=[('scaler', StandardScaler()), (clf, classifier)])
-
-        # define search space
+        # define search space and search
         space = CLF_HPARAMS[clf]
-        #space = dict()
-        #space['n_estimators'] = [10, 100, 500]
-        #space['max_features'] = [2, 4, 6]
 
-        #print(" IS HERE 1")
-        # define search
         search = GridSearchCV(pipe, space, scoring='accuracy', cv=cv_inner, refit=True)
-        #print(" IS HERE 2")
+
         # execute search
         result = search.fit(X_train, y_train)
-        #print(" IS HERE 3")
+
         # get the best performing model fit on the whole training set
         best_model = result.best_estimator_
-        #print(" IS HERE 4")
+
         # evaluate model on the hold out dataset
-        #y_pred = best_model.predict(X_test)
         y_pred = best_model.predict(X_test)
-        y_prob = best_model.predict_proba(X_test)
-        #print(" IS HERE 5")
 
         # evaluate the model
         acc = accuracy_score(y_test, y_pred)
-        #auc = get_roc_auc_score(y_test, y_prob)
 
         # store the result
         outer_results.append(acc)
 
         # report progress
         print('>acc=%.3f,  est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_), "\n")
-    
+
     # summarize the estimated performance of the model
     print('Accuracy: %.3f (%.3f)' % (np.mean(outer_results), np.std(outer_results)), "\n")
 
+    y_predict = search.predict(X_test)
+
+    clf_accuracy = accuracy_score(y_test, y_predict)
+    print('accuracy: {:.3f}'.format(clf_accuracy))
+
+
+    y_prob = search.predict_proba(X_test)
+    auc_score = plot_roc_auc(y_test, y_prob, clf, attr)
+    print("auc: ", auc_score)
+
+    return (clf_accuracy, auc_score)
 
 
 ### Evaluation functions ###
@@ -397,47 +363,24 @@ def evaluate_recommender(model, X_test):
 
     return scores
 
-def get_roc_auc_score(y_test, y_score):
-    #Create one-hot encoding
-    #y_test = np.array(y_test)
-    #y_test = y_test.reshape(-1, 1)
 
-    print("y_score: ", y_score)
-    #enc = OneHotEncoder()
-    #y_test = enc.fit_transform(y_test).toarray()
-    y_score = np.array(y_score[0])
-    #y_score= y_score.reshape(-1, 1)
-    print("y_score: ", y_score)
-    #print("y_score: ", y_score)
-    print("y_test: ", y_test)
-    #print("y_test: ", y_test)
-
-    #y_test = pd.DataFrame(data=y_test)
-    #y_score = pd.DataFrame(data=y_score)
-
-    #enc = OneHotEncoder(categories=categories)
-    #y_test = enc.fit_transform(y_test).toarray()
-    #y_score = enc.fit_transform(y_score).toarray()
-    n_classes = y_test.shape[1]
-    
-    
-    
-
-    # Compute ROC curve and ROC area for each class
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
-
-    # Compute micro-average ROC curve and ROC area
-    fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
-    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-    print("roc_auc: ",roc_auc["micro"])
-    return roc_auc["micro"]
+def plot_roc_auc(y_test, y_prob, clf, attr):
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1], pos_label=1)
 
 
+    clf_name = CLF_PLOT_NAME[clf]
+    fig = plt.figure(figsize=(8, 4))
+    # plt.plot(fpr_LR, tpr_LR, linestyle='-', label='Log. Reg.')
+    plt.plot(fpr, tpr, linestyle='-.', lw=2, label=clf_name)
+    plt.legend()
+    auc_score = auc(x=fpr, y=tpr)
+    plt.title(clf_name + ' AUC: {:.3f}'.format( auc(x=fpr, y=tpr)), fontsize=14)
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    #plt.show()
+    filename = "output/plots/auc_"  + attr + "_" + clf
+    plt.savefig(filename)
+    return auc_score
 
 ### Utility functions ###
 
@@ -445,6 +388,7 @@ def get_roc_auc_score(y_test, y_score):
 def get_coldstart_units(train_units, test_units, unit_name="units"):
     cold_start_units = set(test_units) - set(train_units)
     return cold_start_units
+
 
 # Generates an output file name
 def get_output_filename(base, result):
@@ -461,27 +405,29 @@ def get_output_filename(base, result):
         filename += "_t"
     elif result["attr"] == "city":
         filename += "_c"
-            
+
     filename += ".csv"
     return filename
 
+
 # Turns recommendations into a matrix
 def recs_to_matrix(recs):
-    rec_matrix = [] 
+    rec_matrix = []
     rec_matrix = np.zeros((NUM_USERS, NUM_ITEMS), dtype=np.double)
     row_index = []
     column_index = []
     for i in range(NUM_USERS):
-        row_index.append(str(i+1))
+        row_index.append(str(i + 1))
     for j in range(NUM_ITEMS):
-        column_index.append(str(j+1))
-    
+        column_index.append(str(j + 1))
+
     for usr in range(recs.shape[0]):
         for rnk in range(recs.shape[1]):
             item = recs[rnk][usr]
             rec_matrix[int(usr)][int(item)] = 1.0
     rec_matrix = pd.DataFrame(data=rec_matrix, index=row_index, columns=column_index)
     return rec_matrix
+
 
 # Returns classifier object
 def get_classifier(clf_str):
@@ -496,10 +442,12 @@ def get_classifier(clf_str):
         classifier = RandomForestClassifier()
     return classifier
 
+
 # Adds user attributes to recommendations
 def add_attr_to_recs(recs, attr, attr_values):
     recs[attr] = attr_values
     return recs
+
 
 # Returns users and items for given set
 def get_users_items(x_train, x_test):
@@ -507,8 +455,7 @@ def get_users_items(x_train, x_test):
     test_users = np.sort(x_test.user_id.unique())
     train_items = np.sort(x_train.item_id.unique())
     test_items = np.sort(x_test.item_id.unique())
-    return(train_users, train_items, test_users, test_items)
-
+    return (train_users, train_items, test_users, test_items)
 
 
 ### Print functions ###
@@ -532,7 +479,7 @@ def print_user_item_stats(train_units, test_units, unit_name="units"):
     print("\n")
 
 
-#Evaluate X_train Matrix Sparsity
+# Evaluate X_train Matrix Sparsity
 def evaluate_matrix_sparsity(x_set, set_name=""):
     unique_users = x_set.user_id.nunique()
     unique_items = x_set.item_id.nunique()
@@ -541,11 +488,9 @@ def evaluate_matrix_sparsity(x_set, set_name=""):
     print("\n")
 
 
-
-
 ### Write to csv functions ###
 
-def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
+def write_double_rec_to_csv(rec_train, scores_train, rec_test, scores_test):
     conf_scores_train = rec_train.copy()
     conf_scores_test = rec_test.copy()
 
@@ -553,9 +498,9 @@ def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
         print("Recommendations are not written to file for N higher than 20.")
     else:
 
-        with open('recomended_items.csv','w', newline='') as csvfile:
+        with open('recomended_items.csv', 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(["User", "Item_tr",  "Item_te", "Rank", "Conf_score_tr",   "Conf_score_te"] )
+            csv_writer.writerow(["User", "Item_tr", "Item_te", "Rank", "Conf_score_tr", "Conf_score_te"])
 
         ind = 0
 
@@ -563,32 +508,32 @@ def write_double_rec_to_csv(rec_train, scores_train, rec_test,  scores_test):
             for rnk in range(rec_train.shape[1]):
                 conf_scores_train[rnk][usr] = scores_train[ind]
                 conf_scores_test[rnk][usr] = scores_test[ind]
-                with open('recomended_items.csv','a', newline='') as csvfile:
+                with open('recomended_items.csv', 'a', newline='') as csvfile:
                     csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    csv_writer.writerow([ usr, rec_train[rnk][usr],  rec_test[rnk][usr],  rnk+1, conf_scores_train[rnk][usr],  conf_scores_test[rnk][usr]] )
+                    csv_writer.writerow(
+                        [usr, rec_train[rnk][usr], rec_test[rnk][usr], rnk + 1, conf_scores_train[rnk][usr],
+                         conf_scores_test[rnk][usr]])
                 ind += 1
 
-def write_recommendations_to_csv(recommendations, filename):
-    recommendations.to_csv(path_or_buf=filename, index=False)
 
 def write_rec_scores_to_csv(all_results):
-
-    with open('rec_scores.csv','w', newline='') as csvfile:
+    with open('rec_scores.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile, delimiter='|', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["Nr\t",  "P@K\t\t\t",  "R@K\t\t\t",  "HR\t\t\t"] )
-
+        csv_writer.writerow(["Nr\t", "P@K\t\t\t", "R@K\t\t\t", "HR\t\t\t"])
 
     for round in all_results.keys():
         result = all_results[round]
-        with open('rec_scores.csv','a', newline='') as csvfile:
+        with open('rec_scores.csv', 'a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ round, result["p"],  result["r"],  result["hr"] ] )
+            csv_writer.writerow([round, result["p"], result["r"], result["hr"]])
 
-def write_clf_scores_to_csv(all_results):
 
-    with open('clf_scores.csv','w', newline='') as csvfile:
+def write_clf_scores_to_csv(all_results, metric):
+    filename = 'clf_' + metric + '_score.csv'
+    with open(filename, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(["Clf\t",  "Gender\t\t\t",  "Age\t\t\t",  "Job\t\t\t",  "State\t\t\t", "County\t\t\t", "City\t\t\t",] )
+        csv_writer.writerow(
+            ["Clf\t", "Gender\t\t\t", "Age\t\t\t", "Job\t\t\t", "State\t\t\t", "County\t\t\t", "City\t\t\t", ])
 
     output = {}
     for result in all_results:
@@ -598,33 +543,29 @@ def write_clf_scores_to_csv(all_results):
             for attr in INFER_ATTR.keys():
                 output[clf][attr] = "------------------"
         attr = result["attr"]
-        output[clf][attr] = result["roc_auc"]
+        output[clf][attr] = result[metric]
 
     for clf in output.keys():
-        with open('clf_scores.csv','a', newline='') as csvfile:
+        with open(filename, 'a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ clf, output[clf]["gender"],  output[clf]["age"],  output[clf]["occupation"],  output[clf]["state"], output[clf]["county"], output[clf]["city"] ] )
+            csv_writer.writerow(
+                [clf, output[clf]["gender"], output[clf]["age"], output[clf]["occupation"], output[clf]["state"],
+                 output[clf]["county"], output[clf]["city"]])
+
 
 def write_clf_preds_to_csv(result):
     # Make a separate file for each clf - attr pair
     base = "output/prediction_values/clf_pred"
     filename = get_output_filename(base, result)
-    #class_labels = ["c_" + x for x in range(len(result["y_prob"]))]
+    # class_labels = ["c_" + x for x in range(len(result["y_prob"]))]
 
-    with open(filename,'w', newline='') as csvfile:
+    with open(filename, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         csv_writer.writerow(["User", "y_true", "y_pred"])
     for i in range(len(result["users"])):
-        
-        with open(filename,'a', newline='') as csvfile:
+        with open(filename, 'a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([ result["users"][i], result["y_true"][i],  result["y_pred"][i] ] )
-
-
-
-
-
-
+            csv_writer.writerow([result["users"][i], result["y_true"][i], result["y_pred"][i]])
 
 
 def main():
@@ -634,14 +575,12 @@ def main():
 
     # Load user info
     user_info = load_user_data()
-    
 
     # Load user features
     user_features = load_user_features()
-    
 
     # Load interaction data and create training and test sets
-    interaction_data = load_interaction_data() 
+    interaction_data = load_interaction_data()
     users = np.sort(interaction_data.user_id.unique())
 
     # Create train and test sets
@@ -666,7 +605,7 @@ def main():
     print_matrix_dim(X_test2, "X_test2")
     evaluate_matrix_sparsity(X_test2, "X_test2")
 
-    
+
     # User and Item stats
     print("X train and test 1")
     print_user_item_stats(train_users1, test_users1, "users")
@@ -674,235 +613,73 @@ def main():
     print("X train and test 2")
     print_user_item_stats(train_users2, test_users2, "users")
     print_user_item_stats(train_items2, test_items2, "items")"""
-    
-    #print(user_features)
+
+    # print(user_features)
 
     # Generate recommendations_train
     rec_scores = {}
     print("Recommender Round 1: ")
-    rankfm1, recommendations_train, scores_train = generate_recommendations(X_train1, X_test1, user_features, train_users1, use_features=True)
+    rankfm1, recommendations_train, scores_train = generate_recommendations(X_train1, X_test1, user_features,
+                                                                            train_users1, use_features=True)
     rec_scores["round1"] = evaluate_recommender(rankfm1, X_test1)
 
     # Generate recommendations_test
     print("Recommender Round 2: ")
-    rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features, train_users2, use_features=True)
+    rankfm2, recommendations_test, scores_test = generate_recommendations(X_train2, X_test2, user_features,
+                                                                          train_users2, use_features=True)
     rec_scores["round2"] = evaluate_recommender(rankfm2, X_test2)
 
-    #Write recommendation results to file
+    # Write recommendation results to file
     write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
     write_rec_scores_to_csv(rec_scores)
-    
 
-
-
-    #Classifier
+    # Classifier
     # X = interaction_data + extra attributes
     # y = true value for attribute
 
     # Classification
     attributes_train = {}
     attributes_test = {}
-    
+
     rec_train = recs_to_matrix(recommendations_train)
     rec_test = recs_to_matrix(recommendations_test)
     print("Rec train shape: ", rec_train.shape)
     print("Rec test shape: ", rec_test.shape)
 
-    write_recommendations_to_csv(rec_train, "green.csv")
-    write_recommendations_to_csv(rec_test, "blue.csv")
-
+    results = []
 
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
-            #print(attributes_test[attr])
-    
+            # print(attributes_test[attr])
+            
+
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
             recs_train_ctx = copy.deepcopy(rec_train)
-            recs_test_ctx  = copy.deepcopy(rec_test)
-            
-            #print("recs before: ",  recs_train_ctx )
-            #print(attr, " attributes train len: ", len(attributes_train[attr]))
-            #print(attr, " attributes test len: ", len(attributes_test[attr]))
+            recs_test_ctx = copy.deepcopy(rec_test)
+
 
             for attr2 in INFER_ATTR.keys():
                 if INFER_ATTR[attr2] == True and attr != attr2:
                     recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
                     recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
-            
+
             for clf in CLASSIFIERS.keys():
                 if CLASSIFIERS[clf] == True:
-                    print("CV for ", attr)
-                    cross_validate( clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
-
-"""
-    # Classification
-    attributes_train = {}
-    attributes_test = {}
-    classifier = None
-    all_score_results = []
-    
-    rec_train = recs_to_matrix(recommendations_train)
-    rec_test = recs_to_matrix(recommendations_test)
-    print("Rec train shape: ", rec_train.shape)
-    print("Rec test shape: ", rec_test.shape)
+                    print('\n')
+                    print("CV with ", clf, " for ", attr)
+                    result = {}
+                    result['clf'] = clf
+                    result['attr'] = attr
+                    (result['acc'], result['auc']) = cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
+                    results.append(result)
+    #write_clf_scores_to_csv(results, 'acc')
+    #write_clf_scores_to_csv(results, 'auc')
 
 
-    for attr in INFER_ATTR.keys():
-        if INFER_ATTR[attr] == True:
-            # Prepare gender attributes for classification
-            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
-            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
-            #print(attributes_test[attr])
-    
-    for attr in INFER_ATTR.keys():
-        if INFER_ATTR[attr] == True:
-            recs_train_ctx = copy.deepcopy(rec_train)
-            recs_test_ctx  = copy.deepcopy(rec_test)
-            
-            #print("recs before: ",  recs_train_ctx )
-            #print(attr, " attributes train len: ", len(attributes_train[attr]))
-            #print(attr, " attributes test len: ", len(attributes_test[attr]))
-
-            for attr2 in INFER_ATTR.keys():
-                if INFER_ATTR[attr2] == True and attr != attr2:
-                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
-                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
-            
-
-
-            # Classify attribute
-            for clf in CLASSIFIERS.keys():
-                if CLASSIFIERS[clf] == True:
-                    
-                    print("## ", clf, " for ", attr, " ##")
-                    classifier = get_classifier(clf, attr)
-                    score_results = classify(classifier, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr])
-                    score_results ["attr"] = attr
-                    score_results ["clf"] = clf
-                    score_results["users"] = test_users2
-                    all_score_results.append(score_results)
-                    score_results["roc_auc"] = get_roc_auc_score(attributes_test[attr], score_results["y_prob"])
-                    write_clf_preds_to_csv(score_results)
-                    #write_clf_probs_to_csv(score_results)
-            
-    write_clf_scores_to_csv(all_score_results)
-
-
-"""
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-"""
-def prepare_attributes_for_recommender(user_info,  user_features):
-    attr_classes = {}
-    for attr_type in INFER_ATTR.keys():
-        if INFER_ATTR[attr_type] == True:
-            attr_classes[attr_type] = {}
-
-    def is_in_age_group(age, age_cat):
-        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
-    
-    # Map zip code to state/city/county
-    def map_location(zipcode, loc_type):
-        search = SearchEngine(simple_zipcode=True)
-        zip_code = search.by_zipcode(zipcode)
-        zip_code = zip_code.to_dict()
-        return zip_code[loc_type]
-
-    
-    for usr_id in range(len(user_info)):
-        for attr_type in INFER_ATTR.keys():
-            if INFER_ATTR[attr_type] == True:
-                attr_value = user_info[usr_id+1][attr_type]
-
-                if attr_type == "age":
-                    for age_cat in AGE_GROUPS.keys():
-                        if is_in_age_group(attr_value, age_cat):
-                            new_attr_value = age_cat
-                else:
-                    if attr_type == "location":
-                        attr_value = map_location(attr_value, LOC_TYPE)
-                    # Create dict of attribute labels
-                    if attr_value not in attr_classes[attr_type].keys():
-                        attr_classes[attr_type][attr_value] = len(attr_classes[attr_type])
-                    new_attr_value = attr_classes[attr_type][attr_value]
-
-                # Create array of attribute representations
-                user_features[usr_id][attr_type] = new_attr_value
-    for cls in attr_classes.keys():
-        print(attr_classes[cls])
-    user_features = pd.DataFrame(data=user_features)
-    return user_features
-
-def write_clf_probs_to_csv(result):
-    # Make a separate file for each clf - attr pair
-    
-    base = "output/prediction_probabilities/clf_prob"
-    filename = get_output_filename(base, result)
-    class_labels = []
-    attr = result["attr"]
-    for i in range(len(result["y_prob"][0])):
-        class_prob = attr + str(i)
-        class_labels.append("c_" + str(i))
-
-    with open(filename,'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(class_labels)
-
-    for i in range(len(result["users"])):
-        with open(filename,'a', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(result["y_prob"] )
-
-def tune_parameters(X_train, X_test, y_train,  y_test):
-    # Set the parameters by cross-validation
-    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]},
-                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
-
-    scores = ['precision', 'recall']
-
-    for score in scores:
-        print("# Tuning hyper-parameters for %s" % score)
-        print()
-
-        clf = GridSearchCV(
-            svm.SVC(), tuned_parameters, scoring='%s_macro' % score
-        )
-        clf.fit(X_train, y_train)
-
-        print("Best parameters set found on development set:")
-        print()
-        print(clf.best_params_)
-        print()
-        print("Grid scores on development set:")
-        print()
-        means = clf.cv_results_['mean_test_score']
-        stds = clf.cv_results_['std_test_score']
-        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-            print("%0.3f (+/-%0.03f) for %r"
-                % (mean, std * 2, params))
-        print()
-
-        print("Detailed classification report:")
-        print()
-        print("The model is trained on the full development set.")
-        print("The scores are computed on the full evaluation set.")
-        print()
-        y_true, y_pred = y_test, clf.predict(X_test)
-        print(classification_report(y_true, y_pred))
-        print()
-
-"""
-

@@ -4,8 +4,8 @@
 #SBATCH --time=48:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1 
-#SBATCH --job-name="ran_r1"
-#SBATCH --output=out_print.out
+#SBATCH --job-name="log_r21"
+#SBATCH --output=out_log_r21.out
 #SBATCH --mail-user=miriamfi@stud.ntnu.no
 #SBATCH --mail-type=ALL
  
@@ -28,6 +28,6 @@ module list
 cd ../rank-env
 source bin/activate
 cd ../RankRec
-python rfm3_print.py
+python rfm_log_r21.py
 deactivate
 uname -a

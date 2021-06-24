@@ -46,18 +46,18 @@ INFER_ATTR = {
     "gender": True,
     "age": True,
     "occupation": True,
-    "state": True,
+    "state": False,
     "county": False,
-    "city": False,
+    "city": True,
 }
 
 INCLUDE_FEATURES = {
     "gender": True,
     "age": True,
     "occupation": True,
-    "state": True,
+    "state": False,
     "county": False,
-    "city": False
+    "city": True
 }
 
 AGE_GROUPS = {
@@ -74,12 +74,12 @@ CLASSIFIERS = {
 }
 
 RAN_FOR_HPARAMS = {
-    "ran_for__n_estimators": [100, 500],
-    "ran_for__max_features": [2, 6],
-    # 'ran_for__bootstrap': [True, False],
-    # 'ran_for__min_samples_leaf': [1, 2, 4],
-    # 'ran_for__min_samples_split': [2, 5, 10],
-    # 'ran_for__max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+    "ran_for__n_estimators": [100, 250, 500, 1000, 1500],
+    "ran_for__max_features": [10, 15, 20],
+    # 'bootstrap': [True, False],
+    'min_samples_leaf': [1, 2, 4],
+    'min_samples_split': [2, 10, 15, 20]
+    # 'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
 }
 
 LOG_REG_HPARAMS = {

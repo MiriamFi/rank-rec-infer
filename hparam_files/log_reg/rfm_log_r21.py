@@ -68,24 +68,24 @@ AGE_GROUPS = {
 
 CLASSIFIERS = {
     "dummy": False,
-    "log_reg": False,
+    "log_reg": True,
     "svc": False,
-    "ran_for": True
+    "ran_for": False
 }
 
 RAN_FOR_HPARAMS = {
     "ran_for__n_estimators": [100, 500],
     "ran_for__max_features": [2, 6],
-    # 'ran_for__bootstrap': [True, False],
-    # 'ran_for__min_samples_leaf': [1, 2, 4],
-    # 'ran_for__min_samples_split': [2, 5, 10],
-    # 'ran_for__max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+    # 'bootstrap': [True, False],
+    # 'min_samples_leaf': [1, 2, 4],
+    # 'min_samples_split': [2, 5, 10],
+    # 'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
 }
 
 LOG_REG_HPARAMS = {
-    'log_reg__solver': ['lbfgs'],
-    'log_reg__C': [100, 10],
-    'log_reg__penalty': ['l2'],
+    'log_reg__solver': ['liblinear', 'saga'],
+    'log_reg__C': [100, 10, 1.0, 0.1, 0.01],
+    'log_reg__penalty':  ['none', 'l1', 'l2'],
     'log_reg__max_iter' : [1000]
 }
 
