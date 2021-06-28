@@ -9,7 +9,7 @@ STATE = "state"
 CITY = "major_city"
 COUNTY = "county"
 
-LOC_TYPE = COUNTY
+LOC_TYPE = STATE
 
 AGE_GROUPS = {
     "age_0": [0,34],
@@ -17,8 +17,8 @@ AGE_GROUPS = {
     "age_2": [46,99]
 }
 INCLUDE_FEATURES = {
-        "gender" : True,
-        "age" : True,
+        "gender" : False,
+        "age" : False,
         "occupation" : True,
         "location" : True
         }
@@ -33,7 +33,7 @@ added_features = {
 
 
 # load other user data -> age, gender ...
-def load_user_data(filename="u.user", path="ml-100k/"):
+def load_user_data(filename="u.user", path="data/ml-100k/"):
     user_info = {}
     user_features = []
     with open(path+filename, 'r') as fin:
@@ -161,7 +161,7 @@ def add_location_feature(user_info, user_features, loc_type):
 
 # Generate a name for the new user features file
 def get_new_file_name():
-    filename = "user_features/feat"
+    filename = "user_features/ml/feat"
     if added_features["gender"] == True:
         filename += "_g"
     if added_features["age"] == True:
