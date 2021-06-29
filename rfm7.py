@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from uszipcode import SearchEngine
+import collections
 
 # Utility imports
 import copy
@@ -52,18 +53,18 @@ INFER_ATTR = {
     "gender": True,
     "age": True,
     "occupation": True,
-    "state": True,
+    "state": False,
     "county": False,
-    "city": False,
+    "city": True,
 }
 
 INCLUDE_FEATURES = {
     "gender": True,
     "age": True,
     "occupation": True,
-    "state": True,
+    "state": False,
     "county": False,
-    "city": False
+    "city": True
 }
 
 AGE_GROUPS = {
@@ -74,9 +75,9 @@ AGE_GROUPS = {
 
 CLASSIFIERS = {
     "dummy": True,
-    "log_reg": True,
-    "svc": True,
-    "ran_for": True
+    "log_reg": False,
+    "svc": False,
+    "ran_for": False
 }
 
 RAN_FOR_HPARAMS = {
@@ -302,8 +303,8 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     outer_results_f1 = list()
     #outer_results_auc = list()
 
-    loo = LeaveOneOut()
-    loo.get_n_splits(X_r1)
+    #loo = LeaveOneOut()
+    #loo.get_n_splits(X_r1)
     for train_ix, test_ix in cv_outer.split(X_r1):
 
     #for train_ix, test_ix in cv_outer.split(X_r1):
@@ -716,6 +717,16 @@ def write_clf_preds_to_csv(result):
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             csv_writer.writerow([result["users"][i], result["y_true"][i], result["y_pred"][i]])
 
+def count_attr_samples(count_attr, limit, less_than):
+    num_of_target_samples = 0
+    for key in count_attr.keys():
+        if less_than==True:
+            if count_attr[key] <= limit:
+                num_of_target_samples += 1
+        else:
+            if count_attr[key] == limit:
+                num_of_target_samples += 1
+    return num_of_target_samples
 
 def main():
     print("Program starting... \n")
@@ -764,7 +775,7 @@ def main():
     print_user_item_stats(train_items2, test_items2, "items")"""
 
     # print(user_features)
-
+    
     # Generate recommendations_train
     rec_scores = {}
     print("Recommender Round 1: ")
@@ -781,7 +792,7 @@ def main():
     # Write recommendation results to file
     write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
     write_rec_scores_to_csv(rec_scores)
-
+    
     # Classifier
     # X = interaction_data + extra attributes
     # y = true value for attribute
@@ -802,8 +813,26 @@ def main():
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
-            print("Diff in users: ", get_coldstart_units(test_users1, test_users1, unit_name="users"))
+            #print("Diff in users: ", get_coldstart_units(test_users1, test_users1, unit_name="users"))
             # print(attributes_test[attr])
+
+            """
+            print(attr)
+            
+            all_attr = np.concatenate((attributes_train[attr], attributes_test[attr]), axis=0)
+            print(len(all_attr))
+            counter_attr = collections.Counter(attributes_train[attr] )
+            print("all_attr: ", counter_attr )
+            
+            print("all_attr unique: ", len(np.unique(all_attr)))
+            print("less than 2 samples: ", count_attr_samples(counter_attr, 1, False) )
+            print("2 samples: ", count_attr_samples(counter_attr, 2, False) )
+            print("5 samples or less: ", count_attr_samples(counter_attr, 5, True) )
+            #print("train_attr: ", collections.Counter(attributes_train[attr]))
+            print("train_attr unique: ", len(np.unique(attributes_train[attr])))
+            #print("test_attr: ", collections.Counter(attributes_test[attr]))
+            print("test_attr unique: ", len(np.unique(attributes_test[attr])))
+            print("\n\n")"""
             
 
     for attr in INFER_ATTR.keys():
