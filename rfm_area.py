@@ -37,6 +37,7 @@ from sklearn.metrics import plot_roc_curve
 from sklearn.preprocessing import label_binarize
 
 from sklearn.model_selection import LeaveOneOut
+from sklearn.preprocessing import label_binarize
 # Constants
 N = 50
 
@@ -49,22 +50,42 @@ USZ_NAMES = {
     "city": "major_city"
 }
 
+STATE_AREA = {
+    'west' : ['WA', 'OR', 'ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'CA', 'AK', 'HI'],
+    'midwest' : ['ND', 'SD', 'NE', 'KS', 'MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH'],
+    'southwest' : ['AZ', 'NM', 'OK', 'TX'],
+    'northwest' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
+    'souheast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
+    'none' : None
+}
+
+AREA_CAT = {
+    'west' : 0,
+    'midwest' : 1,
+    'southwest' : 2,
+    'northwest' : 3,
+    'souheast' : 4,
+    'none' : 5
+}
+
 INFER_ATTR = {
     "gender": True,
     "age": True,
-    "occupation": True,
-    "state": True,
+    "occupation": False,
+    "state": False,
     "county": False,
     "city": False,
+    'area' : True
 }
 
 INCLUDE_FEATURES = {
     "gender": True,
     "age": True,
-    "occupation": True,
-    "state": True,
+    "occupation": False,
+    "state": False,
     "county": False,
-    "city": False
+    "city": False,
+    'area' : True
 }
 
 AGE_GROUPS = {
@@ -75,9 +96,9 @@ AGE_GROUPS = {
 
 CLASSIFIERS = {
     "dummy": True,
-    "log_reg": False,
-    "svc": False,
-    "ran_for": False
+    "log_reg": True,
+    "svc": True,
+    "ran_for": True
 }
 
 RAN_FOR_HPARAMS = {
@@ -154,7 +175,8 @@ def load_user_data(filename="u.user", path="data/ml-100k/"):
                 'occupation': occu,
                 'state': str(zipcode).strip(),
                 'county': str(zipcode).strip(),
-                'city': str(zipcode).strip()
+                'city': str(zipcode).strip(),
+                'area' : str(zipcode).strip()
             }
             # user_features.append({"user_id": str(user_id)})
         print('User Info Loaded!')
@@ -165,7 +187,7 @@ def load_user_data(filename="u.user", path="data/ml-100k/"):
 # Load user features
 def load_user_features():
     # Gets filename for user features
-    filename = "user_features/ml/feat"
+    filename = "user_features/ml_new/feat"
     if INCLUDE_FEATURES["gender"] == True:
         filename += "_g"
     if INCLUDE_FEATURES["age"] == True:
@@ -178,6 +200,8 @@ def load_user_features():
         filename += "_c"
     elif INCLUDE_FEATURES["county"] == True:
         filename += "_t"
+    elif INCLUDE_FEATURES["area"] == True:
+        filename += "_r"
     filename += ".csv"
 
     usr_feat = pd.read_csv(filename)
@@ -234,12 +258,21 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
     def is_in_age_group(age, age_cat):
         return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
 
-    # Map zip code to state/city/county
-    def map_location(zipcode, attr_type):
+    
+    # Map zip code to state
+    def map_location(zipcode):
         search = SearchEngine(simple_zipcode=True)
         zip_code = search.by_zipcode(zipcode)
         zip_code = zip_code.to_dict()
-        return zip_code[USZ_NAMES[attr_type]]
+        area = map_state_to_area(zip_code['state'])
+        return area
+    
+    def map_state_to_area(state):
+        for key in STATE_AREA.keys():
+            if state == None:
+                return 'none'
+            elif state in STATE_AREA[key]:
+                return key
 
     for usr_id in new_user_info.keys():
         attr_value = new_user_info[usr_id][attr_type]
@@ -248,9 +281,10 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
             for age_cat in AGE_GROUPS.keys():
                 if is_in_age_group(attr_value, age_cat):
                     new_attr_value = age_cat
+        elif attr_type == "area":
+                attr_value = map_location(attr_value)
+                new_attr_value = AREA_CAT[attr_value]
         else:
-            if attr_type == "state" or attr_type == "county" or attr_type == "city":
-                attr_value = map_location(attr_value, attr_type)
             # Create dict of attribute labels
             if attr_value not in attr_classes.keys():
                 attr_classes[attr_value] = len(attr_classes)
@@ -258,7 +292,6 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
         # Create array of attribute representations
         attributes.append(new_attr_value)
-    print("Attribute classes: ", attr_classes)
     return attributes
 
 
@@ -289,9 +322,9 @@ def generate_recommendations(X_train, X_test, user_features, users, use_features
 
 def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     # configure the cross-validation procedure
-    #classes = y_r1 + y_r2
+    classes = y_r1 + y_r2
     #print("len classes: ", len(classes))
-    #classes = np.unique(classes)
+    classes = np.unique(classes)
     #print("y_r1: ", y_r1)
     #print("len classes: ", len(classes))
     #print("classes: ", classes)
@@ -302,7 +335,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     # enumerate splits
     outer_results_acc = list()
     outer_results_f1 = list()
-    #outer_results_auc = list()
+    outer_results_auc = list()
 
     #loo = LeaveOneOut()
     #loo.get_n_splits(X_r1)
@@ -374,6 +407,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
         clf_classes = best_model[clf].classes_
         #print("classes: ", clf_classes)
         y_prob = search.predict_proba(X_test)
+        auc_score = plot_roc_auc(y_test, y_prob, clf, attr, classes)
         #auc_score = get_roc_auc( y_test, y_prob)
         #auc_score = plot_roc_auc(y_test, y_prob, clf, attr)
         #print("auc: ", auc_score)
@@ -381,10 +415,11 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
         # store the result
         outer_results_acc.append(acc)
         outer_results_f1.append(f1)
+        outer_results_auc.append(auc_score)
         #outer_results_auc.append(auc_score)
 
         # report progress
-        print('>acc=%.3f, f1=%.3f, est=%.3f, cfg=%s' % (acc, f1, result.best_score_, result.best_params_), "\n")
+        print('>acc=%.3f, f1=%.3f, auc=%.3f, est=%.3f, cfg=%s' % (acc, f1, auc_score, result.best_score_, result.best_params_), "\n")
 
     # summarize the estimated performance of the model
     mean_acc = np.mean(outer_results_acc)
@@ -393,9 +428,9 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     mean_f1 = np.mean(outer_results_f1)
     std_f1 = np.std(outer_results_f1)
     print('F1: %.3f (%.3f)' % (mean_f1, std_f1), "\n")
-    #mean_auc = np.mean(outer_results_auc)
-    #std_auc = np.std(outer_results_auc)
-    #print('AUC: %.3f (%.3f)' % (mean_auc, std_auc), "\n")
+    mean_auc = np.mean(outer_results_auc)
+    std_auc = np.std(outer_results_auc)
+    print('AUC: %.3f (%.3f)' % (mean_auc, std_auc), "\n")
 
 
 
@@ -413,7 +448,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     #auc_score = plot_roc_auc(y_test, y_prob, clf, attr)
     #print("auc: ", auc_score)
 
-    return (mean_acc, mean_f1)
+    return (mean_acc, mean_f1, mean_auc)
 
 
 ### Evaluation functions ###
@@ -431,8 +466,30 @@ def evaluate_recommender(model, X_test):
 
     return scores
 
+def plot_roc_auc(y_test, y_prob, clf, attr, classes):
+    
 
+    y_test = np.array(y_test)
+    y_test = label_binarize(y_test, classes=classes)
 
+    if len(classes) == 2:
+        fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1], pos_label=1)
+    else: 
+        fpr, tpr, thresholds = roc_curve(y_test[:, 1], y_prob[:, 1], pos_label=1)
+
+    clf_name = CLF_PLOT_NAME[clf]
+    fig = plt.figure(figsize=(8, 4))
+    # plt.plot(fpr_LR, tpr_LR, linestyle='-', label='Log. Reg.')
+    plt.plot(fpr, tpr, linestyle='-.', lw=2, label=clf_name)
+    plt.legend()
+    auc_score = auc(x=fpr, y=tpr)
+    plt.title(clf_name + ' AUC: {:.3f}'.format( auc(x=fpr, y=tpr)), fontsize=14)
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    #plt.show()
+    filename = "output_ex1_co/plots/auc_"  + attr + "_" + clf
+    plt.savefig(filename)
+    return auc_score
  
 """
 
@@ -817,7 +874,7 @@ def main():
             #print("Diff in users: ", get_coldstart_units(test_users1, test_users1, unit_name="users"))
             # print(attributes_test[attr])
 
-            
+
             print(attr)
             
             all_attr = np.concatenate((attributes_train[attr], attributes_test[attr]), axis=0)
@@ -854,10 +911,11 @@ def main():
                     result = {}
                     result['clf'] = clf
                     result['attr'] = attr
-                    (result['acc'], result['f1']) = cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
+                    (result['acc'], result['f1'], result['auc']) = cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
                     results.append(result)
     write_clf_scores_to_csv(results, 'acc')
     write_clf_scores_to_csv(results, 'f1')
+    write_clf_scores_to_csv(results, 'auc')
 
 
 

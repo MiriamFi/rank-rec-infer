@@ -17,13 +17,20 @@ AGE_GROUPS = {
     "age_2": [46,99]
 }
 INCLUDE_FEATURES = {
-        "gender" : False,
-        "age" : False,
-        "occupation" : True,
+        "gender" : True,
+        "age" : True,
+        "occupation" : False,
         "location" : True
         }
 
-
+STATE_AREA = {
+    'west' : ['WA', 'OR', 'ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'CA', 'AK', 'HI'],
+    'midwest' : ['ND', 'SD', 'NE', 'KS', 'MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH'],
+    'southwest' : ['AZ', 'NM', 'OK', 'TX'],
+    'northwest' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
+    'souheast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
+    'none' : None
+}
 
 # Variables
 added_features = {
@@ -114,47 +121,37 @@ def add_occupation_feature(user_info, user_features):
     return user_features
 
 # Add location to user features
-def add_location_feature(user_info, user_features, loc_type):
+def add_location_feature(user_info, user_features):
     
     if added_features["location"] == True:
         return
     
     # Map zip code to state/city
-    def map_location(zipcode, loc_type):
+    def map_location(zipcode):
         search = SearchEngine(simple_zipcode=True)
         zip_code = search.by_zipcode(zipcode)
         zip_code = zip_code.to_dict()
-        return zip_code[loc_type]
+        area = map_state_to_area(zip_code['state'])
+        return area
     
+    def map_state_to_area(state):
+        for key in STATE_AREA.keys():
+            if state == None:
+                return 'none'
+            elif state in STATE_AREA[key]:
+                return key
+        return None
 
-    # Generate location dict
-    locations = {}
-
-    for u_id in range(len(user_info)):
-        zipcode = user_info[u_id]["zipcode"].strip()
-        user_loc = map_location(zipcode, loc_type)
-        #if user_loc == None:
-        #    print("zip: ", zipcode, ", loc:", user_loc)
-        if user_loc not in locations.keys():
-            if loc_type == STATE:
-                locations[user_loc] = "state_" + str(len(locations))
-            elif loc_type == CITY:
-                locations[user_loc] = "city_" + str(len(locations))
-            elif loc_type == COUNTY:
-                locations[user_loc] = "county_" + str(len(locations))
-    #print("locations: ", locations)
-
+    
     # Generate user features
     for u_id in range(len(user_info)):
-        for loc_key in locations.keys():
-            label = locations[loc_key]
-            user_features[u_id][label] = 0
+        for loc_key in STATE_AREA.keys():
+            user_features[u_id][loc_key] = 0
         
         zip_code = user_info[u_id]["zipcode"].strip()
-        location = map_location(zip_code, loc_type)
+        location = map_location(zip_code)
 
-        label = locations[location]
-        user_features[u_id][label] = 1
+        user_features[u_id][location] = 1
     
     added_features["location"] = True
     print("Location feature was added")
@@ -164,7 +161,7 @@ def add_location_feature(user_info, user_features, loc_type):
 
 # Generate a name for the new user features file
 def get_new_file_name():
-    filename = "user_features/ml/feat"
+    filename = "user_features/ml_new/feat"
     if added_features["gender"] == True:
         filename += "_g"
     if added_features["age"] == True:
@@ -172,12 +169,7 @@ def get_new_file_name():
     if added_features["occupation"] == True:
         filename += "_o"
     if added_features["location"] == True:
-        if LOC_TYPE == STATE:
-            filename += "_s"
-        if LOC_TYPE == CITY:
-            filename += "_c"
-        if LOC_TYPE == COUNTY:
-            filename += "_t"
+        filename += "_r"
     filename += ".csv"
     return filename
 
@@ -199,7 +191,7 @@ def main():
         user_features = add_occupation_feature(user_info, user_features)
 
     if INCLUDE_FEATURES["location"] == True:
-        user_features = add_location_feature(user_info, user_features, LOC_TYPE)
+        user_features = add_location_feature(user_info, user_features)
     
     
     print("user_features[0]:", user_features[0])
