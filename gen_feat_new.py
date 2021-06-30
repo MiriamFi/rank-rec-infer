@@ -8,8 +8,11 @@ OCC_NUM = 21
 STATE = "state"
 CITY = "major_city"
 COUNTY = "county"
+AREA_5 = "area_5"
+AREA_2 = "area_2"
 
-LOC_TYPE = STATE
+
+LOC_TYPE = AREA_5
 
 AGE_GROUPS = {
     "age_0": [0,34],
@@ -19,18 +22,49 @@ AGE_GROUPS = {
 INCLUDE_FEATURES = {
         "gender" : True,
         "age" : True,
-        "occupation" : False,
+        "occupation" : True,
         "location" : True
         }
 
-STATE_AREA = {
+STATE_AREA_5 = {
     'west' : ['WA', 'OR', 'ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'CA', 'AK', 'HI'],
     'midwest' : ['ND', 'SD', 'NE', 'KS', 'MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH'],
     'southwest' : ['AZ', 'NM', 'OK', 'TX'],
-    'northwest' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
-    'souheast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
+    'northeast' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
+    'southeast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
     'none' : None
 }
+
+STATE_AREA_2 = {
+    'west' : ['ND', 'SD', 'NE', 'KS', 'WA', 'OR', 'ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'CA', 'AK', 'HI', 'AZ', 'NM', 'OK', 'TX'],
+    'east' : ['MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH', 'NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT', 'AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
+    'none' : None
+}
+
+OCCUPATIONS = {
+    'technician': 'technician/engineer',
+    'lawyer': 'lawyer',
+    'executive': 'executive',
+    'student': 'student',
+    'programmer': 'programmer',
+    'engineer': 'technician/engineer',
+    'retired': 'homemaker/retired',
+    'scientist': 'scientist',
+    'educator': 'educator',
+    'other': 'other/none',
+    'salesman': 'salesman/marketing',
+    'healthcare': 'healthcare/doctor',
+    'administrator': 'administrator',
+    'librarian': 'librarian',
+    'writer': 'writer',
+    'artist': 'artist',
+    'none': 'other/none',
+    'marketing': 'salesman/marketing',
+    'doctor': 'healthcare/doctor',
+    'entertainment': 'entertainment',
+    'homemaker': 'homemaker/retired'
+    }
+
 
 # Variables
 added_features = {
@@ -99,6 +133,9 @@ def add_occupation_feature(user_info, user_features):
     occupations = {}
     for u_id in range(len(user_info)):
         occ = user_info[u_id]["occupation"]
+        occ = OCCUPATIONS[occ]
+        #if occ == 'none':
+            #occ = 'other'
 
         if occ not in occupations.keys():
             occupations[occ] = "occupation_" + str(len(occupations))
@@ -112,6 +149,9 @@ def add_occupation_feature(user_info, user_features):
             user_features[u_id][occ_label] = 0
         
         user_occ = user_info[u_id]["occupation"]
+        #if user_occ == 'none':
+            #user_occ = 'other'
+        user_occ = OCCUPATIONS[occ]
 
         occ_label = occupations[user_occ]
         user_features[u_id][occ_label] = 1
@@ -122,6 +162,7 @@ def add_occupation_feature(user_info, user_features):
 
 # Add location to user features
 def add_location_feature(user_info, user_features):
+    state_area = STATE_AREA_5 if LOC_TYPE== AREA_5 else STATE_AREA_2
     
     if added_features["location"] == True:
         return
@@ -135,17 +176,17 @@ def add_location_feature(user_info, user_features):
         return area
     
     def map_state_to_area(state):
-        for key in STATE_AREA.keys():
+        for key in state_area.keys():
             if state == None:
                 return 'none'
-            elif state in STATE_AREA[key]:
+            elif state in state_area[key]:
                 return key
         return None
 
     
     # Generate user features
     for u_id in range(len(user_info)):
-        for loc_key in STATE_AREA.keys():
+        for loc_key in state_area.keys():
             user_features[u_id][loc_key] = 0
         
         zip_code = user_info[u_id]["zipcode"].strip()
@@ -169,7 +210,11 @@ def get_new_file_name():
     if added_features["occupation"] == True:
         filename += "_o"
     if added_features["location"] == True:
-        filename += "_r"
+        if LOC_TYPE == AREA_5:
+            filename += "_r5"
+        if LOC_TYPE == AREA_2:
+            filename += "_r2"
+        
     filename += ".csv"
     return filename
 

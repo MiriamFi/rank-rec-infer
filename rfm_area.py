@@ -44,49 +44,90 @@ N = 50
 K_OUTER = 5
 K_INNER = 3
 
+INFER_ATTR = {
+    "gender": True,
+    "age": True,
+    "occupation": True,
+    "state": False,
+    "county": False,
+    "city": False,
+    'area_5' : False,
+    'area_2' : True
+}
+
+INCLUDE_FEATURES = {
+    "gender": True,
+    "age": True,
+    "occupation": True,
+    "state": False,
+    "county": False,
+    "city": False,
+    'area_5' : False,
+    'area_2' : True
+}
+
+
+
 USZ_NAMES = {
     "state": "state",
     "county": "county",
     "city": "major_city"
 }
 
-STATE_AREA = {
+STATE_AREA_5 = {
     'west' : ['WA', 'OR', 'ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'CA', 'AK', 'HI'],
     'midwest' : ['ND', 'SD', 'NE', 'KS', 'MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH'],
     'southwest' : ['AZ', 'NM', 'OK', 'TX'],
-    'northwest' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
-    'souheast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
+    'northeast' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
+    'southeast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
     'none' : None
 }
 
-AREA_CAT = {
+STATE_AREA_2 = {
+    'west' : ['ND', 'SD', 'NE', 'KS', 'WA', 'OR', 'ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'CA', 'AK', 'HI', 'AZ', 'NM', 'OK', 'TX'],
+    'east' : ['MN', 'IA', 'MO', 'WI', 'IL', 'IN', 'MI', 'OH', 'NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT', 'AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
+    'none' : None
+}
+
+AREA_CAT_5 = {
     'west' : 0,
     'midwest' : 1,
     'southwest' : 2,
-    'northwest' : 3,
-    'souheast' : 4,
+    'northeast' : 3,
+    'southeast' : 4,
     'none' : 5
 }
 
-INFER_ATTR = {
-    "gender": True,
-    "age": True,
-    "occupation": False,
-    "state": False,
-    "county": False,
-    "city": False,
-    'area' : True
+AREA_CAT_2 = {
+    'west' : 0,
+    'east': 1,
+    'none' : 2
 }
 
-INCLUDE_FEATURES = {
-    "gender": True,
-    "age": True,
-    "occupation": False,
-    "state": False,
-    "county": False,
-    "city": False,
-    'area' : True
-}
+OCCUPATIONS = {
+    'technician': 'technician/engineer',
+    'lawyer': 'lawyer',
+    'executive': 'executive',
+    'student': 'student',
+    'programmer': 'programmer',
+    'engineer': 'technician/engineer',
+    'retired': 'homemaker/retired',
+    'scientist': 'scientist',
+    'educator': 'educator',
+    'other': 'other/none',
+    'salesman': 'salesman/marketing',
+    'healthcare': 'healthcare/doctor',
+    'administrator': 'administrator',
+    'librarian': 'librarian',
+    'writer': 'writer',
+    'artist': 'artist',
+    'none': 'other/none',
+    'marketing': 'salesman/marketing',
+    'doctor': 'healthcare/doctor',
+    'entertainment': 'entertainment',
+    'homemaker': 'homemaker/retired'
+    }
+
 
 AGE_GROUPS = {
     0: [0, 34],
@@ -176,7 +217,8 @@ def load_user_data(filename="u.user", path="data/ml-100k/"):
                 'state': str(zipcode).strip(),
                 'county': str(zipcode).strip(),
                 'city': str(zipcode).strip(),
-                'area' : str(zipcode).strip()
+                'area_5' : str(zipcode).strip(),
+                'area_2' : str(zipcode).strip()
             }
             # user_features.append({"user_id": str(user_id)})
         print('User Info Loaded!')
@@ -200,8 +242,10 @@ def load_user_features():
         filename += "_c"
     elif INCLUDE_FEATURES["county"] == True:
         filename += "_t"
-    elif INCLUDE_FEATURES["area"] == True:
-        filename += "_r"
+    elif INCLUDE_FEATURES["area_5"] == True:
+        filename += "_r5"
+    elif INCLUDE_FEATURES["area_2"] == True:
+        filename += "_r2"
     filename += ".csv"
 
     usr_feat = pd.read_csv(filename)
@@ -250,6 +294,7 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
     attributes = []
     new_user_info = {}
 
+
     for i in range(len(users)):
         for key in user_info.keys():
             if int(users[i]) == key:
@@ -260,19 +305,27 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
     
     # Map zip code to state
-    def map_location(zipcode):
+    def map_location(zipcode, attr_type):
         search = SearchEngine(simple_zipcode=True)
         zip_code = search.by_zipcode(zipcode)
         zip_code = zip_code.to_dict()
-        area = map_state_to_area(zip_code['state'])
+        area = map_state_to_area(zip_code['state'], attr_type)
         return area
     
-    def map_state_to_area(state):
-        for key in STATE_AREA.keys():
-            if state == None:
-                return 'none'
-            elif state in STATE_AREA[key]:
-                return key
+    def map_state_to_area(state, attr_type):
+        if attr_type == 'area_5':
+            for key in STATE_AREA_5.keys():
+                if state == None:
+                    return 'none'
+                elif state in STATE_AREA_5[key]:
+                    return key
+        elif attr_type == 'area_2':
+            for key in STATE_AREA_2.keys():
+                if state == None:
+                    return 'none'
+                elif state in STATE_AREA_2[key]:
+                    return key
+            
 
     for usr_id in new_user_info.keys():
         attr_value = new_user_info[usr_id][attr_type]
@@ -281,10 +334,15 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
             for age_cat in AGE_GROUPS.keys():
                 if is_in_age_group(attr_value, age_cat):
                     new_attr_value = age_cat
-        elif attr_type == "area":
-                attr_value = map_location(attr_value)
-                new_attr_value = AREA_CAT[attr_value]
+        elif attr_type == "area_5":
+                attr_value = map_location(attr_value, attr_type)
+                new_attr_value = AREA_CAT_5[attr_value]
+        elif attr_type == "area_2":
+                attr_value = map_location(attr_value, attr_type)
+                new_attr_value = AREA_CAT_2[attr_value]
         else:
+            if attr_type == 'occupation':
+                attr_value = OCCUPATIONS[attr_value]
             # Create dict of attribute labels
             if attr_value not in attr_classes.keys():
                 attr_classes[attr_value] = len(attr_classes)
@@ -292,6 +350,7 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
 
         # Create array of attribute representations
         attributes.append(new_attr_value)
+    print("atr_classes: ", attr_classes)
     return attributes
 
 
@@ -364,6 +423,7 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
         print("y_test unique len: ", len(np.unique(y_test)))
         #print("y all unique: ", np.unique(np.concatenate((y_train, y_test), axis=0)))
         #print("y all unique len: ", len(np.unique(np.concatenate((y_train, y_test), axis=0))))
+        print(set(y_train) - set(y_test))
 
         # Normalize the data
         X_train = preprocessing.normalize(X_train, norm='l2')
@@ -433,21 +493,6 @@ def cross_validate(clf, X_r1, X_r2, y_r1, y_r2, attr):
     print('AUC: %.3f (%.3f)' % (mean_auc, std_auc), "\n")
 
 
-
-    #y_predict = search.predict(X_test)
-
-    #clf_accuracy = accuracy_score(y_test, y_predict)
-    #print('accuracy: {:.3f}'.format(clf_accuracy))
-
-    #print(confusion_matrix(y_test, y_pred))
-    #cnf_m = confusion_matrix(y_test, y_pred, labels=classes)
-    #cnf_m = multilabel_confusion_matrix(y_test, y_pred, labels=classes)
-    #print(cnf_m)
-
-    #y_prob = search.predict_proba(X_test)
-    #auc_score = plot_roc_auc(y_test, y_prob, clf, attr)
-    #print("auc: ", auc_score)
-
     return (mean_acc, mean_f1, mean_auc)
 
 
@@ -487,109 +532,11 @@ def plot_roc_auc(y_test, y_prob, clf, attr, classes):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     #plt.show()
-    filename = "output_ex1_co/plots/auc_"  + attr + "_" + clf
+    filename = "output/plots/auc_"  + attr + "_" + clf
     plt.savefig(filename)
     return auc_score
  
-"""
 
-def get_roc_auc(y_test, y_prob):
-    #y_test = label_binarize(y_test, classes=classes)
-    clf_roc_auc = roc_auc_score(y_test, y_prob, average="macro", multi_class='ovr')
-    return clf_roc_auc 
-
-def get_roc_auc(n_classes, y_test, y_prob):
-    
-    fpr = dict()
-    tpr = dict()
-    roc_auc = list()
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_test, y_prob[:, i],  pos_label=i)
-        roc_auc.append(auc(fpr[i], tpr[i]))
-    
-    return np.mean(roc_auc)
-
-
-
-def plot_roc_auc(y_test, y_prob, clf, attr):
-    pos = y_test[0]
-    fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1], pos_label=pos)
-
-
-    clf_name = CLF_PLOT_NAME[clf]
-    fig = plt.figure(figsize=(8, 4))
-    # plt.plot(fpr_LR, tpr_LR, linestyle='-', label='Log. Reg.')
-    plt.plot(fpr, tpr, linestyle='-.', lw=2, label=clf_name)
-    plt.legend()
-    auc_score = auc(x=fpr, y=tpr)
-    plt.title(clf_name + ' AUC: {:.3f}'.format( auc(x=fpr, y=tpr)), fontsize=14)
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    #plt.show()
-    filename = "output_ex1_co/plots/auc_"  + attr + "_" + clf
-    plt.savefig(filename)
-    return auc_score
-
-
-
-
-"""
-
-
-"""
-def plot_roc_auc(y_test, y_prob, clf, attr, cnf_m, n_classes, y_pred):
-    # (tn, fp, fn, tp)
-    print("len cnf_m: ", len(cnf_m))
-    print("len cnf_m[0]: ", len(cnf_m[0]))
-
-    fpr = []
-    tpr = []
-    tn = dict()
-    fp =  dict()
-    fn =  dict()
-    tp =  dict()
-    roc_auc = dict()
-    for i in range(len(cnf_m)):
-        print("i: ", i)
-        cnf = cnf_m[i].ravel()
-        print("cnf: ", cnf)
-        print("len cnf: ", len(cnf))
-        #tn[i], fp[i], fn[i], tp[i] = cnf
-        tn[i] = cnf[0]
-        fp[i] = cnf[1]
-        fn[i] = cnf[2]
-        tp[i] = cnf[3]
-        fpr.append(fp[i] / (fp[i] + tn[i]))
-        tpr.append( tp[i] / (tp[i] + fn[i]))
-        #roc_auc[i] = auc(fpr[i], tpr[i])
-    #fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1], pos_label=1)
-
-    print("fpr: ", fpr)
-    print("tpr: ", tpr)
-
-    #tpr_micro = sum(tp) / (np.sum(tp) + np.sum(fn))
-    #fpr_micro = sum(fp) / (np.sum(fp) + np.sum(tn))
-
-    #print("fpr: ", fpr_m)
-    #print("tpr: ", tpr_m)
-
-    #fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_pred.ravel())
-    roc_auc["micro"] = auc(fpr, tpr)
-    print("roc_auc: ",roc_auc["micro"])
-
-    clf_name = CLF_PLOT_NAME[clf]
-    fig = plt.figure(figsize=(8, 4))
-    # plt.plot(fpr_LR, tpr_LR, linestyle='-', label='Log. Reg.')
-    plt.plot(fpr, tpr, linestyle='-.', lw=2, label=clf_name)
-    plt.legend()
-    auc_score = auc(x=fpr, y=tpr)
-    plt.title(clf_name + ' AUC: {:.3f}'.format( auc(x=fpr, y=tpr)), fontsize=14)
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    #plt.show()
-    filename = "output/plots/auc_"  + attr + "_" + clf
-    plt.savefig(filename)
-    return auc_score"""
 ### Utility functions ###
 
 # Get cold-start users and items
@@ -741,7 +688,7 @@ def write_clf_scores_to_csv(all_results, metric):
     with open(filename, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         csv_writer.writerow(
-            ["Clf\t", "Gender\t\t\t", "Age\t\t\t", "Job\t\t\t", "State\t\t\t", "County\t\t\t", "City\t\t\t", ])
+            ["Clf\t", "Gender\t\t\t", "Age\t\t\t", "Job\t\t\t", "Area_5\t\t\t", "Area_2\t\t\t", ])
 
     output = {}
     for result in all_results:
@@ -757,8 +704,8 @@ def write_clf_scores_to_csv(all_results, metric):
         with open(filename, 'a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             csv_writer.writerow(
-                [clf, output[clf]["gender"], output[clf]["age"], output[clf]["occupation"], output[clf]["state"],
-                 output[clf]["county"], output[clf]["city"]])
+                [clf, output[clf]["gender"], output[clf]["age"], output[clf]["occupation"], output[clf]["area_5"],
+                 output[clf]["area_2"]])
 
 
 def write_clf_preds_to_csv(result):
