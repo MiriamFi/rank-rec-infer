@@ -51,28 +51,28 @@ K_OUTER = 5
 K_INNER = 3
 
 INFER_ATTR = {
-    "gender": True,
-    "age": True,
-    "occupation": True,
-    "state": True,
+    "gender": False,
+    "age": False,
+    "occupation": False,
+    "state": False,
     "county": False,
-    "city": False,
+    "city": True,
     'area_5' : False,
     'area_2' : False
 }
 
 INCLUDE_FEATURES = {
-    "gender": True,
-    "age": True,
-    "occupation": True,
-    "state": True,
+    "gender": False,
+    "age": False,
+    "occupation": False,
+    "state": False,
     "county": False,
-    "city": False,
+    "city": True,
     'area_5' : False,
     'area_2' : False
 }
 
-OUTPUT_PATH = 'output_ex1_ar10/'
+OUTPUT_PATH = 'output_ex1_tc/'
 
 USZ_NAMES = {
     "state": "state",
@@ -172,10 +172,10 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
-    "dummy": True,
-    "log_reg": True,
-    "svc": True,
-    "ran_for": True
+    "dummy": False,
+    "log_reg": False,
+    "svc": False,
+    "ran_for": False
 }
 
 RAN_FOR_HPARAMS = {
@@ -484,11 +484,11 @@ def old_prepare_attributes_for_classifier(user_info, users, attr_type):
             for age_cat in AGE_GROUPS.keys():
                 if is_in_age_group(attr_value, age_cat):
                     new_attr_value = age_cat
-        elif attr_type == "state" or attr_type == "city" or attr_type == "county":
-            attr_value = map_location(attr_value, attr_type)
-            new_attr_value = STATES_CAT[attr_value]
+        
             # Create dict of attribute labels
         else:
+            if attr_type == "state" or attr_type == "city" or attr_type == "county":
+                attr_value = map_location(attr_value, attr_type)
             if attr_value not in attr_classes.keys():
                 attr_classes[attr_value] = len(attr_classes)
             new_attr_value = attr_classes[attr_value]
@@ -1021,15 +1021,15 @@ def main():
     for attr in INFER_ATTR.keys():
         if INFER_ATTR[attr] == True:
             # Prepare gender attributes for classification
-            attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
-            attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
-            attributes[attr] = prepare_attributes_for_classifier(user_info, users, attr_type=attr)
+            attributes_train[attr] = old_prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
+            attributes_test[attr] = old_prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            attributes[attr] = old_prepare_attributes_for_classifier(user_info, users, attr_type=attr)
             #print("Diff in users: ", get_coldstart_units(test_users1, test_users1, unit_name="users"))
             # print(attributes_test[attr])
 
 
             print(attr)
-            if attr == 'state':
+            if attr == 'city':
                 counter_attr = collections.Counter(attributes[attr])
                 print("all_attr: ", counter_attr )
                 counter_values = []
@@ -1044,12 +1044,12 @@ def main():
                 
                 print("all_attr unique: ", len(np.unique(attributes[attr])))
                 plt.bar(labels, height=counter_values)
-                plt.title('area_10', fontsize=14)
+                plt.title('cities', fontsize=14)
                 plt.xlabel('location class nr')
                 plt.ylabel('users')
                 #plt.xticks(counter_values, labels)
                 #plt.show()
-                filename = OUTPUT_PATH + "hist_plots/hist_area_10"
+                filename = OUTPUT_PATH + "hist_plots/hist_area_tc"
                 plt.savefig(filename)
             
     for attr in INFER_ATTR.keys():
