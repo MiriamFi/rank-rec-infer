@@ -38,6 +38,12 @@ from sklearn.preprocessing import label_binarize
 
 from sklearn.model_selection import LeaveOneOut
 from sklearn.preprocessing import label_binarize
+
+from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
+from sklearn.cluster import SpectralClustering
+from sklearn.mixture import GaussianMixture
+
 # Constants
 N = 50
 
@@ -48,22 +54,22 @@ INFER_ATTR = {
     "gender": False,
     "age": False,
     "occupation": False,
-    "state": False,
+    "state": True,
     "county": False,
     "city": False,
     'area_5' : False,
-    'area_2' : True
+    'area_2' : False
 }
 
 INCLUDE_FEATURES = {
     "gender": False,
     "age": False,
     "occupation": False,
-    "state": False,
+    "state": True,
     "county": False,
     "city": False,
     'area_5' : False,
-    'area_2' : True
+    'area_2' : False
 }
 
 
@@ -89,6 +95,34 @@ STATE_AREA_2 = {
     'none' : None
 }
 
+STATE_AREA_10 = {
+    "cat0": ['CA'],
+    "cat1": ['TX', 'DC', 'NC', 'IA','KY' ],
+    "cat2": ['GA',  'MO', 'PA', 'MD'],
+    "cat3": ['OR', 'VA', 'NJ', 'TN', 'IN'],
+    "cat4": ['VT', 'KS', 'AK', 'OK', 'FL', 'AL', 'ID', 'NE', 'NH', 'MS', 'NM', 'RI', 'HI', 'WV', 'ME', 'DE', 'WY', 'SD'],
+    "cat5": ['CT', 'SC', 'CO', 'UT', 'MI', 'WA'],
+    "cat6": [ 'IL', 'WI', 'OH' ],
+    "cat7": ['MA', 'NY', 'LA'],
+    "cat8": ['AZ', 'MN', 'ND', 'MT', 'NV', 'AR'],
+    "cat9" : [None, "none"]
+
+}
+
+AREA_CAT_10 = {
+    "cat0": 0,
+    "cat1": 1,
+    "cat2": 2,
+    "cat3": 3,
+    "cat4": 4,
+    "cat5": 5,
+    "cat6": 6,
+    "cat7": 7,
+    "cat8": 8,
+    "cat9" : 9
+
+}
+
 AREA_CAT_5 = {
     'west' : 0,
     'midwest' : 1,
@@ -103,6 +137,8 @@ AREA_CAT_2 = {
     'east': 1,
     'none' : 2
 }
+
+STATES_CAT = {'AZ': 0, 'CA': 1, 'VT': 2, 'GA': 3, 'MN': 4, 'IL': 5, 'MO': 6, 'TX': 7, 'PA': 8, 'OR': 9, 'KS': 10, 'CT': 11, 'AK': 12, 'VA': 13, 'DC': 14, 'OK': 15, 'NJ': 16, 'SC': 17, 'CO': 18, 'TN': 19, 'UT': 20, 'WI': 21, 'FL': 22, 'AL': 23, 'MI': 24, 'MD': 25, None: 26, 'ID': 27, 'MA': 28, 'NE': 29, 'NY': 30, 'LA': 31, 'NC': 32, 'IA': 33, 'NH': 34, 'OH': 35, 'KY': 36, 'IN': 37, 'ND': 38, 'WA': 39, 'MS': 40, 'NV': 41, 'AR': 42, 'MT': 43, 'NM': 44, 'RI': 45, 'HI': 46, 'WV': 47, 'ME': 48, 'DE': 49, 'WY': 50, 'SD': 51}
 
 OCCUPATIONS = {
     'technician': 'technician/engineer',
@@ -136,10 +172,10 @@ AGE_GROUPS = {
 }
 
 CLASSIFIERS = {
-    "dummy": False,
-    "log_reg": False,
-    "svc": False,
-    "ran_for": False
+    "dummy": True,
+    "log_reg": True,
+    "svc": True,
+    "ran_for": True
 }
 
 RAN_FOR_HPARAMS = {
@@ -185,7 +221,7 @@ NUM_ITEMS = 1682
 
 
 # Variales
-
+#old_location_classes= {}
 
 ### Data Loader functions ###
 
@@ -229,7 +265,10 @@ def load_user_data(filename="u.user", path="data/ml-100k/"):
 # Load user features
 def load_user_features():
     # Gets filename for user features
-    filename = "user_features/ml_new/feat"
+    if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["county"] == True or INCLUDE_FEATURES["city"] == True:
+        filename = "user_features/ml/feat"
+    else:
+        filename = "user_features/ml_new/feat"
     if INCLUDE_FEATURES["gender"] == True:
         filename += "_g"
     if INCLUDE_FEATURES["age"] == True:
@@ -289,6 +328,63 @@ def prepare_rec_splits(data, train_size=0.9, test_size=0.1):
     return (X_train, X_test)
 
 
+def new_prepare_attributes_for_classifier(user_info, users, attr_type, loc_classes):
+    attr_classes = {}
+    attributes = []
+    new_user_info = {}
+
+
+    for i in range(len(users)):
+        for key in user_info.keys():
+            if int(users[i]) == key:
+                new_user_info[key] = user_info[key]
+
+    def is_in_age_group(age, age_cat):
+        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
+
+    
+    # Map zip code to state
+    def map_location(zipcode, attr, loc_classes):
+        search = SearchEngine(simple_zipcode=True)
+        zip_code = search.by_zipcode(zipcode)
+        zip_code = zip_code.to_dict()
+        area = map_state_to_area(zip_code[attr],  loc_classes)
+        return area
+    
+    def map_state_to_area(state, loc_classes):
+        #print(old_loc_classes)
+        for key in loc_classes.keys():
+            if state == None:
+                return 'none'
+            elif STATES_CAT[state] in loc_classes[key]:
+                return key
+
+            
+
+    for usr_id in new_user_info.keys():
+        attr_value = new_user_info[usr_id][attr_type]
+
+        if attr_type == "age":
+            for age_cat in AGE_GROUPS.keys():
+                if is_in_age_group(attr_value, age_cat):
+                    new_attr_value = age_cat
+        elif attr_type == "state" or attr_type == "city" or attr_type == "county":
+                new_attr_value = map_location(attr_value, attr_type, loc_classes)
+
+        else:
+            if attr_type == 'occupation':
+                attr_value = OCCUPATIONS[attr_value]
+            # Create dict of attribute labels
+            if attr_value not in attr_classes.keys():
+                attr_classes[attr_value] = len(attr_classes)
+            new_attr_value = attr_classes[attr_value]
+
+        # Create array of attribute representations
+        attributes.append(new_attr_value)
+    print("atr_classes: ", attr_classes)
+    
+    return attributes
+
 def prepare_attributes_for_classifier(user_info, users, attr_type):
     attr_classes = {}
     attributes = []
@@ -325,6 +421,12 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
                     return 'none'
                 elif state in STATE_AREA_2[key]:
                     return key
+        elif attr_type == 'state':
+            for key in STATE_AREA_10.keys():
+                if state == None or state=="none":
+                    return 'cat9'
+                elif state in STATE_AREA_10[key]:
+                    return key
             
 
     for usr_id in new_user_info.keys():
@@ -340,6 +442,9 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
         elif attr_type == "area_2":
                 attr_value = map_location(attr_value, attr_type)
                 new_attr_value = AREA_CAT_2[attr_value]
+        elif attr_type == "state":
+                attr_value = map_location(attr_value, attr_type)
+                new_attr_value = AREA_CAT_10[attr_value]
         else:
             if attr_type == 'occupation':
                 attr_value = OCCUPATIONS[attr_value]
@@ -354,7 +459,148 @@ def prepare_attributes_for_classifier(user_info, users, attr_type):
     return attributes
 
 
+def old_prepare_attributes_for_classifier(user_info, users, attr_type):
+    attr_classes = {}
+    attributes = []
+    new_user_info = {}
+
+    for i in range(len(users)):
+        for key in user_info.keys():
+            if int(users[i]) == key:
+                new_user_info[key] = user_info[key]
+
+    def is_in_age_group(age, age_cat):
+        return True if age >= AGE_GROUPS[age_cat][0] and age <= AGE_GROUPS[age_cat][1] else False
+
+    # Map zip code to state/city/county
+    def map_location(zipcode, attr_type):
+        search = SearchEngine(simple_zipcode=True)
+        zip_code = search.by_zipcode(zipcode)
+        zip_code = zip_code.to_dict()
+        return zip_code[USZ_NAMES[attr_type]]
+
+    for usr_id in new_user_info.keys():
+        attr_value = new_user_info[usr_id][attr_type]
+
+        if attr_type == "age":
+            for age_cat in AGE_GROUPS.keys():
+                if is_in_age_group(attr_value, age_cat):
+                    new_attr_value = age_cat
+        elif attr_type == "state" or attr_type == "city" or attr_type == "county":
+            attr_value = map_location(attr_value, attr_type)
+            new_attr_value = STATES_CAT[attr_value]
+            # Create dict of attribute labels
+        else:
+            if attr_value not in attr_classes.keys():
+                attr_classes[attr_value] = len(attr_classes)
+            new_attr_value = attr_classes[attr_value]
+
+        # Create array of attribute representations
+        attributes.append(new_attr_value)
+    print("atr_classes: ", attr_classes)
+    #if attr_type == "state" or attr_type == "city" or attr_type == "county":
+        #old_location_classes = attr_classes
+    return attributes
 ### Recommender system functions ###
+
+def clustering(data, attr):
+    # create scatter plot
+    #plt.scatter(data,  cmap='viridis')
+    #plt.show()
+    n_classes = 6
+    n_loc_classes = 6
+    kmeans = KMeans(n_clusters=n_classes)
+    data_tmp = copy.deepcopy(data)
+    data_tmp = data_tmp.drop(columns=[attr], axis=1)
+    kmeans.fit(data_tmp)
+    #print(kmeans.cluster_centers_)
+    y_km = kmeans.fit_predict(data_tmp)
+    #y_km = pd.DataFrame(data= y_km, columns=['cluster'])
+    #y_km = y_km["cluster"]
+    #print(y_km)
+    data["cluster"] = y_km
+    #print(data)
+    #for col in data.columns:
+        #sprint(col)
+
+    attr_data = data[[attr, 'cluster'] ]
+    print('attr_data: ', attr_data)
+    #print('attr_data.shape: ', attr_data.shape)
+    
+    locs = {}
+    for ind in attr_data.index:
+        if attr_data[attr][ind] not in locs.keys():
+            locs[attr_data[attr][ind]] = []
+        locs[attr_data[attr][ind]].append(attr_data['cluster'][ind])
+    
+    locs_per = {}
+    #print(locs)
+    for key in locs.keys():
+        num_samples = len(locs[key])
+        locs[key] = collections.Counter(locs[key])
+        locs_per[key] = collections.Counter(locs[key])
+        for k in locs[key].keys():
+            locs_per[key][k] = locs[key][k]/num_samples
+    #print(locs)
+    #print(locs_per)
+
+    loc_classes = np.zeros((len(locs_per.keys()), n_classes), dtype=np.double)
+    for key in locs_per.keys():
+        for k in locs_per[key].keys():
+            loc_classes[key][k] = locs_per[key][k]
+    #print(loc_classes)
+
+    labels = [x for x in range(n_classes)]
+    locs_mat = pd.DataFrame(data=loc_classes, columns=labels)
+    #locs_mat[attr] = locs_per.keys()
+    
+    
+    #plt.scatter(attr_data[attr], attr_data['cluster'],  cmap='viridis')
+    #plt.show()
+    kmeans_loc = KMeans(n_clusters=n_loc_classes)
+    kmeans_loc.fit(locs_mat)
+    print(kmeans_loc.cluster_centers_)
+    y_km2 = kmeans_loc.fit_predict(locs_mat)
+    locs_mat['class'] = y_km2
+    locs_mat[attr] = locs_per.keys()
+    print(locs_mat)
+    print(y_km2)
+
+    locations = {}
+    for ind in locs_mat.index:
+        if locs_mat['class'][ind] not in locations.keys():
+            locations[locs_mat['class'][ind]] = []
+        locations[locs_mat['class'][ind]].append(locs_mat[attr][ind])
+    #plt.scatter(locs_mat[y_km ==0,0], locs_mat[y_km == 0,1], s=100, c='red')
+    #plt.show()
+    #plt.scatter(locs_mat[y_km ==1,0], locs_mat[y_km == 1,1], s=100, c='black')
+    #plt.show()
+    #plt.scatter(locs_mat[y_km ==2,0], locs_mat[y_km == 2,1], s=100, c='blue')
+    #plt.show()
+    #plt.scatter(locs_mat[y_km ==3,0], locs_mat[y_km == 3,1], s=100, c='cyan')
+    #plt.show()
+    #y_km2 = pd.DataFrame(data= y_km2, columns=['cluster'])
+    print(locations)
+    return locations
+
+def dbscan(data):
+    #model = DBSCAN(eps=0.30, min_samples=9)
+    #model = SpectralClustering(n_clusters=2)
+    model = GaussianMixture(n_components=2)
+    # fit model and predict clusters
+    yhat = model.fit_predict(data)
+    # retrieve unique clusters
+    clusters = np.unique(yhat)
+    # create scatter plot for samples from each cluster
+    for cluster in clusters:
+        # get row indexes for samples with this cluster
+        row_ix = np.where(yhat == cluster)
+        # create scatter of these samples
+        plt.scatter(data[row_ix, 0], data[row_ix, 1])
+    # show the plot
+    plt.show()
+
+
 
 def generate_recommendations(X_train, X_test, user_features, users, use_features=True):
     # Build and train FM model
@@ -756,31 +1002,6 @@ def main():
     (train_users1, train_items1, test_users1, test_items1) = get_users_items(X_train1, X_test1)
     (train_users2, train_items2, test_users2, test_items2) = get_users_items(X_train2, X_test2)
 
-    """
-    # Training and test set dimensions
-    print_matrix_dim(X_train1, "X_train1")
-    evaluate_matrix_sparsity(X_train1, "X_train1")
-
-    print_matrix_dim(X_test1, "X_test1")
-    evaluate_matrix_sparsity(X_test1, "X_test1")
-
-    print_matrix_dim(X_train2, "X_train2")
-    evaluate_matrix_sparsity(X_train2, "X_train2")
-
-    print_matrix_dim(X_test2, "X_test2")
-    evaluate_matrix_sparsity(X_test2, "X_test2")
-
-
-    # User and Item stats
-    print("X train and test 1")
-    print_user_item_stats(train_users1, test_users1, "users")
-    print_user_item_stats(train_items1, test_items1, "items")
-    print("X train and test 2")
-    print_user_item_stats(train_users2, test_users2, "users")
-    print_user_item_stats(train_items2, test_items2, "items")"""
-
-    # print(user_features)
-    
     # Generate recommendations_train
     rec_scores = {}
     print("Recommender Round 1: ")
@@ -805,6 +1026,7 @@ def main():
     # Classification
     attributes_train = {}
     attributes_test = {}
+    attributes = {}
 
     rec_train = recs_to_matrix(recommendations_train)
     rec_test = recs_to_matrix(recommendations_test)
@@ -818,51 +1040,155 @@ def main():
             # Prepare gender attributes for classification
             attributes_train[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
             attributes_test[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            attributes[attr] = prepare_attributes_for_classifier(user_info, users, attr_type=attr)
             #print("Diff in users: ", get_coldstart_units(test_users1, test_users1, unit_name="users"))
             # print(attributes_test[attr])
 
 
             print(attr)
             
-            all_attr = np.concatenate((attributes_train[attr], attributes_test[attr]), axis=0)
-            print(len(all_attr))
-            counter_attr = collections.Counter(all_attr)
+            counter_attr = collections.Counter(attributes[attr])
             print("all_attr: ", counter_attr )
+            counter_values = []
+            labels = []
+            for key in counter_attr.keys():
+                counter_values.append(counter_attr[key])
+                if key == 'none':
+                    labels.append(-1)
+                else:
+                    labels.append(int(key))
+            print(labels)
             
-            print("all_attr unique: ", len(np.unique(all_attr)))
-            print("less than 2 samples: ", count_attr_samples(counter_attr, 1, False) )
-            print("2 samples: ", count_attr_samples(counter_attr, 2, False) )
-            print("5 samples or less: ", count_attr_samples(counter_attr, 5, True) )
-            #print("train_attr: ", collections.Counter(attributes_train[attr]))
-            print("train_attr unique: ", len(np.unique(attributes_train[attr])))
-            #print("test_attr: ", collections.Counter(attributes_test[attr]))
-            print("test_attr unique: ", len(np.unique(attributes_test[attr])))
-            print("\n\n")
+            print("all_attr unique: ", len(np.unique(attributes[attr])))
+            plt.bar(labels, height=counter_values)
+            plt.title('area_10', fontsize=14)
+            plt.xlabel('location class nr')
+            plt.ylabel('users')
+            #plt.xticks(counter_values, labels)
+            plt.show()
             
-
     for attr in INFER_ATTR.keys():
-        if INFER_ATTR[attr] == True:
-            recs_train_ctx = copy.deepcopy(rec_train)
-            recs_test_ctx = copy.deepcopy(rec_test)
+            if INFER_ATTR[attr] == True:
+                recs_train_ctx = copy.deepcopy(rec_train)
+                recs_test_ctx = copy.deepcopy(rec_test)
 
 
-            for attr2 in INFER_ATTR.keys():
-                if INFER_ATTR[attr2] == True and attr != attr2:
-                    recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
-                    recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
+                for attr2 in INFER_ATTR.keys():
+                    if INFER_ATTR[attr2] == True and attr != attr2:
+                        recs_train_ctx = add_attr_to_recs(recs_train_ctx, attr2, attributes_train[attr2])
+                        recs_test_ctx = add_attr_to_recs(recs_test_ctx, attr2, attributes_test[attr2])
 
-            for clf in CLASSIFIERS.keys():
-                if CLASSIFIERS[clf] == True:
-                    print('\n')
-                    print("CV with ", clf, " for ", attr)
-                    result = {}
-                    result['clf'] = clf
-                    result['attr'] = attr
-                    (result['acc'], result['f1'], result['auc']) = cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
-                    results.append(result)
+                for clf in CLASSIFIERS.keys():
+                    if CLASSIFIERS[clf] == True:
+                        print('\n')
+                        print("CV with ", clf, " for ", attr)
+                        result = {}
+                        result['clf'] = clf
+                        result['attr'] = attr
+                        (result['acc'], result['f1'], result['auc']) = cross_validate(clf, recs_train_ctx, recs_test_ctx, attributes_train[attr], attributes_test[attr], attr)
+                        results.append(result)
     write_clf_scores_to_csv(results, 'acc')
     write_clf_scores_to_csv(results, 'f1')
     write_clf_scores_to_csv(results, 'auc')
+    
+
+    """
+    # Classification
+    attributes_train = {}
+    attributes_test = {}
+    attributes_train_tmp = {}
+    attributes_test_tmp = {}
+
+    rec_train = recs_to_matrix(recommendations_train)
+    rec_test = recs_to_matrix(recommendations_test)
+    print("Rec train shape: ", rec_train.shape)
+    print("Rec test shape: ", rec_test.shape)
+
+    # Classification
+    attributes = {}
+    attributes_tmp = {}
+
+
+
+    for attr in INFER_ATTR.keys():
+        if INFER_ATTR[attr] == True:
+            
+            # Prepare gender attributes for classification
+            if INCLUDE_FEATURES["state"] == True or INCLUDE_FEATURES["county"] == True or INCLUDE_FEATURES["city"] == True:
+                
+                attributes_train_tmp[attr] = old_prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
+                attributes_test_tmp[attr] = old_prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+                attributes_tmp[attr] = old_prepare_attributes_for_classifier(user_info, users, attr_type=attr )
+            else:
+                attributes_tmp[attr] = prepare_attributes_for_classifier(user_info, users, attr_type=attr)
+                attributes_train_tmp[attr] = prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr)
+                attributes_test_tmp[attr] = prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr)
+            #print(attributes[attr])
+
+            print(attr + " old")
+            
+            counter_attr1 = collections.Counter(attributes_tmp[attr])
+            print("all_attr: ", counter_attr1 )
+            counter_values1 = []
+            labels1 = []
+            for key in counter_attr1.keys():
+                counter_values1.append(counter_attr1[key])
+                if key == 'none':
+                    labels1.append(-1)
+                else:
+                    labels1.append(int(key))
+            print(labels1)
+
+            recs_train_ctx_tmp = copy.deepcopy(rec_train)
+            recs_train_ctx_tmp = add_attr_to_recs(recs_train_ctx_tmp, attr, attributes_train_tmp[attr])
+            print("recs_train_ctx: ", recs_train_ctx_tmp)
+            print("recs_train_ctx.shape: ", recs_train_ctx_tmp.shape)
+
+            location_classes = clustering(recs_train_ctx_tmp, attr)
+            if attr == "state" or attr == "county" or attr == "city":
+                attributes[attr] = new_prepare_attributes_for_classifier(user_info, users, attr_type=attr, loc_classes =location_classes)
+                attributes_train[attr] = new_prepare_attributes_for_classifier(user_info, test_users1, attr_type=attr, loc_classes =location_classes)
+                attributes_test[attr] = new_prepare_attributes_for_classifier(user_info, test_users2, attr_type=attr, loc_classes =location_classes)
+
+            print(attr)
+            
+            counter_attr = collections.Counter(attributes[attr])
+            print("all_attr: ", counter_attr )
+            counter_values = []
+            labels = []
+            for key in counter_attr.keys():
+                counter_values.append(counter_attr[key])
+                if key == 'none':
+                    labels.append(-1)
+                else:
+                    labels.append(int(key))
+            print(labels)
+            
+            print("all_attr unique: ", len(np.unique(attributes[attr])))
+            plt.bar(labels, height=counter_values)
+            plt.title(attr, fontsize=14)
+            plt.xlabel(attr + ' nr')
+            plt.ylabel('users')
+            #plt.xticks(counter_values, labels)
+            plt.show()
+            data = np.zeros(shape=(len(counter_attr),2))
+            ind = 0
+            for key in counter_attr.keys():
+                data[ind, 0] = key
+                data[ind, 1] = counter_attr[key]
+                ind += 1
+
+            #dbscan(data)
+            
+            print("\n\n")
+        """
+
+            
+
+            
+            
+
+
 
 
 

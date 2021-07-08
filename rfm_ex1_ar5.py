@@ -532,6 +532,7 @@ def plot_roc_auc(y_test, y_prob, clf, attr, classes):
     #plt.show()
     filename = OUTPUT_PATH + "plots/auc_"  + attr + "_" + clf
     plt.savefig(filename)
+    plt.close()
     return auc_score
  
 
