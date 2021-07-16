@@ -1,0 +1,870 @@
+we are running from this directory: /cluster/home/miriamfi/RankRec
+The name of the job is: ex1_ar2
+The job ID is 370155
+The job was run on these nodes: idun-02-25
+Number of nodes: 1
+We are using 1 cores
+We are using 1 cores per node
+Total of 1 cores
+
+Currently Loaded Modules:
+  1) GCCcore/9.3.0
+  2) zlib/1.2.11-GCCcore-9.3.0                     (H)
+  3) binutils/2.34-GCCcore-9.3.0                   (H)
+  4) iccifort/2020.1.217
+  5) numactl/2.0.13-GCCcore-9.3.0                  (H)
+  6) UCX/1.8.0-GCCcore-9.3.0                       (H)
+  7) impi/2019.7.217-iccifort-2020.1.217
+  8) iimpi/2020a
+  9) imkl/2020.1.217-iimpi-2020a
+ 10) intel/2020a
+ 11) bzip2/1.0.8-GCCcore-9.3.0                     (H)
+ 12) ncurses/6.2-GCCcore-9.3.0                     (H)
+ 13) libreadline/8.0-GCCcore-9.3.0                 (H)
+ 14) Tcl/8.6.10-GCCcore-9.3.0                      (H)
+ 15) SQLite/3.31.1-GCCcore-9.3.0                   (H)
+ 16) XZ/5.2.5-GCCcore-9.3.0                        (H)
+ 17) GMP/6.2.0-GCCcore-9.3.0                       (H)
+ 18) libffi/3.3-GCCcore-9.3.0                      (H)
+ 19) Python/3.8.2-GCCcore-9.3.0
+ 20) pybind11/2.4.3-GCCcore-9.3.0-Python-3.8.2     (H)
+ 21) SciPy-bundle/2020.03-intel-2020a-Python-3.8.2
+ 22) libpng/1.6.37-GCCcore-9.3.0                   (H)
+ 23) freetype/2.10.1-GCCcore-9.3.0                 (H)
+ 24) expat/2.2.9-GCCcore-9.3.0                     (H)
+ 25) util-linux/2.35-GCCcore-9.3.0                 (H)
+ 26) fontconfig/2.13.92-GCCcore-9.3.0              (H)
+ 27) xorg-macros/1.19.2-GCCcore-9.3.0              (H)
+ 28) libpciaccess/0.16-GCCcore-9.3.0               (H)
+ 29) X11/20200222-GCCcore-9.3.0                    (H)
+ 30) Tk/8.6.10-GCCcore-9.3.0                       (H)
+ 31) Tkinter/3.8.2-GCCcore-9.3.0                   (H)
+ 32) matplotlib/3.2.1-intel-2020a-Python-3.8.2
+
+  Where:
+   H:  Hidden Module
+
+ 
+
+Program starting... 
+
+User Info Loaded!
+Loaded user features from user_features/ml_new/feat_g_a_o_r2.csv
+User features shape:  (943, 25) 
+
+Matrix Dimensions for  X_train1
+X_train1  shape: (39633, 2)
+X_train1  unique users: 943
+X_train1  unique items: 1440
+
+
+X_train1  matrix sparsity: 97.1%
+
+
+Matrix Dimensions for  X_test1
+X_test1  shape: (29942, 2)
+X_test1  unique users: 943
+X_test1  unique items: 1465
+
+
+X_test1  matrix sparsity: 97.8%
+
+
+Matrix Dimensions for  X_train2
+X_train2  shape: (69575, 2)
+X_train2  unique users: 943
+X_train2  unique items: 1575
+
+
+X_train2  matrix sparsity: 95.3%
+
+
+Matrix Dimensions for  X_test2
+X_test2  shape: (30425, 2)
+X_test2  unique users: 943
+X_test2  unique items: 1574
+
+
+X_test2  matrix sparsity: 98.0%
+
+
+X train and test 1
+Stats for  users
+Train  users : 943
+Test  users 943
+cold-start  users : set()
+
+
+Stats for  items
+Train  items : 1440
+Test  items 1465
+cold-start  items : {'816', '1027', '1310', '1156', '1540', '838', '1541', '1480', '1486', '1578', '1501', '745', '1096', '858', '1422', '804', '1446', '1293', '784', '1144', '765', '1354', '1454', '1595', '1639', '400', '1474', '1658', '1416', '1448', '1397', '1597', '788', '1521', '1672', '1532', '1599', '37', '1523', '1644', '1003', '1162', '1239', '1626', '1309', '439', '572', '437', '1515', '1032', '388', '1534', '1594', '1435', '1403', '1230', '1676', '1231', '1314', '1490', '817', '1550', '1553', '442', '1223', '598', '726', '1481', '138', '668', '927', '1477', '1222', '1325', '852', '1611', '1517', '1374', '1444', '1450', '1598', '1456', '1443', '438', '1505', '1642', '1285', '1596', '1175', '777', '1600', '1548', '1104', '1250', '920', '1654', '1495', '1634', '1370', '1043', '1419', '415', '1467', '1602', '1528', '1662', '1210', '1412', '830', '992', '1253', '1657', '78', '1522', '1609', '573', '1459', '1200', '1660', '1155', '1303', '1471', '775', '791', '1542', '1002', '35', '1638', '1364', '1246', '1617', '1531', '1402', '1610', '1509'}
+
+
+X train and test 2
+Stats for  users
+Train  users : 943
+Test  users 943
+cold-start  users : set()
+
+
+Stats for  items
+Train  items : 1575
+Test  items 1574
+cold-start  items : {'1563', '1236', '1365', '1586', '1669', '1645', '1593', '1648', '677', '1526', '1653', '1504', '1625', '1508', '1674', '1436', '1583', '1581', '1580', '1682', '1130', '1668', '1621', '1460', '1663', '1628', '1398', '1603', '1494', '1675', '1666', '1576', '1681', '1678', '1677', '1651', '1632', '600', '1661', '1624', '1584', '1618', '1665', '1497', '626', '1447', '957', '1649', '1452', '1582', '1637', '1680', '1577', '1492', '1327', '1453', '1546', '1659', '1498', '1627', '1499', '1235', '599', '1590', '1525', '1579', '1606', '1650', '897', '1571', '1667', '1562', '1647', '1549', '1275', '1570', '814', '1614', '1633', '1640', '1408', '1673', '1186', '1588', '1679', '1458', '911', '1569', '1543', '1646', '1613', '1565', '1616', '1671', '1493', '1575', '910', '1520', '1189', '1664', '1489', '1572', '1510', '913', '1106', '1432', '1476'}
+
+
+Recommender Round 1: 
+
+training epoch: 0
+log likelihood: -15197.41015625
+
+training epoch: 1
+log likelihood: -13173.75
+
+training epoch: 2
+log likelihood: -13025.26953125
+
+training epoch: 3
+log likelihood: -12318.650390625
+
+training epoch: 4
+log likelihood: -11503.5595703125
+
+training epoch: 5
+log likelihood: -10675.9501953125
+
+training epoch: 6
+log likelihood: -9951.990234375
+
+training epoch: 7
+log likelihood: -9320.33984375
+
+training epoch: 8
+log likelihood: -8661.849609375
+
+training epoch: 9
+log likelihood: -8242.0
+
+training epoch: 10
+log likelihood: -7811.77001953125
+
+training epoch: 11
+log likelihood: -7838.22998046875
+
+training epoch: 12
+log likelihood: -7442.97021484375
+
+training epoch: 13
+log likelihood: -7159.85009765625
+
+training epoch: 14
+log likelihood: -7081.06982421875
+
+training epoch: 15
+log likelihood: -6938.77001953125
+
+training epoch: 16
+log likelihood: -6876.2001953125
+
+training epoch: 17
+log likelihood: -6789.0
+
+training epoch: 18
+log likelihood: -6588.2001953125
+
+training epoch: 19
+log likelihood: -6640.7099609375
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.930184
+std          1.402752
+min         -4.005488
+25%         -0.045677
+50%          1.027063
+75%          1.992425
+max          5.088910
+dtype: float64
+precision: 0.092
+recall: 0.265
+hit rate: 0.934
+Recommender Round 2: 
+
+training epoch: 0
+log likelihood: -26214.529296875
+
+training epoch: 1
+log likelihood: -23434.810546875
+
+training epoch: 2
+log likelihood: -21916.490234375
+
+training epoch: 3
+log likelihood: -19999.419921875
+
+training epoch: 4
+log likelihood: -17823.810546875
+
+training epoch: 5
+log likelihood: -16648.150390625
+
+training epoch: 6
+log likelihood: -15911.419921875
+
+training epoch: 7
+log likelihood: -15380.9296875
+
+training epoch: 8
+log likelihood: -14611.5400390625
+
+training epoch: 9
+log likelihood: -14453.830078125
+
+training epoch: 10
+log likelihood: -14183.3095703125
+
+training epoch: 11
+log likelihood: -13625.6201171875
+
+training epoch: 12
+log likelihood: -13468.91015625
+
+training epoch: 13
+log likelihood: -13180.9404296875
+
+training epoch: 14
+log likelihood: -13231.669921875
+
+training epoch: 15
+log likelihood: -13120.830078125
+
+training epoch: 16
+log likelihood: -12925.1904296875
+
+training epoch: 17
+log likelihood: -12915.6103515625
+
+training epoch: 18
+log likelihood: -12738.849609375
+
+training epoch: 19
+log likelihood: -12741.9501953125
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.902843
+std          1.612863
+min         -4.423714
+25%         -0.205577
+50%          1.007629
+75%          2.121045
+max          5.097384
+dtype: float64
+precision: 0.077
+recall: 0.228
+hit rate: 0.922
+Recommendations are not written to file for N higher than 20.
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+atr_classes:  {'M': 0, 'F': 1}
+atr_classes:  {'M': 0, 'F': 1}
+gender
+1886
+all_attr:  Counter({0: 670, 1: 273})
+all_attr unique:  2
+less than 2 samples:  0
+2 samples:  0
+5 samples or less:  0
+train_attr unique:  2
+test_attr unique:  2
+
+
+
+atr_classes:  {}
+atr_classes:  {}
+age
+1886
+all_attr:  Counter({0: 544, 1: 209, 2: 190})
+all_attr unique:  3
+less than 2 samples:  0
+2 samples:  0
+5 samples or less:  0
+train_attr unique:  3
+test_attr unique:  3
+
+
+
+atr_classes:  {'technician/engineer': 0, 'lawyer': 1, 'executive': 2, 'student': 3, 'programmer': 4, 'homemaker/retired': 5, 'scientist': 6, 'educator': 7, 'other/none': 8, 'salesman/marketing': 9, 'healthcare/doctor': 10, 'administrator': 11, 'librarian': 12, 'writer': 13, 'artist': 14, 'entertainment': 15}
+atr_classes:  {'technician/engineer': 0, 'lawyer': 1, 'executive': 2, 'student': 3, 'programmer': 4, 'homemaker/retired': 5, 'scientist': 6, 'educator': 7, 'other/none': 8, 'salesman/marketing': 9, 'healthcare/doctor': 10, 'administrator': 11, 'librarian': 12, 'writer': 13, 'artist': 14, 'entertainment': 15}
+occupation
+1886
+all_attr:  Counter({3: 196, 8: 114, 7: 95, 0: 94, 11: 79, 4: 66, 12: 51, 13: 45, 9: 38, 2: 32, 6: 31, 14: 28, 10: 23, 5: 21, 15: 18, 1: 12})
+all_attr unique:  16
+less than 2 samples:  0
+2 samples:  0
+5 samples or less:  0
+train_attr unique:  16
+test_attr unique:  16
+
+
+
+atr_classes:  {}
+atr_classes:  {}
+area_2
+1886
+all_attr:  Counter({1: 608, 0: 298, 2: 37})
+all_attr unique:  3
+less than 2 samples:  0
+2 samples:  0
+5 samples or less:  0
+train_attr unique:  3
+test_attr unique:  3
+
+
+
+
+
+CV with  dummy  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.714, f1=0.714, auc=0.500, est=0.710, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.688, f1=0.688, auc=0.500, est=0.716, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.693, f1=0.693, auc=0.500, est=0.715, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.734, f1=0.734, auc=0.500, est=0.705, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.723, f1=0.723, auc=0.500, est=0.707, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.711 (0.018) 
+
+F1: 0.711 (0.018) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.582, f1=0.582, auc=0.582, est=0.718, cfg={'log_reg__C': 0.1, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.545, f1=0.545, auc=0.516, est=0.722, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.672, f1=0.672, auc=0.670, est=0.725, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.622, f1=0.622, auc=0.573, est=0.734, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.580, f1=0.580, auc=0.567, est=0.748, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+Accuracy: 0.600 (0.043) 
+
+F1: 0.600 (0.043) 
+
+AUC: 0.582 (0.050) 
+
+
+
+CV with  svc  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.704, f1=0.704, auc=0.624, est=0.712, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.688, f1=0.688, auc=0.537, est=0.716, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.656, f1=0.656, auc=0.607, est=0.723, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.617, f1=0.617, auc=0.523, est=0.717, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.617, f1=0.617, auc=0.550, est=0.728, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+Accuracy: 0.656 (0.036) 
+
+F1: 0.656 (0.036) 
+
+AUC: 0.568 (0.040) 
+
+
+
+CV with  ran_for  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.730, f1=0.730, auc=0.691, est=0.732, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 15, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.698, f1=0.698, auc=0.624, est=0.749, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 15, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.693, f1=0.693, auc=0.605, est=0.747, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1000} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.739, f1=0.739, auc=0.682, est=0.739, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.723, f1=0.723, auc=0.718, est=0.734, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+Accuracy: 0.717 (0.018) 
+
+F1: 0.717 (0.018) 
+
+AUC: 0.664 (0.042) 
+
+
+
+CV with  dummy  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.534, f1=0.534, auc=0.500, est=0.588, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.556, f1=0.556, auc=0.500, est=0.582, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.619, f1=0.619, auc=0.500, est=0.566, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.580, f1=0.580, auc=0.500, est=0.576, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.596, f1=0.596, auc=0.500, est=0.572, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.577 (0.030) 
+
+F1: 0.577 (0.030) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.608, f1=0.608, auc=0.624, est=0.630, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.561, f1=0.561, auc=0.504, est=0.631, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.529, f1=0.529, auc=0.520, est=0.611, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.564, f1=0.564, auc=0.523, est=0.649, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.574, f1=0.574, auc=0.445, est=0.645, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+Accuracy: 0.567 (0.026) 
+
+F1: 0.567 (0.026) 
+
+AUC: 0.523 (0.058) 
+
+
+
+CV with  svc  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.508, f1=0.508, auc=0.594, est=0.635, cfg={'svc__C': 10, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.561, f1=0.561, auc=0.457, est=0.625, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.603, f1=0.603, auc=0.545, est=0.623, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.537, f1=0.537, auc=0.475, est=0.625, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.585, f1=0.585, auc=0.468, est=0.634, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+Accuracy: 0.559 (0.034) 
+
+F1: 0.559 (0.034) 
+
+AUC: 0.508 (0.053) 
+
+
+
+CV with  ran_for  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.587, f1=0.587, auc=0.605, est=0.654, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.603, f1=0.603, auc=0.586, est=0.650, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1500} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.630, f1=0.630, auc=0.551, est=0.646, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.612, f1=0.612, auc=0.623, est=0.640, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.628, f1=0.628, auc=0.483, est=0.642, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+Accuracy: 0.612 (0.016) 
+
+F1: 0.612 (0.016) 
+
+AUC: 0.569 (0.049) 
+
+
+
+CV with  dummy  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.217, f1=0.217, auc=0.500, est=0.206, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.180, f1=0.180, auc=0.500, est=0.215, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.206, f1=0.206, auc=0.500, est=0.208, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.229, f1=0.229, auc=0.500, est=0.203, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.207, f1=0.207, auc=0.500, est=0.208, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.208 (0.016) 
+
+F1: 0.208 (0.016) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.196, f1=0.196, auc=0.818, est=0.220, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.196, f1=0.196, auc=0.853, est=0.243, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.196, f1=0.196, auc=0.649, est=0.232, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.223, f1=0.223, auc=0.659, est=0.216, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.213, f1=0.213, auc=0.391, est=0.224, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+Accuracy: 0.205 (0.011) 
+
+F1: 0.205 (0.011) 
+
+AUC: 0.674 (0.164) 
+
+
+
+CV with  svc  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.238, f1=0.238, auc=0.853, est=0.214, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.196, f1=0.196, auc=0.500, est=0.236, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.164, f1=0.164, auc=0.199, est=0.223, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.218, f1=0.218, auc=0.382, est=0.213, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.197, f1=0.197, auc=0.714, est=0.224, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+Accuracy: 0.203 (0.025) 
+
+F1: 0.203 (0.025) 
+
+AUC: 0.529 (0.233) 
+
+
+
+CV with  ran_for  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.296, f1=0.296, auc=0.591, est=0.263, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 1000} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.212, f1=0.212, auc=0.578, est=0.275, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 1000} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.233, f1=0.233, auc=0.400, est=0.276, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.282, f1=0.282, auc=0.435, est=0.253, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.250, f1=0.250, auc=0.355, est=0.250, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+Accuracy: 0.255 (0.031) 
+
+F1: 0.255 (0.031) 
+
+AUC: 0.472 (0.095) 
+
+
+
+CV with  dummy  for  area_2
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.646, f1=0.646, auc=0.500, est=0.645, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.693, f1=0.693, auc=0.500, est=0.633, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.593, f1=0.593, auc=0.500, est=0.658, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.660, f1=0.660, auc=0.500, est=0.641, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.633, f1=0.633, auc=0.500, est=0.648, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.645 (0.033) 
+
+F1: 0.645 (0.033) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  area_2
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.587, f1=0.587, auc=0.511, est=0.637, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.550, f1=0.550, auc=0.509, est=0.634, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.497, f1=0.497, auc=0.458, est=0.658, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.527, f1=0.527, auc=0.425, est=0.641, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.585, f1=0.585, auc=0.494, est=0.642, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+Accuracy: 0.549 (0.034) 
+
+F1: 0.549 (0.034) 
+
+AUC: 0.479 (0.033) 
+
+
+
+CV with  svc  for  area_2
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.646, f1=0.646, auc=0.525, est=0.645, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.661, f1=0.661, auc=0.487, est=0.634, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.497, f1=0.497, auc=0.433, est=0.660, cfg={'svc__C': 0.001, 'svc__kernel': 'linear', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.654, f1=0.654, auc=0.465, est=0.644, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.622, f1=0.622, auc=0.506, est=0.649, cfg={'svc__C': 0.1, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+Accuracy: 0.616 (0.061) 
+
+F1: 0.616 (0.061) 
+
+AUC: 0.483 (0.032) 
+
+
+
+CV with  ran_for  for  area_2
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.651, f1=0.651, auc=0.547, est=0.649, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.683, f1=0.683, auc=0.563, est=0.638, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.582, f1=0.582, auc=0.471, est=0.662, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 500} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.638, f1=0.638, auc=0.452, est=0.657, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 1000} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.628, f1=0.628, auc=0.496, est=0.648, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 100} 
+
+Accuracy: 0.636 (0.033) 
+
+F1: 0.636 (0.033) 
+
+AUC: 0.506 (0.043) 
+
+Linux idun-02-25 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux

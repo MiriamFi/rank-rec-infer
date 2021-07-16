@@ -1,0 +1,893 @@
+we are running from this directory: /cluster/home/miriamfi/RankRec
+The name of the job is: ex1_ar10
+The job ID is 369078
+The job was run on these nodes: idun-02-10
+Number of nodes: 1
+We are using 1 cores
+We are using 1 cores per node
+Total of 1 cores
+
+Currently Loaded Modules:
+  1) GCCcore/9.3.0
+  2) zlib/1.2.11-GCCcore-9.3.0                     (H)
+  3) binutils/2.34-GCCcore-9.3.0                   (H)
+  4) iccifort/2020.1.217
+  5) numactl/2.0.13-GCCcore-9.3.0                  (H)
+  6) UCX/1.8.0-GCCcore-9.3.0                       (H)
+  7) impi/2019.7.217-iccifort-2020.1.217
+  8) iimpi/2020a
+  9) imkl/2020.1.217-iimpi-2020a
+ 10) intel/2020a
+ 11) bzip2/1.0.8-GCCcore-9.3.0                     (H)
+ 12) ncurses/6.2-GCCcore-9.3.0                     (H)
+ 13) libreadline/8.0-GCCcore-9.3.0                 (H)
+ 14) Tcl/8.6.10-GCCcore-9.3.0                      (H)
+ 15) SQLite/3.31.1-GCCcore-9.3.0                   (H)
+ 16) XZ/5.2.5-GCCcore-9.3.0                        (H)
+ 17) GMP/6.2.0-GCCcore-9.3.0                       (H)
+ 18) libffi/3.3-GCCcore-9.3.0                      (H)
+ 19) Python/3.8.2-GCCcore-9.3.0
+ 20) pybind11/2.4.3-GCCcore-9.3.0-Python-3.8.2     (H)
+ 21) SciPy-bundle/2020.03-intel-2020a-Python-3.8.2
+ 22) libpng/1.6.37-GCCcore-9.3.0                   (H)
+ 23) freetype/2.10.1-GCCcore-9.3.0                 (H)
+ 24) expat/2.2.9-GCCcore-9.3.0                     (H)
+ 25) util-linux/2.35-GCCcore-9.3.0                 (H)
+ 26) fontconfig/2.13.92-GCCcore-9.3.0              (H)
+ 27) xorg-macros/1.19.2-GCCcore-9.3.0              (H)
+ 28) libpciaccess/0.16-GCCcore-9.3.0               (H)
+ 29) X11/20200222-GCCcore-9.3.0                    (H)
+ 30) Tk/8.6.10-GCCcore-9.3.0                       (H)
+ 31) Tkinter/3.8.2-GCCcore-9.3.0                   (H)
+ 32) matplotlib/3.2.1-intel-2020a-Python-3.8.2
+
+  Where:
+   H:  Hidden Module
+
+ 
+
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+rfm_ex1_ar10.py:755: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig = plt.figure(figsize=(8, 4))
+Program starting... 
+
+User Info Loaded!
+Loaded user features from user_features/ml/feat_g_a_o_s.csv
+User features shape:  (943, 79) 
+
+Recommender Round 1: 
+
+training epoch: 0
+log likelihood: -15460.6904296875
+
+training epoch: 1
+log likelihood: -13158.830078125
+
+training epoch: 2
+log likelihood: -12714.25
+
+training epoch: 3
+log likelihood: -11872.9697265625
+
+training epoch: 4
+log likelihood: -10939.259765625
+
+training epoch: 5
+log likelihood: -10048.5703125
+
+training epoch: 6
+log likelihood: -9164.1298828125
+
+training epoch: 7
+log likelihood: -8725.150390625
+
+training epoch: 8
+log likelihood: -8228.919921875
+
+training epoch: 9
+log likelihood: -7853.6298828125
+
+training epoch: 10
+log likelihood: -7774.08984375
+
+training epoch: 11
+log likelihood: -7567.93994140625
+
+training epoch: 12
+log likelihood: -7308.08984375
+
+training epoch: 13
+log likelihood: -7085.18994140625
+
+training epoch: 14
+log likelihood: -6966.66015625
+
+training epoch: 15
+log likelihood: -6794.080078125
+
+training epoch: 16
+log likelihood: -6696.5
+
+training epoch: 17
+log likelihood: -6691.77978515625
+
+training epoch: 18
+log likelihood: -6656.14990234375
+
+training epoch: 19
+log likelihood: -6585.10009765625
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.916720
+std          1.404564
+min         -3.818304
+25%         -0.060449
+50%          1.012269
+75%          1.974513
+max          4.465515
+dtype: float64
+precision: 0.092
+recall: 0.266
+hit rate: 0.929
+Recommender Round 2: 
+
+training epoch: 0
+log likelihood: -26349.55078125
+
+training epoch: 1
+log likelihood: -23065.2890625
+
+training epoch: 2
+log likelihood: -20907.80078125
+
+training epoch: 3
+log likelihood: -18564.310546875
+
+training epoch: 4
+log likelihood: -17043.69921875
+
+training epoch: 5
+log likelihood: -16167.75
+
+training epoch: 6
+log likelihood: -15458.4296875
+
+training epoch: 7
+log likelihood: -14864.2998046875
+
+training epoch: 8
+log likelihood: -14389.8896484375
+
+training epoch: 9
+log likelihood: -14049.509765625
+
+training epoch: 10
+log likelihood: -13580.3603515625
+
+training epoch: 11
+log likelihood: -13296.3798828125
+
+training epoch: 12
+log likelihood: -13181.7802734375
+
+training epoch: 13
+log likelihood: -13086.66015625
+
+training epoch: 14
+log likelihood: -12981.6201171875
+
+training epoch: 15
+log likelihood: -12902.25
+
+training epoch: 16
+log likelihood: -12781.6103515625
+
+training epoch: 17
+log likelihood: -12618.599609375
+
+training epoch: 18
+log likelihood: -12566.8798828125
+
+training epoch: 19
+log likelihood: -12420.7802734375
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.811506
+std          1.406060
+min         -3.534985
+25%         -0.167946
+50%          0.871593
+75%          1.854560
+max          4.802665
+dtype: float64
+precision: 0.071
+recall: 0.216
+hit rate: 0.879
+Recommendations are not written to file for N higher than 20.
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+atr_classes:  {'M': 0, 'F': 1}
+atr_classes:  {'M': 0, 'F': 1}
+atr_classes:  {'M': 0, 'F': 1}
+gender
+atr_classes:  {}
+atr_classes:  {}
+atr_classes:  {}
+age
+atr_classes:  {'technician/engineer': 0, 'lawyer': 1, 'executive': 2, 'student': 3, 'programmer': 4, 'homemaker/retired': 5, 'scientist': 6, 'educator': 7, 'other/none': 8, 'salesman/marketing': 9, 'healthcare/doctor': 10, 'administrator': 11, 'librarian': 12, 'writer': 13, 'artist': 14, 'entertainment': 15}
+atr_classes:  {'technician/engineer': 0, 'lawyer': 1, 'executive': 2, 'student': 3, 'programmer': 4, 'homemaker/retired': 5, 'scientist': 6, 'educator': 7, 'other/none': 8, 'salesman/marketing': 9, 'healthcare/doctor': 10, 'administrator': 11, 'librarian': 12, 'writer': 13, 'artist': 14, 'entertainment': 15}
+atr_classes:  {'technician/engineer': 0, 'other/none': 1, 'writer': 2, 'executive': 3, 'administrator': 4, 'student': 5, 'lawyer': 6, 'educator': 7, 'scientist': 8, 'entertainment': 9, 'programmer': 10, 'librarian': 11, 'homemaker/retired': 12, 'artist': 13, 'salesman/marketing': 14, 'healthcare/doctor': 15}
+occupation
+atr_classes:  {}
+atr_classes:  {}
+atr_classes:  {}
+state
+all_attr:  Counter({0: 116, 1: 109, 6: 104, 5: 104, 7: 101, 8: 100, 2: 97, 4: 89, 3: 86, 9: 37})
+[8, 0, 4, 6, 2, 5, 7, 3, 1, 9]
+all_attr unique:  10
+
+
+CV with  dummy  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.714, f1=0.714, auc=0.500, est=0.710, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.688, f1=0.688, auc=0.500, est=0.716, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.693, f1=0.693, auc=0.500, est=0.715, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.734, f1=0.734, auc=0.500, est=0.705, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.723, f1=0.723, auc=0.500, est=0.707, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.711 (0.018) 
+
+F1: 0.711 (0.018) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.698, f1=0.698, auc=0.678, est=0.717, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.667, f1=0.667, auc=0.621, est=0.721, cfg={'log_reg__C': 0.001, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.693, f1=0.693, auc=0.719, est=0.731, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.707, f1=0.707, auc=0.683, est=0.706, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.644, f1=0.644, auc=0.678, est=0.748, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+Accuracy: 0.682 (0.023) 
+
+F1: 0.682 (0.023) 
+
+AUC: 0.676 (0.031) 
+
+
+
+CV with  svc  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.661, f1=0.661, auc=0.604, est=0.717, cfg={'svc__C': 0.001, 'svc__kernel': 'linear', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.688, f1=0.688, auc=0.544, est=0.718, cfg={'svc__C': 1.0, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.672, f1=0.672, auc=0.639, est=0.728, cfg={'svc__C': 0.001, 'svc__kernel': 'linear', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.734, f1=0.734, auc=0.660, est=0.705, cfg={'svc__C': 0.1, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.617, f1=0.617, auc=0.633, est=0.722, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+Accuracy: 0.674 (0.038) 
+
+F1: 0.674 (0.038) 
+
+AUC: 0.616 (0.040) 
+
+
+
+CV with  ran_for  for  gender
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.741, f1=0.741, auc=0.667, est=0.728, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.693, f1=0.693, auc=0.661, est=0.739, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.698, f1=0.698, auc=0.700, est=0.737, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.761, f1=0.761, auc=0.680, est=0.707, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  2
+y_test unique len:  2
+set()
+>acc=0.739, f1=0.739, auc=0.752, est=0.738, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1000} 
+
+Accuracy: 0.726 (0.026) 
+
+F1: 0.726 (0.026) 
+
+AUC: 0.692 (0.033) 
+
+
+
+CV with  dummy  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.534, f1=0.534, auc=0.500, est=0.588, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.556, f1=0.556, auc=0.500, est=0.582, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.619, f1=0.619, auc=0.500, est=0.566, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.580, f1=0.580, auc=0.500, est=0.576, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.596, f1=0.596, auc=0.500, est=0.572, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.577 (0.030) 
+
+F1: 0.577 (0.030) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.529, f1=0.529, auc=0.601, est=0.629, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.534, f1=0.534, auc=0.465, est=0.623, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.598, f1=0.598, auc=0.553, est=0.621, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.537, f1=0.537, auc=0.558, est=0.609, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.569, f1=0.569, auc=0.567, est=0.600, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+Accuracy: 0.554 (0.026) 
+
+F1: 0.554 (0.026) 
+
+AUC: 0.549 (0.045) 
+
+
+
+CV with  svc  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.545, f1=0.545, auc=0.553, est=0.611, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.550, f1=0.550, auc=0.332, est=0.631, cfg={'svc__C': 100, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.630, f1=0.630, auc=0.529, est=0.593, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.564, f1=0.564, auc=0.469, est=0.612, cfg={'svc__C': 100, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.622, f1=0.622, auc=0.581, est=0.591, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+Accuracy: 0.582 (0.036) 
+
+F1: 0.582 (0.036) 
+
+AUC: 0.493 (0.088) 
+
+
+
+CV with  ran_for  for  age
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.561, f1=0.561, auc=0.675, est=0.625, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.582, f1=0.582, auc=0.476, est=0.617, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.624, f1=0.624, auc=0.483, est=0.623, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.585, f1=0.585, auc=0.511, est=0.619, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  3
+y_test unique len:  3
+set()
+>acc=0.622, f1=0.622, auc=0.544, est=0.620, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1000} 
+
+Accuracy: 0.595 (0.025) 
+
+F1: 0.595 (0.025) 
+
+AUC: 0.538 (0.073) 
+
+
+
+CV with  dummy  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.217, f1=0.217, auc=0.500, est=0.206, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.180, f1=0.180, auc=0.500, est=0.215, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.206, f1=0.206, auc=0.500, est=0.208, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.229, f1=0.229, auc=0.500, est=0.203, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.207, f1=0.207, auc=0.500, est=0.208, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.208 (0.016) 
+
+F1: 0.208 (0.016) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.196, f1=0.196, auc=0.864, est=0.269, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.185, f1=0.185, auc=0.856, est=0.267, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.153, f1=0.153, auc=0.638, est=0.244, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.181, f1=0.181, auc=0.444, est=0.257, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.202, f1=0.202, auc=0.521, est=0.245, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+Accuracy: 0.183 (0.017) 
+
+F1: 0.183 (0.017) 
+
+AUC: 0.664 (0.171) 
+
+
+
+CV with  svc  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.238, f1=0.238, auc=0.743, est=0.228, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.180, f1=0.180, auc=0.623, est=0.257, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.228, f1=0.228, auc=0.602, est=0.235, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.223, f1=0.223, auc=0.812, est=0.233, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.207, f1=0.207, auc=0.586, est=0.240, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+Accuracy: 0.215 (0.020) 
+
+F1: 0.215 (0.020) 
+
+AUC: 0.673 (0.089) 
+
+
+
+CV with  ran_for  for  occupation
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.259, f1=0.259, auc=0.453, est=0.261, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1500} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.190, f1=0.190, auc=0.444, est=0.256, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.212, f1=0.212, auc=0.613, est=0.255, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.207, f1=0.207, auc=0.911, est=0.245, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  16
+y_test unique len:  16
+set()
+>acc=0.234, f1=0.234, auc=0.495, est=0.244, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 500} 
+
+Accuracy: 0.221 (0.024) 
+
+F1: 0.221 (0.024) 
+
+AUC: 0.583 (0.175) 
+
+
+
+CV with  dummy  for  state
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.122, f1=0.122, auc=0.500, est=0.097, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.106, f1=0.106, auc=0.500, est=0.127, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.127, f1=0.127, auc=0.500, est=0.109, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.117, f1=0.117, auc=0.500, est=0.111, cfg={'dummy__strategy': 'most_frequent'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.080, f1=0.080, auc=0.500, est=0.105, cfg={'dummy__strategy': 'most_frequent'} 
+
+Accuracy: 0.110 (0.017) 
+
+F1: 0.110 (0.017) 
+
+AUC: 0.500 (0.000) 
+
+
+
+CV with  log_reg  for  state
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.101, f1=0.101, auc=0.604, est=0.126, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'saga'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.090, f1=0.090, auc=0.512, est=0.137, cfg={'log_reg__C': 0.1, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.127, f1=0.127, auc=0.610, est=0.117, cfg={'log_reg__C': 0.1, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.149, f1=0.149, auc=0.505, est=0.118, cfg={'log_reg__C': 0.01, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'newton-cg'} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.133, f1=0.133, auc=0.511, est=0.143, cfg={'log_reg__C': 0.1, 'log_reg__max_iter': 10000, 'log_reg__penalty': 'l2', 'log_reg__solver': 'sag'} 
+
+Accuracy: 0.120 (0.022) 
+
+F1: 0.120 (0.022) 
+
+AUC: 0.548 (0.048) 
+
+
+
+CV with  svc  for  state
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.106, f1=0.106, auc=0.454, est=0.145, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.069, f1=0.069, auc=0.454, est=0.139, cfg={'svc__C': 0.1, 'svc__kernel': 'linear', 'svc__probability': True} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.111, f1=0.111, auc=0.556, est=0.131, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.112, f1=0.112, auc=0.520, est=0.123, cfg={'svc__C': 10, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.101, f1=0.101, auc=0.556, est=0.147, cfg={'svc__C': 0.1, 'svc__kernel': 'linear', 'svc__probability': True} 
+
+Accuracy: 0.100 (0.016) 
+
+F1: 0.100 (0.016) 
+
+AUC: 0.508 (0.046) 
+
+
+
+CV with  ran_for  for  state
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.116, f1=0.116, auc=0.438, est=0.155, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 15, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.122, f1=0.122, auc=0.496, est=0.147, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.127, f1=0.127, auc=0.572, est=0.142, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 15, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.122, f1=0.122, auc=0.495, est=0.135, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 100} 
+
+y_train unique len:  10
+y_test unique len:  10
+set()
+>acc=0.122, f1=0.122, auc=0.619, est=0.151, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1000} 
+
+Accuracy: 0.122 (0.003) 
+
+F1: 0.122 (0.003) 
+
+AUC: 0.524 (0.064) 
+
+Linux idun-02-10 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux

@@ -5,9 +5,7 @@ import copy
 import re
 from string import ascii_letters, digits
 
-#TODO: Switch user filtering and book filtering
-#TODO: Turn everything into implicit ratings
-#TODO: Figure out how to preprocess the location info
+
 
 
 path = 'data/book-crossing/'
@@ -64,9 +62,11 @@ df_users.loc[df_users['country_check']==1, 'country'] = np.nan
 US_mappings = ["Indiana,", "Illinois,", "New Hampshire,", "Louisiana,", "Texas,", "Oregon,",
  "Massachusetts,", "Virginia,",  "California,",  "North Carolina,",  "South Carolina,",
   "Auckland,", "United States", "Kentucky,", "Pennsylvania,", "Missouri,", "New Jersey,", 
-  "New York,", "Tennessee,", "Oklahoma,", "United State", "Mississippi,", "Us", "Michigan," ]
+  "New York,", "Tennessee,", "Oklahoma,", "United State", "Mississippi,", "Us", "Michigan,", 'Connecticut, ']
 UK_mappings = ['England']
 Italy_mappings = ["Piemonte,"]
+Belgium_mappings = ['Liege, ']
+Spain_mappings = ['Catalunya, ']
 
 countries = []
 for ind in df_users.index:
@@ -80,7 +80,11 @@ for ind in df_users.index:
         country = 'Italy'
     elif country in Italy_mappings:
        country = 'Italy'
-    elif country == 'N/A' or country== 'Far Away...':
+    elif country in Spain_mappings:
+       country = 'Spain'
+    elif country in Belgium_mappings:
+       country = 'Belgium'
+    elif country == 'N/A' or country == 'N/A, ' or country== 'Far Away...':
         country = np.nan
     countries.append(country)
         
@@ -124,7 +128,8 @@ print('Explicit ratings: %d\nImplicit ratings: %d' % (len(df_ratings_explicit), 
 
 
 
-book_ratings_threshold_perc = 0.5
+book_ratings_threshold_perc = 0.1
+file_perc = str(book_ratings_threshold_perc)[0] + "_" + str(book_ratings_threshold_perc)[2] 
 book_ratings_threshold = len(df_ratings_implicit['isbn'].unique()) * book_ratings_threshold_perc
 
 filter_books_list = df_ratings_implicit['isbn'].value_counts().head(int(book_ratings_threshold)).index.to_list()
@@ -140,18 +145,20 @@ filter_users_list = filter_users[filter_users >= user_ratings_threshold].index.t
 
 df_ratings_top_new = df_ratings_top[df_ratings_top['user_id'].isin(filter_users_list)]
 
+
 print('Filter: users with at least %d ratings\nNumber of records: %d' % (user_ratings_threshold, len(df_ratings_top_new)))
 print('Filter: unique users with at least %d ratings\nNumber of records: %d' % (user_ratings_threshold, len(df_ratings_top_new['user_id'].unique())))
 
-df_ratings_top_new.to_csv('data/bx-pre/ratings_top.csv', encoding='utf-8', index=False)
+df_ratings_top_new.to_csv('data/bx-pre/ratings_top_' + str(file_perc) + '.csv', encoding='utf-8', index=False)
 
 
 
 df_top_users = df_users_m[df_users_m['user_id'].isin(filter_users_list)]
 
+
 print('Filter: users with at least %d ratings\nNumber of records: %d' % (user_ratings_threshold, len(df_top_users)))
 
-df_top_users.to_csv('data/bx-pre/users_top.csv', encoding='utf-8', index=False)
+df_top_users.to_csv('data/bx-pre/users_top_' + str(file_perc) + '.csv', encoding='utf-8', index=False)
 
 
 

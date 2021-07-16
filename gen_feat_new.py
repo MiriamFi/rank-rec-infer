@@ -1,6 +1,7 @@
 
 import pandas as pd
 from uszipcode import SearchEngine
+import collections
 
 # Constants
 OCC_NUM = 21
@@ -10,9 +11,10 @@ CITY = "major_city"
 COUNTY = "county"
 AREA_5 = "area_5"
 AREA_2 = "area_2"
+COAST = "coast"
 
 
-LOC_TYPE = AREA_5
+LOC_TYPE = COAST
 
 AGE_GROUPS = {
     "age_0": [0,34],
@@ -33,6 +35,13 @@ STATE_AREA_5 = {
     'northeast' : ['NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT'],
     'southeast' : ['AR', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD', 'WV', 'KY','TN'],
     'none' : None
+}
+
+STATE_COAST = {
+    'coast' : ['WA','OR','CA','AK','HI', 'TX', 'LA', 'MS', 'AL', 'GA', 'FL', 'SC', 'NC', 'VA', 'DC', 'DE','MD','NY', 'PA', 'NJ', 'CT', 'RI', 'MA', 'NH', 'ME', 'VT','MN','WI','IL', 'IN', 'MI', 'OH'],
+    'rest': ['ID', 'MT', 'WY', 'CO', 'UT', 'NV', 'ND', 'SD', 'NE', 'KS',  'IA', 'MO', 'AZ', 'NM', 'OK', 'AR', 'WV', 'KY','TN'],
+    'none' : None
+
 }
 
 STATE_AREA_2 = {
@@ -162,10 +171,17 @@ def add_occupation_feature(user_info, user_features):
 
 # Add location to user features
 def add_location_feature(user_info, user_features):
-    state_area = STATE_AREA_5 if LOC_TYPE== AREA_5 else STATE_AREA_2
+    if LOC_TYPE== AREA_5:
+        state_area = STATE_AREA_5
+    elif LOC_TYPE== AREA_2:
+        state_area = STATE_AREA_2
+    elif LOC_TYPE== COAST:
+        state_area = STATE_COAST
     
     if added_features["location"] == True:
         return
+    
+    locations = []
     
     # Map zip code to state/city
     def map_location(zipcode):
@@ -178,8 +194,10 @@ def add_location_feature(user_info, user_features):
     def map_state_to_area(state):
         for key in state_area.keys():
             if state == None:
+                locations.append('none')
                 return 'none'
             elif state in state_area[key]:
+                locations.append(key)
                 return key
         return None
 
@@ -196,6 +214,9 @@ def add_location_feature(user_info, user_features):
     
     added_features["location"] = True
     print("Location feature was added")
+    cnt = collections.Counter(locations)
+    print(cnt)
+    print("Len unique locations: ", len(cnt))
     return user_features
 
 
@@ -214,6 +235,8 @@ def get_new_file_name():
             filename += "_r5"
         if LOC_TYPE == AREA_2:
             filename += "_r2"
+        if LOC_TYPE == COAST:
+            filename += "_coast"
         
     filename += ".csv"
     return filename

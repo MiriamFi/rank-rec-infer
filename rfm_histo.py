@@ -236,6 +236,7 @@ def load_interaction_data(filename="u.data", path="data/ml-100k/"):
     # Prepare data
     data = pd.DataFrame(data=data)
     # print(data.iloc[0])
+    print(data.shape)
     return data
 
 
@@ -297,13 +298,16 @@ def load_user_features():
 ### Data preparation functions ###
 
 def prepare_rec_splits(data, train_size=0.9, test_size=0.1):
+    data.sort_values(by=['ts'])
     ranks = data.groupby('user_id')['ts'].rank(method='first')
+
+    #print("ranks: ", ranks)
     counts = data['user_id'].map(data.groupby('user_id')['ts'].apply(len))
+    #print("counts: ", counts)
     thrs_train = (ranks / counts) <= train_size
     thres_train = pd.DataFrame(thrs_train, columns=["thrs_train"])
     data = data.join(thres_train)
     X_train = data[data['thrs_train'] == True]
-    # print("X_train: ", X_train)
     X_train = X_train.drop(columns=['thrs_train', 'ts'], axis=1)
     # print("X_train: ", X_train)
     if train_size + test_size == 1.0:
@@ -325,6 +329,8 @@ def prepare_rec_splits(data, train_size=0.9, test_size=0.1):
     X_test = X_test.applymap(str)
     X_train = X_train.sort_values(by=['user_id'])
     X_test = X_test.sort_values(by=['user_id'])
+    print(X_train)
+    print(X_test)
     return (X_train, X_test)
 
 
@@ -1032,6 +1038,8 @@ def main():
     rec_test = recs_to_matrix(recommendations_test)
     print("Rec train shape: ", rec_train.shape)
     print("Rec test shape: ", rec_test.shape)
+
+    print("Rec train: ", rec_train)
 
     results = []
 
