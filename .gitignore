@@ -146,5 +146,6 @@ cython_debug/
 data/
 user_features/
 bx-pre/
+experiment_results/old_experiments/
 
 # End of https://www.toptal.com/developers/gitignore/api/python

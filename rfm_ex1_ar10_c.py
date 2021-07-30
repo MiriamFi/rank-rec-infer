@@ -54,7 +54,7 @@ INFER_ATTR = {
     "gender": True,
     "age": True,
     "occupation": True,
-    "state": True,
+    "state": False,
     "county": False,
     "city": False,
     'area_5' : False,
@@ -1014,7 +1014,7 @@ def main():
     """
 
     recommendations_train = pd.read_csv('data/bx-pre/rec_train.csv', sep=',')
-    recommendations_test = pd.read_csv('data/bx-pre/rec_train.csv', sep=',')
+    recommendations_test = pd.read_csv('data/bx-pre/rec_test.csv', sep=',')
     users = []
     for key in user_info.keys():
         users.append(key)

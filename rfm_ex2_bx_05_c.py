@@ -672,6 +672,9 @@ def main():
     #df_ratings = df_ratings.drop(columns=["book_rating"], axis=1)
     users = np.sort(df_ratings.user_id.unique())
 
+    print_matrix_dim(df_ratings, "df_ratings")
+    evaluate_matrix_sparsity(df_ratings, "df_ratings")
+
     # Create train and test sets
     (X_train1, X_test1) = prepare_rec_splits(df_ratings, train_size=0.4, test_size=0.3)
     (X_train2, X_test2) = prepare_rec_splits(df_ratings, train_size=0.7, test_size=0.3)

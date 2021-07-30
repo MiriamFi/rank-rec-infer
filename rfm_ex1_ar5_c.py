@@ -745,8 +745,8 @@ def main():
     # Load user info
     user_info = load_user_data()
 
-    
     """
+    
     # Load user features
     user_features = load_user_features()
 
@@ -762,6 +762,9 @@ def main():
     (train_users1, train_items1, test_users1, test_items1) = get_users_items(X_train1, X_test1)
     (train_users2, train_items2, test_users2, test_items2) = get_users_items(X_train2, X_test2)
 
+    print_matrix_dim(interaction_data, "interaction_data")
+    evaluate_matrix_sparsity(interaction_data, "interaction_data,")
+    
     
     # Training and test set dimensions
     print_matrix_dim(X_train1, "X_train1")
@@ -804,12 +807,14 @@ def main():
     write_double_rec_to_csv(recommendations_train, scores_train, recommendations_test, scores_test)
     write_rec_scores_to_csv(rec_scores)
 
+    
+
     recommendations_train.to_csv('data/bx-pre/rec_train.csv', encoding='utf-8', index=False)
     recommendations_test.to_csv('data/bx-pre/rec_test.csv', encoding='utf-8', index=False)
-    
     """
+    
     recommendations_train = pd.read_csv('data/bx-pre/rec_train.csv', sep=',')
-    recommendations_test = pd.read_csv('data/bx-pre/rec_train.csv', sep=',')
+    recommendations_test = pd.read_csv('data/bx-pre/rec_test.csv', sep=',')
     users = []
     for key in user_info.keys():
         users.append(key)

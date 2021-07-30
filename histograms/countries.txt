@@ -1,0 +1,13 @@
+unique_countries:  ['Usa' nan 'France' 'Australia' 'Taiwan' 'Germany' 'Iran' 'Spain' 'Italy'
+ 'Switzerland' 'United Kingdom' 'Romania' 'Malaysia' 'Austria' 'Canada'
+ 'Portugal' 'Finland' 'Greece' 'Qatar' 'Japan' 'New Zealand' 'Ireland'
+ 'Netherlands' 'Bulgaria' 'Iraq' 'Brazil' 'Guernsey' 'Sweden' 'Belgium'
+ 'China' 'Burma' 'South Africa' 'Poland' 'Russia' 'Singapore' 'Cyprus'
+ 'Kuwait' 'Dominican Republic' 'Norway' 'Denmark' 'Catalunya,'
+ 'Czech Republic' 'Hong Kong' 'Costa Rica' 'Philippines' 'N/A,' 'Egypt'
+ 'Aruba']
+
+unique_countries len:  48
+Counter({'Usa': 2496, 'Canada': 361, 'United Kingdom': 189, 'Germany': 172, 'Australia': 99, nan: 90, 'Spain': 84, 'France': 68, 'Portugal': 46, 'Netherlands': 37, 'Italy': 33, 'Malaysia': 26, 'New Zealand': 21, 'Austria': 17, 'Switzerland': 15, 'Finland': 12, 'Iran': 6, 'Romania': 6, 'Japan': 5, 'Ireland': 5, 'Brazil': 5, 'Singapore': 4, 'Denmark': 4, 'Sweden': 3, 'Dominican Republic': 3, 'Greece': 2, 'Qatar': 2, 'Belgium': 2, 'China': 2, 'South Africa': 2, 'Poland': 2, 'Norway': 2, 'Taiwan': 1, 'Bulgaria': 1, 'Iraq': 1, 'Guernsey': 1, 'Burma': 1, 'Russia': 1, 'Cyprus': 1, 'Kuwait': 1, 'Catalunya,': 1, 'Czech Republic': 1, 'Hong Kong': 1, 'Costa Rica': 1, 'Philippines': 1, 'N/A,': 1, 'Egypt': 1, 'Aruba': 1})
+df_users shape:  (3837, 49)
+User features saved to file:  user_features/bx/feat_co_0_5.csv

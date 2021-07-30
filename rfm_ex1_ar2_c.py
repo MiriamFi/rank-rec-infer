@@ -809,11 +809,14 @@ def main():
     #recommendations_test.to_csv('data/bx-pre/rec_test.csv', encoding='utf-8', index=False)
     """
     recommendations_train = pd.read_csv('data/bx-pre/rec_train.csv', sep=',')
-    recommendations_test = pd.read_csv('data/bx-pre/rec_train.csv', sep=',')
+    recommendations_test = pd.read_csv('data/bx-pre/rec_test.csv', sep=',')
     users = []
     for key in user_info.keys():
         users.append(key)
     users = np.sort(users)
+
+
+
 
     # Classifier
     # X = interaction_data + extra attributes

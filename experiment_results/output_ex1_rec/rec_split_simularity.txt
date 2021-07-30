@@ -1,0 +1,3 @@
+hits:  22539
+hit_rate per user:  23.901378579003183
+% of items being the same in the sets: 47.803%

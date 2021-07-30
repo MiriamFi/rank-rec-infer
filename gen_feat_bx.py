@@ -4,6 +4,7 @@ from uszipcode import SearchEngine
 import re
 import numpy as np
 import collections
+from matplotlib import pyplot as plt
 
 # Constants
 """
@@ -28,7 +29,7 @@ USA_CAT = {
 }
 
 
-BX_SIZE = '0_1'
+BX_SIZE = '0_5'
 
 BX_SIZES = ['0_1','0_3', '0_5', '0_7']
 
@@ -81,6 +82,22 @@ def load_bx_user_data():
     countries = df_users['country'].to_list()
     cnt = collections.Counter(countries)
     print(cnt)
+
+    counter_values = []
+    labels = []
+    for key in cnt.keys():
+        counter_values.append(cnt[key])
+        if key == 'N/A, ':
+            key='nan'
+        labels.append(str(key))
+    print(labels)
+
+    plt.bar(labels, height=counter_values)
+    plt.title('Countries', fontsize=14)
+    plt.xlabel('attribute class')
+    plt.ylabel('users')
+    #plt.xticks(counter_values, labels)
+    plt.show()
     df_users.drop(['country'], axis=1, inplace=True)
     df_users.drop(['age'], axis=1, inplace=True)
 
@@ -112,7 +129,7 @@ def main():
     
     user_features = load_bx_user_data()
     filename = get_new_file_name()
-    user_features.to_csv(filename, index=False)
+    #user_features.to_csv(filename, index=False)
     print("User features saved to file: ", filename)
 
     
