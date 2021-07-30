@@ -1,0 +1,219 @@
+Program starting...
+
+User Info Loaded!
+Loaded user features from user_features/ml_new/feat_g_a_o_s.csv
+User features shape:  (943, 79)
+
+Matrix Dimensions for  X_train1
+X_train1  shape: (39633, 2)
+X_train1  unique users: 943
+X_train1  unique items: 1440
+
+
+X_train1  matrix sparsity: 97.1%
+
+
+Matrix Dimensions for  X_test1
+X_test1  shape: (29942, 2)
+X_test1  unique users: 943
+X_test1  unique items: 1465
+
+
+X_test1  matrix sparsity: 97.8%
+
+
+Matrix Dimensions for  X_train2
+X_train2  shape: (69575, 2)
+X_train2  unique users: 943
+X_train2  unique items: 1575
+
+
+X_train2  matrix sparsity: 95.3%
+
+
+Matrix Dimensions for  X_test2
+X_test2  shape: (30425, 2)
+X_test2  unique users: 943
+X_test2  unique items: 1574
+
+
+X_test2  matrix sparsity: 98.0%
+
+
+X train and test 1
+Stats for  users
+Train  users : 943
+Test  users 943
+cold-start  users : set()
+
+
+Stats for  items
+Train  items : 1440
+Test  items 1465
+cold-start  items : {'1156', '1486', '439', '1523', '1403', '1611', '1446', '1253', '1314', '775', '1239', '1435', '1370', '1471', '858', '1397', '1364', '1597', '1416', '852', '1642', '1522', '1602', '784', '437', '1450', '1595', '1222', '1672', '838', '1505', '1509', '1660', '1541', '598', '1175', '1521', '1144', '1325', '1531', '1310', '1419', '1444', '830', '1638', '668', '1374', '1230', '1662', '1285', '1540', '1032', '1609', '573', '1550', '1495', '1467', '388', '1309', '1443', '1303', '1293', '1246', '1676', '1481', '1104', '1155', '1231', '1617', '1626', '1477', '1598', '1459', '1210', '817', '920', '1594', '572', '1634', '438', '1200', '1600', '1548', '1515', '1480', '1162', '400', '138', '1599', '1456', '1639', '78', '745', '788', '1534', '1578', '1454', '1657', '1658', '1501', '1448', '992', '1654', '415', '1002', '777', '1422', '1003', '1412', '1490', '765', '1250', '1517', '791', '1096', '1644', '1474', '1532', '1223', '35', '442', '1528', '927', '1043', '816', '1553', '1596', '1354', '804', '1027', '1542', '37', '726', '1402', '1610'}
+
+
+X train and test 2
+Stats for  users
+Train  users : 943
+Test  users 943
+cold-start  users : set()
+
+
+Stats for  items
+Train  items : 1575
+Test  items 1574
+cold-start  items : {'1493', '1565', '1562', '1616', '1510', '1130', '1649', '1549', '1570', '1653', '1432', '1606', '1581', '814', '1563', '1504', '1633', '1579', '1499', '1489', '957', '1453', '1682', '1668', '677', '1569', '1625', '1525', '1189', '1584', '1671', '1583', '1508', '1543', '1452', '1646', '1647', '1624', '1674', '1665', '1650', '1613', '1677', '1673', '1627', '897', '1447', '1476', '1637', '1546', '1659', '1618', '1614', '1680', '1667', '1365', '1494', '1664', '1648', '1498', '1460', '1526', '1669', '1679', '626', '1632', '1576', '1580', '1186', '1651', '1586', '1681', '1571', '600', '1520', '1645', '599', '1640', '1236', '1408', '1663', '1492', '1572', '1436', '1235', '1666', '1590', '1678', '1497', '1582', '1106', '1588', '913', '1593', '1327', '1458', '1628', '910', '911', '1675', '1275', '1398', '1603', '1661', '1575', '1577', '1621'}
+
+
+Recommender Round 1:
+
+training epoch: 0
+log likelihood: -15336.2197265625
+
+training epoch: 1
+log likelihood: -13171.1201171875
+
+training epoch: 2
+log likelihood: -12849.33984375
+
+training epoch: 3
+log likelihood: -12007.7197265625
+
+training epoch: 4
+log likelihood: -11185.2900390625
+
+training epoch: 5
+log likelihood: -10220.1201171875
+
+training epoch: 6
+log likelihood: -9303.2900390625
+
+training epoch: 7
+log likelihood: -8870.169921875
+
+training epoch: 8
+log likelihood: -8338.6796875
+
+training epoch: 9
+log likelihood: -7968.5
+
+training epoch: 10
+log likelihood: -7756.31982421875
+
+training epoch: 11
+log likelihood: -7624.7998046875
+
+training epoch: 12
+log likelihood: -7268.22021484375
+
+training epoch: 13
+log likelihood: -7034.35986328125
+
+training epoch: 14
+log likelihood: -6965.60009765625
+
+training epoch: 15
+log likelihood: -6847.39990234375
+
+training epoch: 16
+log likelihood: -6708.240234375
+
+training epoch: 17
+log likelihood: -6660.2099609375
+
+training epoch: 18
+log likelihood: -6586.39013671875
+
+training epoch: 19
+log likelihood: -6572.39990234375
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.846137
+std          1.451506
+min         -3.780623
+25%         -0.185321
+50%          0.913497
+75%          1.946337
+max          4.755292
+dtype: float64
+precision: 0.087
+recall: 0.262
+hit rate: 0.918
+Recommender Round 2:
+
+training epoch: 0
+log likelihood: -26401.19921875
+
+training epoch: 1
+log likelihood: -23302.9296875
+
+training epoch: 2
+log likelihood: -21482.80078125
+
+training epoch: 3
+log likelihood: -19161.580078125
+
+training epoch: 4
+log likelihood: -17110.69921875
+
+training epoch: 5
+log likelihood: -16116.0400390625
+
+training epoch: 6
+log likelihood: -15332.0302734375
+
+training epoch: 7
+log likelihood: -14655.33984375
+
+training epoch: 8
+log likelihood: -14167.419921875
+
+training epoch: 9
+log likelihood: -13831.740234375
+
+training epoch: 10
+log likelihood: -13679.98046875
+
+training epoch: 11
+log likelihood: -13447.740234375
+
+training epoch: 12
+log likelihood: -13034.8896484375
+
+training epoch: 13
+log likelihood: -12913.8095703125
+
+training epoch: 14
+log likelihood: -12928.400390625
+
+training epoch: 15
+log likelihood: -12803.75
+
+training epoch: 16
+log likelihood: -12730.58984375
+
+training epoch: 17
+log likelihood: -12554.2900390625
+
+training epoch: 18
+log likelihood: -12489.1796875
+
+training epoch: 19
+log likelihood: -12322.0302734375
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.852363
+std          1.468422
+min         -4.353670
+25%         -0.160283
+50%          0.920388
+75%          1.939886
+max          4.855047
+dtype: float64
+precision: 0.071
+recall: 0.215
+hit rate: 0.877
+Recommendations are not written to file for N higher than 20.

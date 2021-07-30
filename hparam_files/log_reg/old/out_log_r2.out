@@ -1,0 +1,36 @@
+we are running from this directory: /cluster/home/miriamfi/RankRec
+The name of the job is: log_r2
+The job ID is 331812
+The job was run on these nodes: idun-02-13
+Number of nodes: 1
+We are using 1 cores
+We are using 1 cores per node
+Total of 1 cores
+
+Currently Loaded Modules:
+  1) GCCcore/10.2.0
+  2) zlib/1.2.11-GCCcore-10.2.0          (H)
+  3) binutils/2.35-GCCcore-10.2.0        (H)
+  4) iccifort/2020.4.304
+  5) numactl/2.0.13-GCCcore-10.2.0       (H)
+  6) UCX/1.9.0-GCCcore-10.2.0            (H)
+  7) impi/2019.9.304-iccifort-2020.4.304
+  8) iimpi/2020b
+  9) imkl/2020.4.304-iimpi-2020b
+ 10) intel/2020b
+ 11) bzip2/1.0.8-GCCcore-10.2.0          (H)
+ 12) ncurses/6.2-GCCcore-10.2.0          (H)
+ 13) libreadline/8.0-GCCcore-10.2.0      (H)
+ 14) Tcl/8.6.10-GCCcore-10.2.0           (H)
+ 15) SQLite/3.33.0-GCCcore-10.2.0        (H)
+ 16) XZ/5.2.5-GCCcore-10.2.0             (H)
+ 17) GMP/6.2.0-GCCcore-10.2.0            (H)
+ 18) libffi/3.3-GCCcore-10.2.0           (H)
+ 19) Python/3.8.6-GCCcore-10.2.0
+
+  Where:
+   H:  Hidden Module
+
+ 
+
+slurmstepd: error: *** JOB 331812 ON idun-02-13 CANCELLED AT 2021-06-23T10:50:15 DUE TO TIME LIMIT ***

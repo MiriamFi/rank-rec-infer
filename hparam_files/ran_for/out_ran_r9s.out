@@ -1,0 +1,276 @@
+we are running from this directory: /cluster/home/miriamfi/RankRec
+The name of the job is: ran_r9s
+The job ID is 335304
+The job was run on these nodes: idun-02-11
+Number of nodes: 1
+We are using 1 cores
+We are using 1 cores per node
+Total of 1 cores
+
+Currently Loaded Modules:
+  1) GCCcore/9.3.0
+  2) zlib/1.2.11-GCCcore-9.3.0                     (H)
+  3) binutils/2.34-GCCcore-9.3.0                   (H)
+  4) iccifort/2020.1.217
+  5) numactl/2.0.13-GCCcore-9.3.0                  (H)
+  6) UCX/1.8.0-GCCcore-9.3.0                       (H)
+  7) impi/2019.7.217-iccifort-2020.1.217
+  8) iimpi/2020a
+  9) imkl/2020.1.217-iimpi-2020a
+ 10) intel/2020a
+ 11) bzip2/1.0.8-GCCcore-9.3.0                     (H)
+ 12) ncurses/6.2-GCCcore-9.3.0                     (H)
+ 13) libreadline/8.0-GCCcore-9.3.0                 (H)
+ 14) Tcl/8.6.10-GCCcore-9.3.0                      (H)
+ 15) SQLite/3.31.1-GCCcore-9.3.0                   (H)
+ 16) XZ/5.2.5-GCCcore-9.3.0                        (H)
+ 17) GMP/6.2.0-GCCcore-9.3.0                       (H)
+ 18) libffi/3.3-GCCcore-9.3.0                      (H)
+ 19) Python/3.8.2-GCCcore-9.3.0
+ 20) pybind11/2.4.3-GCCcore-9.3.0-Python-3.8.2     (H)
+ 21) SciPy-bundle/2020.03-intel-2020a-Python-3.8.2
+ 22) libpng/1.6.37-GCCcore-9.3.0                   (H)
+ 23) freetype/2.10.1-GCCcore-9.3.0                 (H)
+ 24) expat/2.2.9-GCCcore-9.3.0                     (H)
+ 25) util-linux/2.35-GCCcore-9.3.0                 (H)
+ 26) fontconfig/2.13.92-GCCcore-9.3.0              (H)
+ 27) xorg-macros/1.19.2-GCCcore-9.3.0              (H)
+ 28) libpciaccess/0.16-GCCcore-9.3.0               (H)
+ 29) X11/20200222-GCCcore-9.3.0                    (H)
+ 30) Tk/8.6.10-GCCcore-9.3.0                       (H)
+ 31) Tkinter/3.8.2-GCCcore-9.3.0                   (H)
+ 32) matplotlib/3.2.1-intel-2020a-Python-3.8.2
+
+  Where:
+   H:  Hidden Module
+
+ 
+
+Program starting... 
+
+User Info Loaded!
+Loaded user features from user_features/feat_g_a_o_s.csv
+User features shape:  (943, 79) 
+
+Recommender Round 1: 
+
+training epoch: 0
+log likelihood: -15457.1103515625
+
+training epoch: 1
+log likelihood: -13156.6904296875
+
+training epoch: 2
+log likelihood: -12544.599609375
+
+training epoch: 3
+log likelihood: -11818.7099609375
+
+training epoch: 4
+log likelihood: -10744.51953125
+
+training epoch: 5
+log likelihood: -9786.900390625
+
+training epoch: 6
+log likelihood: -9050.740234375
+
+training epoch: 7
+log likelihood: -8811.08984375
+
+training epoch: 8
+log likelihood: -8394.4404296875
+
+training epoch: 9
+log likelihood: -7911.2001953125
+
+training epoch: 10
+log likelihood: -7642.14990234375
+
+training epoch: 11
+log likelihood: -7595.2900390625
+
+training epoch: 12
+log likelihood: -7301.47021484375
+
+training epoch: 13
+log likelihood: -7188.9501953125
+
+training epoch: 14
+log likelihood: -6919.33984375
+
+training epoch: 15
+log likelihood: -6903.4501953125
+
+training epoch: 16
+log likelihood: -6824.0400390625
+
+training epoch: 17
+log likelihood: -6633.18017578125
+
+training epoch: 18
+log likelihood: -6704.10986328125
+
+training epoch: 19
+log likelihood: -6601.3798828125
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.913671
+std          1.411474
+min         -3.458176
+25%         -0.079870
+50%          0.996234
+75%          1.977124
+max          4.691661
+dtype: float64
+precision: 0.093
+recall: 0.275
+hit rate: 0.942
+Recommender Round 2: 
+
+training epoch: 0
+log likelihood: -26473.619140625
+
+training epoch: 1
+log likelihood: -23126.310546875
+
+training epoch: 2
+log likelihood: -21016.26953125
+
+training epoch: 3
+log likelihood: -18742.0703125
+
+training epoch: 4
+log likelihood: -17036.94921875
+
+training epoch: 5
+log likelihood: -16032.8603515625
+
+training epoch: 6
+log likelihood: -15345.150390625
+
+training epoch: 7
+log likelihood: -14748.2900390625
+
+training epoch: 8
+log likelihood: -14194.0498046875
+
+training epoch: 9
+log likelihood: -13975.58984375
+
+training epoch: 10
+log likelihood: -13826.3603515625
+
+training epoch: 11
+log likelihood: -13322.580078125
+
+training epoch: 12
+log likelihood: -13233.830078125
+
+training epoch: 13
+log likelihood: -12991.58984375
+
+training epoch: 14
+log likelihood: -13019.650390625
+
+training epoch: 15
+log likelihood: -12750.5
+
+training epoch: 16
+log likelihood: -12597.0595703125
+
+training epoch: 17
+log likelihood: -12505.08984375
+
+training epoch: 18
+log likelihood: -12448.1396484375
+
+training epoch: 19
+log likelihood: -12593.349609375
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.807661
+std          1.424060
+min         -3.791778
+25%         -0.196329
+50%          0.887419
+75%          1.883309
+max          4.606211
+dtype: float64
+precision: 0.071
+recall: 0.205
+hit rate: 0.888
+Recommendations are not written to file for N higher than 20.
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+
+
+CV with  ran_for  for  gender
+>acc=0.714,  est=0.714, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 500} 
+
+>acc=0.683,  est=0.736, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 1500} 
+
+>acc=0.693,  est=0.725, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.723,  est=0.718, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+>acc=0.729,  est=0.726, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+Accuracy: 0.708 (0.018) 
+
+accuracy: 0.729
+auc:  0.6031532805429864
+
+
+CV with  ran_for  for  age
+>acc=0.513,  est=0.606, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 100} 
+
+>acc=0.561,  est=0.614, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+>acc=0.598,  est=0.597, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 250} 
+
+>acc=0.574,  est=0.595, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 2, 'ran_for__n_estimators': 500} 
+
+>acc=0.601,  est=0.605, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+Accuracy: 0.569 (0.032) 
+
+accuracy: 0.601
+auc:  0.6376386170906719
+
+
+CV with  ran_for  for  occupation
+>acc=0.243,  est=0.228, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 15, 'ran_for__n_estimators': 100} 
+
+>acc=0.180,  est=0.248, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 15, 'ran_for__n_estimators': 250} 
+
+>acc=0.217,  est=0.248, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 250} 
+
+>acc=0.245,  est=0.224, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 2, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 500} 
+
+>acc=0.207,  est=0.225, cfg={'ran_for__max_features': 20, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 250} 
+
+Accuracy: 0.218 (0.024) 
+
+accuracy: 0.207
+auc:  0.37117117117117115
+
+
+CV with  ran_for  for  state
+>acc=0.143,  est=0.122, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 250} 
+
+>acc=0.111,  est=0.138, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 1, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 100} 
+
+>acc=0.143,  est=0.134, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 100} 
+
+>acc=0.117,  est=0.130, cfg={'ran_for__max_features': 15, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 20, 'ran_for__n_estimators': 1500} 
+
+>acc=0.144,  est=0.128, cfg={'ran_for__max_features': 10, 'ran_for__min_samples_leaf': 4, 'ran_for__min_samples_split': 10, 'ran_for__n_estimators': 1500} 
+
+Accuracy: 0.131 (0.014) 
+
+accuracy: 0.144
+auc:  0.5546353807223372
+Linux idun-02-11 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux

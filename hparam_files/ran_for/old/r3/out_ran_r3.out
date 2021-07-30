@@ -1,0 +1,247 @@
+we are running from this directory: /cluster/home/miriamfi/RankRec
+The name of the job is: ran_r3
+The job ID is 331236
+The job was run on these nodes: idun-02-25
+Number of nodes: 1
+We are using 1 cores
+We are using 1 cores per node
+Total of 1 cores
+
+Currently Loaded Modules:
+  1) GCCcore/10.2.0
+  2) zlib/1.2.11-GCCcore-10.2.0          (H)
+  3) binutils/2.35-GCCcore-10.2.0        (H)
+  4) iccifort/2020.4.304
+  5) numactl/2.0.13-GCCcore-10.2.0       (H)
+  6) UCX/1.9.0-GCCcore-10.2.0            (H)
+  7) impi/2019.9.304-iccifort-2020.4.304
+  8) iimpi/2020b
+  9) imkl/2020.4.304-iimpi-2020b
+ 10) intel/2020b
+ 11) bzip2/1.0.8-GCCcore-10.2.0          (H)
+ 12) ncurses/6.2-GCCcore-10.2.0          (H)
+ 13) libreadline/8.0-GCCcore-10.2.0      (H)
+ 14) Tcl/8.6.10-GCCcore-10.2.0           (H)
+ 15) SQLite/3.33.0-GCCcore-10.2.0        (H)
+ 16) XZ/5.2.5-GCCcore-10.2.0             (H)
+ 17) GMP/6.2.0-GCCcore-10.2.0            (H)
+ 18) libffi/3.3-GCCcore-10.2.0           (H)
+ 19) Python/3.8.6-GCCcore-10.2.0
+
+  Where:
+   H:  Hidden Module
+
+ 
+
+Program starting... 
+
+User Info Loaded!
+Loaded user features from user_features/feat_g_a_o_s.csv
+User features shape:  (943, 79) 
+
+Recommender Round 1: 
+
+training epoch: 0
+log likelihood: -15467.1298828125
+
+training epoch: 1
+log likelihood: -13224.8896484375
+
+training epoch: 2
+log likelihood: -12914.75
+
+training epoch: 3
+log likelihood: -12545.2099609375
+
+training epoch: 4
+log likelihood: -12021.5
+
+training epoch: 5
+log likelihood: -11487.51953125
+
+training epoch: 6
+log likelihood: -10701.76953125
+
+training epoch: 7
+log likelihood: -10103.1904296875
+
+training epoch: 8
+log likelihood: -9605.48046875
+
+training epoch: 9
+log likelihood: -9167.7900390625
+
+training epoch: 10
+log likelihood: -8817.400390625
+
+training epoch: 11
+log likelihood: -8634.7197265625
+
+training epoch: 12
+log likelihood: -8347.330078125
+
+training epoch: 13
+log likelihood: -8112.58984375
+
+training epoch: 14
+log likelihood: -8042.0400390625
+
+training epoch: 15
+log likelihood: -8026.35009765625
+
+training epoch: 16
+log likelihood: -7734.509765625
+
+training epoch: 17
+log likelihood: -7533.72021484375
+
+training epoch: 18
+log likelihood: -7448.3701171875
+
+training epoch: 19
+log likelihood: -7381.02001953125
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.964785
+std          1.283805
+min         -3.739148
+25%          0.082705
+50%          1.071784
+75%          1.932930
+max          4.285686
+dtype: float64
+precision: 0.092
+recall: 0.264
+hit rate: 0.922
+Recommender Round 2: 
+
+training epoch: 0
+log likelihood: -26532.91015625
+
+training epoch: 1
+log likelihood: -23211.05078125
+
+training epoch: 2
+log likelihood: -21895.919921875
+
+training epoch: 3
+log likelihood: -20259.330078125
+
+training epoch: 4
+log likelihood: -18354.220703125
+
+training epoch: 5
+log likelihood: -17294.0
+
+training epoch: 6
+log likelihood: -16639.419921875
+
+training epoch: 7
+log likelihood: -16002.1796875
+
+training epoch: 8
+log likelihood: -15289.3203125
+
+training epoch: 9
+log likelihood: -15127.8203125
+
+training epoch: 10
+log likelihood: -14656.5
+
+training epoch: 11
+log likelihood: -14195.400390625
+
+training epoch: 12
+log likelihood: -14133.5
+
+training epoch: 13
+log likelihood: -13842.3896484375
+
+training epoch: 14
+log likelihood: -13693.849609375
+
+training epoch: 15
+log likelihood: -13489.1396484375
+
+training epoch: 16
+log likelihood: -13461.6796875
+
+training epoch: 17
+log likelihood: -13259.169921875
+
+training epoch: 18
+log likelihood: -13249.1904296875
+
+training epoch: 19
+log likelihood: -13034.51953125
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.931917
+std          1.387688
+min         -4.049701
+25%          0.001423
+50%          1.044221
+75%          1.968478
+max          4.607283
+dtype: float64
+precision: 0.076
+recall: 0.224
+hit rate: 0.897
+Recommendations are not written to file for N higher than 20.
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+CV for  gender
+>acc=0.714, est=0.723, cfg={'max_depth': 30, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.688, est=0.732, cfg={'max_depth': 30, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.693, est=0.732, cfg={'max_depth': 40, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.729, est=0.721, cfg={'max_depth': 20, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.723, est=0.714, cfg={'max_depth': 30, 'max_features': 4, 'n_estimators': 100} 
+
+Accuracy: 0.709 (0.016) 
+
+CV for  age
+>acc=0.556, est=0.625, cfg={'max_depth': 20, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.566, est=0.629, cfg={'max_depth': 40, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.614, est=0.613, cfg={'max_depth': 40, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.569, est=0.632, cfg={'max_depth': 30, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.606, est=0.636, cfg={'max_depth': 30, 'max_features': 4, 'n_estimators': 100} 
+
+Accuracy: 0.582 (0.023) 
+
+CV for  occupation
+>acc=0.206, est=0.236, cfg={'max_depth': 20, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.185, est=0.241, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.201, est=0.231, cfg={'max_depth': 20, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.239, est=0.224, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.234, est=0.241, cfg={'max_depth': 20, 'max_features': 4, 'n_estimators': 100} 
+
+Accuracy: 0.213 (0.020) 
+
+CV for  state
+>acc=0.127, est=0.114, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.095, est=0.122, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.090, est=0.130, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.122, est=0.118, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+>acc=0.096, est=0.122, cfg={'max_depth': 10, 'max_features': 4, 'n_estimators': 100} 
+
+Accuracy: 0.106 (0.015) 
+
+Linux idun-02-25 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux

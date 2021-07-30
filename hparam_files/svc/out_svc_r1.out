@@ -1,0 +1,247 @@
+we are running from this directory: /cluster/home/miriamfi/RankRec
+The name of the job is: svc_r1
+The job ID is 332493
+The job was run on these nodes: idun-03-13
+Number of nodes: 1
+We are using 1 cores
+We are using 1 cores per node
+Total of 1 cores
+
+Currently Loaded Modules:
+  1) GCCcore/10.2.0
+  2) zlib/1.2.11-GCCcore-10.2.0          (H)
+  3) binutils/2.35-GCCcore-10.2.0        (H)
+  4) iccifort/2020.4.304
+  5) numactl/2.0.13-GCCcore-10.2.0       (H)
+  6) UCX/1.9.0-GCCcore-10.2.0            (H)
+  7) impi/2019.9.304-iccifort-2020.4.304
+  8) iimpi/2020b
+  9) imkl/2020.4.304-iimpi-2020b
+ 10) intel/2020b
+ 11) bzip2/1.0.8-GCCcore-10.2.0          (H)
+ 12) ncurses/6.2-GCCcore-10.2.0          (H)
+ 13) libreadline/8.0-GCCcore-10.2.0      (H)
+ 14) Tcl/8.6.10-GCCcore-10.2.0           (H)
+ 15) SQLite/3.33.0-GCCcore-10.2.0        (H)
+ 16) XZ/5.2.5-GCCcore-10.2.0             (H)
+ 17) GMP/6.2.0-GCCcore-10.2.0            (H)
+ 18) libffi/3.3-GCCcore-10.2.0           (H)
+ 19) Python/3.8.6-GCCcore-10.2.0
+
+  Where:
+   H:  Hidden Module
+
+ 
+
+Program starting... 
+
+User Info Loaded!
+Loaded user features from user_features/feat_g_a_o_s.csv
+User features shape:  (943, 79) 
+
+Recommender Round 1: 
+
+training epoch: 0
+log likelihood: -15420.6201171875
+
+training epoch: 1
+log likelihood: -13206.48046875
+
+training epoch: 2
+log likelihood: -12834.2802734375
+
+training epoch: 3
+log likelihood: -12361.400390625
+
+training epoch: 4
+log likelihood: -11878.9697265625
+
+training epoch: 5
+log likelihood: -11205.740234375
+
+training epoch: 6
+log likelihood: -10387.349609375
+
+training epoch: 7
+log likelihood: -9908.2998046875
+
+training epoch: 8
+log likelihood: -9402.259765625
+
+training epoch: 9
+log likelihood: -9046.7802734375
+
+training epoch: 10
+log likelihood: -8646.6201171875
+
+training epoch: 11
+log likelihood: -8540.4697265625
+
+training epoch: 12
+log likelihood: -8299.0302734375
+
+training epoch: 13
+log likelihood: -7939.31982421875
+
+training epoch: 14
+log likelihood: -7881.47021484375
+
+training epoch: 15
+log likelihood: -7668.39990234375
+
+training epoch: 16
+log likelihood: -7527.2001953125
+
+training epoch: 17
+log likelihood: -7393.75
+
+training epoch: 18
+log likelihood: -7428.3798828125
+
+training epoch: 19
+log likelihood: -7303.16015625
+recommendations_train shape:  (943, 50)
+Scores shape:  (29942,)
+count    29587.000000
+mean         0.900129
+std          1.280869
+min         -3.789740
+25%          0.024970
+50%          0.982762
+75%          1.871188
+max          4.147296
+dtype: float64
+precision: 0.084
+recall: 0.251
+hit rate: 0.897
+Recommender Round 2: 
+
+training epoch: 0
+log likelihood: -26478.91015625
+
+training epoch: 1
+log likelihood: -23242.9609375
+
+training epoch: 2
+log likelihood: -21768.310546875
+
+training epoch: 3
+log likelihood: -19767.380859375
+
+training epoch: 4
+log likelihood: -18056.390625
+
+training epoch: 5
+log likelihood: -17082.01953125
+
+training epoch: 6
+log likelihood: -16332.3095703125
+
+training epoch: 7
+log likelihood: -15838.5703125
+
+training epoch: 8
+log likelihood: -15162.76953125
+
+training epoch: 9
+log likelihood: -15047.26953125
+
+training epoch: 10
+log likelihood: -14791.51953125
+
+training epoch: 11
+log likelihood: -14389.26953125
+
+training epoch: 12
+log likelihood: -14158.599609375
+
+training epoch: 13
+log likelihood: -13880.150390625
+
+training epoch: 14
+log likelihood: -13820.0400390625
+
+training epoch: 15
+log likelihood: -13619.8095703125
+
+training epoch: 16
+log likelihood: -13435.5
+
+training epoch: 17
+log likelihood: -13338.599609375
+
+training epoch: 18
+log likelihood: -13366.0400390625
+
+training epoch: 19
+log likelihood: -13066.73046875
+recommendations_train shape:  (943, 50)
+Scores shape:  (30425,)
+count    30264.000000
+mean         0.860035
+std          1.326189
+min         -3.818216
+25%         -0.038339
+50%          0.932376
+75%          1.846345
+max          4.708238
+dtype: float64
+precision: 0.072
+recall: 0.215
+hit rate: 0.880
+Recommendations are not written to file for N higher than 20.
+Rec train shape:  (943, 1682)
+Rec test shape:  (943, 1682)
+CV for  gender
+>acc=0.714,  est=0.710, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+>acc=0.688,  est=0.719, cfg={'svc__C': 1.0, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+>acc=0.672,  est=0.718, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+>acc=0.734,  est=0.706, cfg={'svc__C': 1.0, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+>acc=0.723,  est=0.707, cfg={'svc__C': 1.0, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+Accuracy: 0.706 (0.023) 
+
+CV for  age
+>acc=0.534,  est=0.588, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+>acc=0.593,  est=0.592, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+>acc=0.550,  est=0.582, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+>acc=0.569,  est=0.583, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+>acc=0.580,  est=0.582, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+Accuracy: 0.565 (0.021) 
+
+CV for  occupation
+>acc=0.233,  est=0.214, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+>acc=0.190,  est=0.235, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+>acc=0.196,  est=0.229, cfg={'svc__C': 1.0, 'svc__kernel': 'sigmoid', 'svc__probability': True} 
+
+>acc=0.223,  est=0.221, cfg={'svc__C': 10, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+>acc=0.213,  est=0.220, cfg={'svc__C': 100, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+Accuracy: 0.211 (0.016) 
+
+CV for  state
+>acc=0.116,  est=0.125, cfg={'svc__C': 10, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+>acc=0.095,  est=0.131, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+>acc=0.127,  est=0.130, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+>acc=0.117,  est=0.131, cfg={'svc__C': 10, 'svc__kernel': 'poly', 'svc__probability': True} 
+
+>acc=0.128,  est=0.127, cfg={'svc__C': 1.0, 'svc__kernel': 'rbf', 'svc__probability': True} 
+
+Accuracy: 0.117 (0.012) 
+
+Linux idun-03-13 4.18.0-193.el8.x86_64 #1 SMP Fri May 8 10:59:10 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
