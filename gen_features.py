@@ -252,9 +252,9 @@ def main():
     print("user_features shape: ", user_features.shape)
 
     filename = get_new_file_name()
-    #user_features.to_csv(filename, index=False)
-    print("writing is not on")
-    #print("User features saved to file: ", filename)
+    user_features.to_csv(filename, index=False)
+
+    print("User features saved to file: ", filename)
 
 
 
